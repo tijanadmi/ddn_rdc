@@ -588,6 +588,47 @@ type DDNInterruptionOfDeliveryPayload struct {
 	SynsoftId    string `json:"ed_id"`
 }
 
+type VSOb struct {
+	IpsId           string `json:"ips_id"`
+	Tipob           string `json:"tipob"`
+	ObId         string `json:"ob_id"`
+	ObSif string `json:"ob_sif"`
+	Nazob       int    `json:"nazob"`
+	Opis     string `json:"opis"`
+	NnId     string `json:"nn_id"`
+	NnSifra          int    `json:"nn_sifra"`
+	Skt        string `json:"skr"`
+	IdSMrc1          string `json:"id_s_mrc1"`
+	Mrc1        string `json:"mrc1"`
+	IdSMrc2           int    `json:"id_s_mrc2"`
+	Mrc2         string `json:"mrc2"`
+	IdSOrg1           int    `json:"id_s_org1"`
+	IdSOrg2           int    `json:"id_s_org2"`
+	Status         string `json:"status"`
+}
+
+type VSPoljeSvaAP struct {
+	IdSOrg                int    `json:"id_s_org"`
+	P2TrafId        string `json:"p2_traf_id"`
+	ObId        string `json:"ob_id"`
+	P1TrafId           int    `json:"p1_traf_id"`
+	NnId           string `json:"nn_id"`
+	Polje           string `json:"polje"`
+	FupId            string `json:"fup_id"`
+	Funkc               int    `json:"funkc"`
+	TstId             string `json:"tst_id"`
+	Sabir       string `json:"sabir"`
+	Status         string `json:"status"`
+	ImePo string `json:"ime_po"`
+	IdKat         string `json:"id_kat"`
+	Oprem       string `json:"oprem"`
+	Aktne        string `json:"aktne"`
+	Potpun      string `json:"potpun"`
+	NormUkl           string `json:"norm_ukl"`
+	Opis             string `json:"opis"`
+	SapId         string `json:"sap_id"`
+}
+
 
 type STipPrek struct{
 	ID     int    `json:"id"`
