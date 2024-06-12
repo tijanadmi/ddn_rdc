@@ -1,34 +1,42 @@
 package models
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type DDNInterruptionOfDelivery struct {
-	IdSMrc            string        `json:"id_s_mrc"`
-	IdSTipd           string        `json:"id_s_tipd"`
-	IdSVrpd           string        `json:"id_s_vrpd"`
-	IdTipob           string        `json:"id_tipob"`
-	ObId              string        `json:"ob_id"`
+	IdSMrc            int           `json:"id_s_mrc"`
+	SMrc              SMrc          `json:"mrc"`
+	IdSTipd           int           `json:"id_s_tipd"`
+	IdSVrpd           int           `json:"id_s_vrpd"`
+	IdTipob           int           `json:"id_tipob"`
+	ObId              int           `json:"ob_id"`
+	VSOb              VSOb          `json:"objekat"`
 	Vrepoc            string        `json:"vrepoc"`
 	Vrezav            string        `json:"vrezav"`
-	TipDogadjaja      string        `json:"tip_dogadjaja"`
-	Uzrok             string        `json:"uzrok"`
-	IdSVrPrek         string        `json:"id_s_vr_prek"`
+	IdSVrPrek         int           `json:"id_s_vr_prek"`
 	SVrPrek           SVrPrek       `json:"vrsta_prek"`
-	IdSUzrokPrek      string        `json:"id_s_uzrok_prek"`
+	IdSUzrokPrek      int           `json:"id_s_uzrok_prek"`
 	SUzrokPrek        SUzrokPrek    `json:"uzrok_prek"`
 	Snaga             string        `json:"snaga"`
 	Opis              string        `json:"opis"`
 	KorUneo           string        `json:"kor_uneo"`
-	IdSMernaMesta     string        `json:"id_s_mrena_mesta"`
+	IdDogSmene        string        `json:"id_dog_smene"`
+	IdStavke          string        `json:"id_stavke"`
+	Mod               string        `json:"mod"`
+	IdSMernaMesta     int           `json:"id_s_mrena_mesta"`
 	SMernaMesta       SMernaMesta   `json:"merna_mesta"`
-	BrojMesta         string        `json:"broj_mesta"`
+	BrojMesta         int           `json:"broj_mesta"`
 	Ind               string        `json:"ind"`
-	P2TrafId          string        `json:"p2_traf_id"`
-	Bi                string        `json:"bi"`
-	IdSPoduzrokPrek   string        `json:"id_s_poduzrok_prek"`
+	P2TrafId          int           `json:"p2_traf_id"`
+	Bi                int           `json:"bi"`
+	IdSPoduzrokPrek   int           `json:"id_s_poduzrok_prek"`
 	SPoduzrokPrek     SPoduzrokPrek `json:"poduzrok_prek"`
-	IdDogPrekidP      string        `json:"id_dog_prekid_p"`
-	IdTipObjektaNdc   string        `json:"id_tip_objekta_ndc"`
-	IdTipDogadjajaNdc string        `json:"id_tip_dogadjaja_ndc"`
-	SynsoftId         string        `json:"ed_id"`
+	IdDogPrekidP      int           `json:"id_dog_prekid_p"`
+	IdTipObjektaNdc   int           `json:"id_tip_objekta_ndc"`
+	IdTipDogadjajaNdc int           `json:"id_tip_dogadjaja_ndc"`
 }
 
 type DDNInterruptionOfDeliveryPayload struct {
@@ -124,6 +132,14 @@ type SMernaMesta struct {
 	Description string `json:"description"`
 }
 
+type SMrc struct {
+	ID      int    `json:"id"`
+	Code    string `json:"code"`
+	Name    string `json:"name"`
+	Status  string `json:"status"`
+	NameCir string `json:"name_cir"`
+}
+
 // User is the type for users
 type User struct {
 	ID       int
@@ -143,6 +159,27 @@ type UserRole struct {
 	IdRole   int
 	RoleCode string
 	RoleName string
+}
+
+type Session struct {
+	ID           uuid.UUID `json:"id"`
+	Username     string    `json:"username"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type CreateSessionParams struct {
+	ID           uuid.UUID `json:"id"`
+	Username     string    `json:"username"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiresAt    time.Time `json:"expires_at"`
 }
 
 /*func (u *User) PasswordMatches(plainText string) (bool, error) {
