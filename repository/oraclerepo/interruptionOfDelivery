@@ -1,0 +1,169 @@
+package oraclerepo
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/tijanadmi/tis-api/models"
+)
+
+
+
+
+func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(Id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `delete from ddn_prekid_isp where id = :1`
+
+	_, err := m.DB.ExecContext(ctx, stmt, Id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
+func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(id int) (*models.DDNInterruptionOfDelivery, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	query := `select ID_S_MRC,
+	COALESCE(to_char(ID_S_TIPD), ''),
+	COALESCE(to_char(ID_S_VRPD), ''),
+	COALESCE(to_char(ID_TIPOB), ''),
+	COALESCE(to_char(OB_ID), ''),
+   to_char(VREPOC, 'dd.mm.yyyy HH24:MI:SS'),
+   to_char(VREZAV, 'dd.mm.yyyy HH24:MI:SS'),
+   COALESCE(to_char(ID_S_VR_PREK), ''),
+   COALESCE(to_char(ID_S_UZROK_PREK), ''),
+   COALESCE(to_char(SNAGA), ''),
+   COALESCE(OPIS, ''),
+   COALESCE(DDN_KOR, ''),
+   COALESCE(to_char(ID_S_MERNA_MESTA), ''),
+   COALESCE(to_char(BROJ_MMESTA), ''),
+   COALESCE(IND, ''),
+   COALESCE(to_char(ID_P2_TRAF), ''),
+   COALESCE(to_char(BI), ''),
+   COALESCE(to_char(ID_S_PODUZROK_PREK), ''),
+   COALESCE(to_char(ID_DOG_PREKID_P), ''),
+   COALESCE(to_char(ID_TIP_OBJEKTA_NDC), ''),
+   COALESCE(to_char(ID_TIP_DOGADJAJA_NDC), ''),
+   COALESCE(SYNSOFT_ID, '')
+   from ddn_prekid_isp
+   where id=:1`
+
+	row, err := m.DB.QueryContext(ctx, query,id)
+	
+	
+	var i models.DDNInterruptionOfDelivery
+	err := rows.Scan(
+			&i.IdSMrc,
+			&i.IdSTipd,
+			&i.IdSVrpd,
+			&i.IdTipob,
+			&i.ObId,
+			&i.Vrepoc,
+			&i.Vrezav,
+			&i.IdSVrPrek,
+			&i.IdSUzrokPrek,
+			&i.Snaga,
+			&i.Opis,
+			&i.KorUneo,
+			&i.IdSMernaMesta,
+			&i.BrojMesta,
+			&i.Ind,
+			&i.P2TrafId,
+			&i.Bi,
+			&i.IdSPoduzrokPrek,
+			&i.IdDogPrekidP,
+			&i.IdTipObjektaNdc,
+			&i.IdTipDogadjajaNdc,
+			&i.SynsoftId,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+	return &i, nil
+}
+
+
+
+func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(id int) ([]*models.DDNInterruptionOfDelivery, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	query := `select ID_S_MRC,
+	COALESCE(to_char(ID_S_TIPD), ''),
+	COALESCE(to_char(ID_S_VRPD), ''),
+	COALESCE(to_char(ID_TIPOB), ''),
+	COALESCE(to_char(OB_ID), ''),
+   to_char(VREPOC, 'dd.mm.yyyy HH24:MI:SS'),
+   to_char(VREZAV, 'dd.mm.yyyy HH24:MI:SS'),
+   COALESCE(to_char(ID_S_VR_PREK), ''),
+   COALESCE(to_char(ID_S_UZROK_PREK), ''),
+   COALESCE(to_char(SNAGA), ''),
+   COALESCE(OPIS, ''),
+   COALESCE(DDN_KOR, ''),
+   COALESCE(to_char(ID_S_MERNA_MESTA), ''),
+   COALESCE(to_char(BROJ_MMESTA), ''),
+   COALESCE(IND, ''),
+   COALESCE(to_char(ID_P2_TRAF), ''),
+   COALESCE(to_char(BI), ''),
+   COALESCE(to_char(ID_S_PODUZROK_PREK), ''),
+   COALESCE(to_char(ID_DOG_PREKID_P), ''),
+   COALESCE(to_char(ID_TIP_OBJEKTA_NDC), ''),
+   COALESCE(to_char(ID_TIP_DOGADJAJA_NDC), ''),
+   COALESCE(SYNSOFT_ID, '')
+   from ddn_prekid_isp
+   where id=:1`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		fmt.Println("Pogresan upit ili nema rezultata upita")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var p []*models.DDNInterruptionOfDelivery
+
+	for rows.Next() {
+		var ue models.DDNInterruptionOfDelivery
+		err := rows.Scan(
+			&ue.IdSMrc,
+			&ue.IdSTipd,
+			&ue.IdSVrpd,
+			&ue.IdTipob,
+			&ue.ObId,
+			&ue.Vrepoc,
+			&ue.Vrezav,
+			&ue.IdSVrPrek,
+			&ue.IdSUzrokPrek,
+			&ue.Snaga,
+			&ue.Opis,
+			&ue.KorUneo,
+			&ue.IdSMernaMesta,
+			&ue.BrojMesta,
+			&ue.Ind,
+			&ue.P2TrafId,
+			&ue.Bi,
+			&ue.IdSPoduzrokPrek,
+			&ue.IdDogPrekidP,
+			&ue.IdTipObjektaNdc,
+			&ue.IdTipDogadjajaNdc,
+			&ue.SynsoftId,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		p = append(p, &ue)
+	}
+
+	return p, nil
+}
