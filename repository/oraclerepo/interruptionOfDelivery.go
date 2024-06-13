@@ -3,7 +3,9 @@ package oraclerepo
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"log"
 
 	"github.com/tijanadmi/ddn_rdc/models"
 )
@@ -259,6 +261,113 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context,id i
 // 	return p, nil
 // }
 
+
+func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.DDNInterruptionOfDelivery) error {
+
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
+
+	var status int
+	var message string
+
+	query := `begin  ddn.synsoft.p_ddn_prekid_isp_insert(:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24); end;`
+	//var int status
+	//var string message
+	_, err := m.DB.ExecContext(ctx, query,
+		ddnintd.IdSMrc,
+		ddnintd.IdSTipd,
+		ddnintd.IdSVrpd,
+		ddnintd.IdTipob,
+		ddnintd.ObId,
+		ddnintd.Vrepoc,
+		ddnintd.Vrezav,
+		ddnintd.IdSVrPrek,
+		ddnintd.IdSUzrokPrek,
+		ddnintd.Snaga,
+		ddnintd.Opis,
+		ddnintd.KorUneo,
+		ddnintd.IdSMernaMesta,
+		ddnintd.BrojMesta,
+		ddnintd.Ind,
+		ddnintd.P2TrafId,
+		ddnintd.Bi,
+		ddnintd.IdSPoduzrokPrek,
+		ddnintd.IdDogPrekidP,
+		ddnintd.IdTipObjektaNdc,
+		ddnintd.IdTipDogadjajaNdc,
+		ddnintd.SynsoftId,
+		sql.Out{Dest: &status},
+		sql.Out{Dest: &message},
+	)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	//fmt.Println(pipiddn.TipMan)
+	//fmt.Println(pipiddn.DatSmene)
+	//fmt.Println(status)
+	//fmt.Println(message)
+	if status != 0 {
+		return errors.New(message)
+	} else {
+		return nil
+	}
+}
+
+func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.DDNInterruptionOfDelivery) error {
+
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
+
+	var status int
+	var message string
+
+	query := `begin  ddn.synsoft.p_ddn_prekid_isp_update(:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24); end;`
+	//var int status
+	//var string message
+	_, err := m.DB.ExecContext(ctx, query,
+		ddnintd.IdSMrc,
+		ddnintd.IdSTipd,
+		ddnintd.IdSVrpd,
+		ddnintd.IdTipob,
+		ddnintd.ObId,
+		ddnintd.Vrepoc,
+		ddnintd.Vrezav,
+		ddnintd.IdSVrPrek,
+		ddnintd.IdSUzrokPrek,
+		ddnintd.Snaga,
+		ddnintd.Opis,
+		ddnintd.KorUneo,
+		ddnintd.IdSMernaMesta,
+		ddnintd.BrojMesta,
+		ddnintd.Ind,
+		ddnintd.P2TrafId,
+		ddnintd.Bi,
+		ddnintd.IdSPoduzrokPrek,
+		ddnintd.IdDogPrekidP,
+		ddnintd.IdTipObjektaNdc,
+		ddnintd.IdTipDogadjajaNdc,
+		ddnintd.SynsoftId,
+		sql.Out{Dest: &status},
+		sql.Out{Dest: &message},
+	)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	//fmt.Println(pipiddn.TipMan)
+	//fmt.Println(pipiddn.DatSmene)
+	//fmt.Println(status)
+	//fmt.Println(message)
+
+	if status != 0 {
+		return errors.New(message)
+	} else {
+		return nil
+	}
+}
 
 func (m *OracleDBRepo) GetMrcById(ctx context.Context,id int) (*models.SMrc, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
