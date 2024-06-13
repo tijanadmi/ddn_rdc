@@ -9,12 +9,13 @@ import (
 	"time"
 
 	_ "github.com/godror/godror"
+	"github.com/tijanadmi/ddn_rdc/repository"
 	"github.com/tijanadmi/ddn_rdc/util"
 )
 
 var testDB *sql.DB
 
-
+var testRepo repository.DatabaseRepo
 
 func TestMain(m *testing.M) {
 	config, err := util.LoadConfig("../..")

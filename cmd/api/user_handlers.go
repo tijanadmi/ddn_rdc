@@ -50,7 +50,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUserByUsername(req.Username)
+	user, err := server.store.GetUserByUsername(ctx,req.Username)
 	if err != nil {
 		
 		ctx.JSON(http.StatusNotFound, errorResponse(err))

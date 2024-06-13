@@ -3,16 +3,15 @@ package oraclerepo
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/tijanadmi/ddn_rdc/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Authenticate authenticates a user
-func (m *OracleDBRepo) Authenticate(username, testPassword string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) Authenticate(ctx context.Context,username, testPassword string) error {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	/*var id int
 	var hashedPassword string*/
@@ -36,9 +35,9 @@ func (m *OracleDBRepo) Authenticate(username, testPassword string) error {
 	return nil
 }
 
-func (m *OracleDBRepo) GetUserByUsername(username string) (*models.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetUserByUsername(ctx context.Context,username string) (*models.User, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, username, password from tis_services_users where username = :1`
 
@@ -84,9 +83,9 @@ func (m *OracleDBRepo) GetUserByUsername(username string) (*models.User, error) 
 	return &user, nil
 }
 
-func (m *OracleDBRepo) GetUserByID(id int) (*models.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetUserByID(ctx context.Context,id int) (*models.User, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, username, password from tis_services_users where id = :1`
 

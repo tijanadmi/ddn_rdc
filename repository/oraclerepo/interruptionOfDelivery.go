@@ -2,8 +2,8 @@ package oraclerepo
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/tijanadmi/ddn_rdc/models"
 )
@@ -11,9 +11,9 @@ import (
 
 
 
-func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(Id string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(ctx context.Context,Id string) error {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	stmt := `delete from ddn_prekid_isp where id = :1`
 
@@ -26,116 +26,161 @@ func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(Id string) error {
 }
 
 
-// func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(id int) (*models.DDNInterruptionOfDelivery, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-// 	defer cancel()
+func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context,id int) (*models.DDNInterruptionOfDelivery, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// defer cancel()
 
-// 	query := `SELECT PI.ID,
-// 			PI.ID_S_MRC,
-//   			MR.naziv,
-//   			PI.ID_S_TIPD,
-//   			PI.ID_S_VRPD,
-//   			O.TIPOB,
-//   			O.OB_ID,
-//   			O.OB_SIF,
-//   			O.NAZOB,
-//   			O.OPIS,
-//   			O.SKR,
-//   			O.ID_S_MRC1,
-//   			O.MRC1,
-//   			O.ID_S_MRC2,
-//   			O.MRC2,
-//   			O.ID_S_ORG1,
-//   			O.ID_S_ORG2,
-//   			PI.VREPOC,
-//   			PI.VREZAV,
-//   			PI.ID_S_VR_PREK,
-//   			V.NAZIV,
-//   			PI.ID_S_UZROK_PREK,
-//   			U.NAZIV,
-//   			PI.SNAGA,
-//   			PI.OPIS,
-//   			PI.DDN_KOR,
-//   			PI.ID_DOG_SMENE,
-//   			PI.ID_STAVKE,
-//   			PI.MOD,
-//   			PI.ID_S_MERNA_MESTA,
-//   			M.NAZIV,
-//   			PI.BROJ_MMESTA,
-//   			PI.IND,
-//   			PI.ID_P2_TRAF,
-//   			PO.IME_PO,
-//   			PO.OPIS,
-//   			PI.BI,
-//   			PI.ID_S_PODUZROK_PREK,
-//   			PI.ID_DOG_PREKID_P,
-//   			PI.ID_TIP_OBJEKTA_NDC,
-//   			PI.ID_TIP_DOGADJAJA_NDC,
-// 			PI.SYNSOFT_ID
-//   			FROM DDN_PREKID_ISP PI
-//   			INNER JOIN  S_MRC MR ON PI.ID_S_MRC=MR.ID
-//   			INNER JOIN  V_S_OB O ON PI.OB_ID=O.OB_ID AND PI.ID_TIPOB=O.TIPOB
-//   			LEFT JOIN S_VR_PREK V ON PI.ID_S_VR_PREK=V.ID
-//   			LEFT JOIN S_UZROK_PREK U ON PI.ID_S_UZROK_PREK=U.ID
-//   			LEFT JOIN S_MERNA_MESTA M ON PI.ID_S_MERNA_MESTA=M.ID
-//   			LEFT JOIN V_S_POLJE_SVA_AP PO ON PI.ID_P2_TRAF=PO.P2_TRAF_ID
-//   			where id=:1`
+	query := `SELECT PI.ID,
+			PI.ID_S_MRC,
+  			MR.naziv,
+  			PI.ID_S_TIPD,
+  			PI.ID_S_VRPD,
+  			O.TIPOB,
+  			O.OB_ID,
+  			O.OB_SIF,
+  			O.NAZOB,
+  			O.OPIS,
+  			O.SKR,
+  			O.ID_S_MRC1,
+  			O.MRC1,
+  			O.ID_S_MRC2,
+  			O.MRC2,
+  			O.ID_S_ORG1,
+  			O.ID_S_ORG2,
+  			PI.VREPOC,
+  			PI.VREZAV,
+  			PI.ID_S_VR_PREK,
+  			V.NAZIV,
+  			PI.ID_S_UZROK_PREK,
+  			U.NAZIV,
+  			PI.SNAGA,
+  			PI.OPIS,
+  			PI.DDN_KOR,
+  			PI.ID_DOG_SMENE,
+  			PI.ID_STAVKE,
+  			PI.MOD,
+  			PI.ID_S_MERNA_MESTA,
+  			M.NAZIV,
+  			PI.BROJ_MMESTA,
+  			PI.IND,
+  			PI.ID_P2_TRAF,
+  			PO.IME_PO,
+  			PO.OPIS,
+  			PI.BI,
+  			PI.ID_S_PODUZROK_PREK,
+  			PI.ID_DOG_PREKID_P,
+  			PI.ID_TIP_OBJEKTA_NDC,
+  			PI.ID_TIP_DOGADJAJA_NDC,
+			PI.SYNSOFT_ID
+  			FROM DDN_PREKID_ISP PI
+  			INNER JOIN  S_MRC MR ON PI.ID_S_MRC=MR.ID
+  			INNER JOIN  V_S_OB O ON PI.OB_ID=O.OB_ID AND PI.ID_TIPOB=O.TIPOB
+  			LEFT JOIN S_VR_PREK V ON PI.ID_S_VR_PREK=V.ID
+  			LEFT JOIN S_UZROK_PREK U ON PI.ID_S_UZROK_PREK=U.ID
+  			LEFT JOIN S_MERNA_MESTA M ON PI.ID_S_MERNA_MESTA=M.ID
+  			LEFT JOIN V_S_POLJE_SVA_AP PO ON PI.ID_P2_TRAF=PO.P2_TRAF_ID
+  			where id=:1`
 
-// 	row, err := m.DB.QueryContext(ctx, query,id)
+	row := m.DB.QueryRowContext(ctx, query,id)
 	
-	
-// 	var i models.DDNInterruptionOfDelivery
-// 	err := rows.Scan(
-// 			&i.Id,
-// 			&i.IdSMrc,
-// 			&i.SMrc.Name,
-// 			&i.IdSTipd,
-// 			&i.IdSVrpd,
-// 			&i.VSOb.Tipob,
-// 			&i.VSOb.ObId,
-// 			&i.VSOb.ObSif,
-// 			&i.VSOb.Nazob,
-// 			&i.VSOb.Opis,
-// 			&i.VSOb.Skt,
-// 			&i.VSOb.IdSMrc1,
-// 	        &i.VSOb.Mrc1,
-// 			&i.VSOb.IdSMrc2,
-// 			&i.VSOb.Mrc2,
-// 			&i.VSOb.IdSOrg1,
-// 			&i.VSOb.IdSOrg2,
-// 			&i.Vrepoc,
-// 			&i.Vrezav,
-// 			&i.SVrPrek.ID,
-// 			&i.SVrPrek.Name,
-// 			&i.SUzrokPrek.ID,
-// 			&i.SUzrokPrek.Name,
-// 			&i.Snaga,
-// 			&i.Opis,
-// 			&i.KorUneo,
-// 			&i.IdDogSmene,
-// 			&i.IdStavke,
-// 			&i.Mod,
-// 			&i.IdSMernaMesta,
-// 			&i.SMernaMesta.Name,
-// 			&i.BrojMesta,
-// 			&i.Ind,
-// 			&i.P2TrafId,
-// 			&i.VSPoljeSvaAP.ImePo,
-// 			&i.VSPoljeSvaAP.Opis,
-// 			&i.Bi,
-// 			&i.IdSPoduzrokPrek,
-// 			&i.IdDogPrekidP,
-// 			&i.IdTipObjektaNdc,
-// 			&i.IdTipDogadjajaNdc,
-// 			&i.SynsoftId,
-// 		)
+	var  vrPrekName, uzrokPrekName, sMernaMestaName, imePo, opisPo sql.NullString
+	var idSMernaMesta sql.NullInt64
 
-// 		if err != nil {
-// 			return nil, err
-// 		}
+	var i models.DDNInterruptionOfDelivery
+	err := row.Scan(
+			&i.Id,
+			&i.IdSMrc,
+			&i.SMrc.Name,
+			&i.IdSTipd,
+			&i.IdSVrpd,
+			&i.VSOb.Tipob,
+			&i.VSOb.ObId,
+			&i.VSOb.ObSif,
+			&i.VSOb.Nazob,
+			&i.VSOb.Opis,
+			&i.VSOb.Skt,
+			&i.VSOb.IdSMrc1,
+	        &i.VSOb.Mrc1,
+			&i.VSOb.IdSMrc2,
+			&i.VSOb.Mrc2,
+			&i.VSOb.IdSOrg1,
+			&i.VSOb.IdSOrg2,
+			&i.Vrepoc,
+			&i.Vrezav,
+			&i.SVrPrek.ID,
+			&vrPrekName,
+			&i.SUzrokPrek.ID,
+			&uzrokPrekName,
+			&i.Snaga,
+			&i.Opis,
+			&i.KorUneo,
+			&i.IdDogSmene,
+			&i.IdStavke,
+			&i.Mod,
+			&idSMernaMesta,
+			&sMernaMestaName,
+			&i.BrojMesta,
+			&i.Ind,
+			&i.P2TrafId,
+			&imePo,
+			&opisPo,
+			&i.Bi,
+			&i.IdSPoduzrokPrek,
+			&i.IdDogPrekidP,
+			&i.IdTipObjektaNdc,
+			&i.IdTipDogadjajaNdc,
+			&i.SynsoftId,
+		)
 
-// 	return &i, nil
-// }
+		if err != nil {
+			return nil, err
+		}
+
+		// Assign the null strings to the struct fields
+
+	if vrPrekName.Valid {
+		if i.SVrPrek == nil {
+			i.SVrPrek = &models.SVrPrek{}
+		}
+		i.SVrPrek.Name = vrPrekName.String
+	}
+	if uzrokPrekName.Valid {
+		if i.SUzrokPrek == nil {
+			i.SUzrokPrek = &models.SUzrokPrek{}
+		}
+		i.SUzrokPrek.Name = uzrokPrekName.String
+	}
+	if sMernaMestaName.Valid {
+		if i.SMernaMesta == nil {
+			i.SMernaMesta = &models.SMernaMesta{}
+		}
+		i.SMernaMesta.Name = sMernaMestaName.String
+	}
+	// if i.IdSMernaMesta.Valid {
+    //     i.IdSMernaMesta = i.IdSMernaMesta.Int64
+    // } else {
+    //     i.IdSMernaMesta = 0
+    // }
+	if idSMernaMesta.Valid {
+		i.IdSMernaMesta = idSMernaMesta
+	} else {
+		i.IdSMernaMesta = sql.NullInt64{Int64: 0, Valid: false}
+	}
+	if imePo.Valid {
+		if i.VSPoljeSvaAP == nil {
+			i.VSPoljeSvaAP = &models.VSPoljeSvaAP{}
+		}
+		i.VSPoljeSvaAP.ImePo = imePo.String
+	}
+	if opisPo.Valid {
+		if i.VSPoljeSvaAP == nil {
+			i.VSPoljeSvaAP = &models.VSPoljeSvaAP{}
+		}
+		i.VSPoljeSvaAP.Opis = opisPo.String
+	}
+
+	return &i, nil
+}
 
 
 
@@ -215,9 +260,9 @@ func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(Id string) error {
 // }
 
 
-func (m *OracleDBRepo) GetMrcById(id int) (*models.SMrc, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetMrcById(ctx context.Context,id int) (*models.SMrc, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status, naziv_cir
 			  from s_mrc
@@ -243,9 +288,9 @@ func (m *OracleDBRepo) GetMrcById(id int) (*models.SMrc, error) {
 }
 
 // Get returns all s_mrc and error, if any
-func (m *OracleDBRepo) GetSMrc() ([]*models.SMrc, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSMrc(ctx context.Context) ([]*models.SMrc, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status, naziv_cir
 			  from s_mrc`
@@ -280,9 +325,9 @@ func (m *OracleDBRepo) GetSMrc() ([]*models.SMrc, error) {
 }
 
 
-func (m *OracleDBRepo) GetSTipPrekById(id int) (*models.STipPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSTipPrekById(ctx context.Context,id int) (*models.STipPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_tip_prek
@@ -307,9 +352,9 @@ func (m *OracleDBRepo) GetSTipPrekById(id int) (*models.STipPrek, error) {
 }
 
 // Get returns all s_tip_prek and error, if any
-func (m *OracleDBRepo) GetSTipPrek() ([]*models.STipPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSTipPrek(ctx context.Context) ([]*models.STipPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_tip_prek`
@@ -343,9 +388,9 @@ func (m *OracleDBRepo) GetSTipPrek() ([]*models.STipPrek, error) {
 }
 
 
-func (m *OracleDBRepo) GetSVrPrekById(id int) (*models.SVrPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSVrPrekById(ctx context.Context,id int) (*models.SVrPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_vr_prek
@@ -370,9 +415,9 @@ func (m *OracleDBRepo) GetSVrPrekById(id int) (*models.SVrPrek, error) {
 }
 
 // Get returns all s_vr_prek and error, if any
-func (m *OracleDBRepo) GetSVrPrek() ([]*models.SVrPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSVrPrek(ctx context.Context) ([]*models.SVrPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_vr_prek`
@@ -405,9 +450,9 @@ func (m *OracleDBRepo) GetSVrPrek() ([]*models.SVrPrek, error) {
 	return vrps, nil
 }
 
-func (m *OracleDBRepo) GetSUzrokPrekById(id int) (*models.SUzrokPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSUzrokPrekById(ctx context.Context,id int) (*models.SUzrokPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_uzrok_prek
@@ -432,9 +477,9 @@ func (m *OracleDBRepo) GetSUzrokPrekById(id int) (*models.SUzrokPrek, error) {
 }
 
 // Get returns all s_uzrok_prek and error, if any
-func (m *OracleDBRepo) GetSUzrokPrek() ([]*models.SUzrokPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSUzrokPrek(ctx context.Context) ([]*models.SUzrokPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_uzrok_prek`
@@ -467,9 +512,9 @@ func (m *OracleDBRepo) GetSUzrokPrek() ([]*models.SUzrokPrek, error) {
 	return uzroks, nil
 }
 
-func (m *OracleDBRepo) GetSPoduzrokPrekById(id int) (*models.SPoduzrokPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSPoduzrokPrekById(ctx context.Context,id int) (*models.SPoduzrokPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_poduzrok_prek
@@ -494,9 +539,9 @@ func (m *OracleDBRepo) GetSPoduzrokPrekById(id int) (*models.SPoduzrokPrek, erro
 }
 
 // Get returns all s_poduzrok_prek and error, if any
-func (m *OracleDBRepo) GetSPoduzrokPrek() ([]*models.SPoduzrokPrek, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context) ([]*models.SPoduzrokPrek, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_poduzrok_prek`
@@ -529,9 +574,9 @@ func (m *OracleDBRepo) GetSPoduzrokPrek() ([]*models.SPoduzrokPrek, error) {
 	return poduzroks, nil
 }
 
-func (m *OracleDBRepo) GetSMernaMestaById(id int) (*models.SMernaMesta, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSMernaMestaById(ctx context.Context,id int) (*models.SMernaMesta, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_merna_mesta
@@ -556,9 +601,9 @@ func (m *OracleDBRepo) GetSMernaMestaById(id int) (*models.SMernaMesta, error) {
 }
 
 // Get returns all s_poduzrok_prek and error, if any
-func (m *OracleDBRepo) GetSMernaMesta() ([]*models.SMernaMesta, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func (m *OracleDBRepo) GetSMernaMesta(ctx context.Context) ([]*models.SMernaMesta, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
 
 	query := `select id, sifra,naziv, status
 			  from s_merna_mesta`

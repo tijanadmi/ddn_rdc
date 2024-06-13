@@ -1,12 +1,14 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type DDNInterruptionOfDelivery struct {
+	Id                int           `json:"id"`
 	IdSMrc            int           `json:"id_s_mrc"`
 	SMrc              SMrc          `json:"mrc"`
 	IdSTipd           int           `json:"id_s_tipd"`
@@ -17,26 +19,28 @@ type DDNInterruptionOfDelivery struct {
 	Vrepoc            string        `json:"vrepoc"`
 	Vrezav            string        `json:"vrezav"`
 	IdSVrPrek         int           `json:"id_s_vr_prek"`
-	SVrPrek           SVrPrek       `json:"vrsta_prek"`
+	SVrPrek           *SVrPrek       `json:"vrsta_prek"`
 	IdSUzrokPrek      int           `json:"id_s_uzrok_prek"`
-	SUzrokPrek        SUzrokPrek    `json:"uzrok_prek"`
+	SUzrokPrek        *SUzrokPrek    `json:"uzrok_prek"`
 	Snaga             string        `json:"snaga"`
 	Opis              string        `json:"opis"`
 	KorUneo           string        `json:"kor_uneo"`
-	IdDogSmene        string        `json:"id_dog_smene"`
-	IdStavke          string        `json:"id_stavke"`
+	IdDogSmene        int        `json:"id_dog_smene"`
+	IdStavke          int        `json:"id_stavke"`
 	Mod               string        `json:"mod"`
-	IdSMernaMesta     int           `json:"id_s_mrena_mesta"`
-	SMernaMesta       SMernaMesta   `json:"merna_mesta"`
+	IdSMernaMesta     sql.NullInt64           `json:"id_s_mrena_mesta"`
+	SMernaMesta       *SMernaMesta   `json:"merna_mesta"`
 	BrojMesta         int           `json:"broj_mesta"`
 	Ind               string        `json:"ind"`
 	P2TrafId          int           `json:"p2_traf_id"`
+	VSPoljeSvaAP      *VSPoljeSvaAP  `json:"polja"`
 	Bi                int           `json:"bi"`
 	IdSPoduzrokPrek   int           `json:"id_s_poduzrok_prek"`
 	SPoduzrokPrek     SPoduzrokPrek `json:"poduzrok_prek"`
 	IdDogPrekidP      int           `json:"id_dog_prekid_p"`
 	IdTipObjektaNdc   int           `json:"id_tip_objekta_ndc"`
-	IdTipDogadjajaNdc int           `json:"id_tip_dogadjaja_ndc"`
+	IdTipDogadjajaNdc int          `json:"id_tip_dogadjaja_ndc"`
+	SynsoftId         int           `json:"synsoft_id"`
 }
 
 type DDNInterruptionOfDeliveryPayload struct {
