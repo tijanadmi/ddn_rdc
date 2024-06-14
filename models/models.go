@@ -8,6 +8,43 @@ import (
 )
 
 type DDNInterruptionOfDelivery struct {
+	Id				  string `json:"id"`
+	IdSMrc            string `json:"id_s_mrc"`
+	Mrc 			  string `json:"mrc"`
+	IdSTipd           string `json:"id_s_tipd"`
+	IdSVrpd           string `json:"id_s_vrpd"`
+	IdTipob           string `json:"id_tipob"`
+	ObId              string `json:"ob_id"`
+	ObNaziv              string `json:"ob_naziv"`
+	ObOpis              string `json:"ob_opis"`
+	Vrepoc            string `json:"vrepoc"`
+	Vrezav            string `json:"vrezav"`
+	TipDogadjaja      string `json:"tip_dogadjaja"`
+	IdSVrPrek         string `json:"id_s_vr_prek"`
+	VrstaPrek             string `json:"vrsta_prek"`
+	PodvrstaPrek             string `json:"podvrsta_prek"`
+	IdSUzrokPrek      string `json:"id_s_uzrok_prek"`
+	Uzrok             string `json:"uzrok"`
+	Snaga             string `json:"snaga"`
+	Opis              string `json:"opis"`
+	KorUneo           string `json:"kor_uneo"`
+	IdSMernaMesta     string `json:"id_s_merna_mesta"`
+	MernaMesta     string `json:"merna_mesta"`
+	BrojMesta         string `json:"broj_mesta"`
+	Ind               string `json:"ind"`
+	P2TrafId          string `json:"p2_traf_id"`
+	PoljeNaziv          string `json:"polje_naziv"`
+	PoljeOpis          string `json:"polje_opis"`
+	Bi                string `json:"bi"`
+	IdSPoduzrokPrek   string `json:"id_s_poduzrok_prek"`
+	PoduzrokPrek   string `json:"poduzrok_prek"`
+	IdDogPrekidP      string `json:"id_dog_prekid_p"`
+	IdTipObjektaNdc   string `json:"id_tip_objekta_ndc"`
+	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
+	SynsoftId         string `json:"ed_id"`
+}
+
+type DDNInterruptionOfDeliveryRez struct {
 	Id                int           `json:"id"`
 	IdSMrc            int           `json:"id_s_mrc"`
 	SMrc              SMrc          `json:"mrc"`
@@ -99,6 +136,17 @@ type VSPoljeSvaAP struct {
 	NormUkl  string `json:"norm_ukl"`
 	Opis     string `json:"opis"`
 	SapId    string `json:"sap_id"`
+}
+
+type ListLimitOffsetParams struct {
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+}
+
+type ListInterruptionParams struct {
+	Ind    string  `json:"ind"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
 }
 
 type STipPrek struct {

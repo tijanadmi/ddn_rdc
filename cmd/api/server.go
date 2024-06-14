@@ -49,6 +49,22 @@ func (server *Server) setupRouter() {
 	
 	router.POST("/users/login", server.loginUser)
 	router.POST("/tokens/renew_access", server.renewAccessToken)
+	router.GET("/mrc/:id", server.getMrcById)
+	router.GET("/mrc", server.listMrcs)
+	router.GET("/tipprek/:id", server.getSTipPrekById)
+	router.GET("/tipprek", server.listTipPrek)
+	router.GET("/vrprek/:id", server.getSVrPrekById)
+	router.GET("/vrprek", server.listVrPrek)
+	router.GET("/uzrokprek/:id", server.getSUzrokPrekById)
+	router.GET("/uzrokprek", server.listUzrokPrek)
+	router.GET("/poduzrokprek/:id", server.getSPoduzrokPrekById)
+	router.GET("/poduzrokprek", server.listPoduzrokPrek)
+	router.GET("/mernamesta/:id", server.getSMernaMestaById)
+	router.GET("/mernamesta", server.listMernaMesta)
+
+	router.GET("/interruptionofdelivery/:id", server.getDDNInterruptionOfDeliveryById)
+	router.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryP)
+	router.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryK)
 	
 
 	//authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
