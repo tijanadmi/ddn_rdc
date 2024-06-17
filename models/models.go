@@ -144,6 +144,9 @@ type ListLimitOffsetParams struct {
 }
 
 type ListInterruptionParams struct {
+	Mrc int32 `json:"mrc"`
+	StartDate string `json:"start_date"`
+	EndDate string `json:"end_date"`
 	Ind    string  `json:"ind"`
 	Limit  int32  `json:"limit"`
 	Offset int32  `json:"offset"`
