@@ -134,6 +134,24 @@ func (server *Server) getObjId(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, mrc)
 }
 
+func (server *Server) getPoljeGEById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	mrcID, err := strconv.Atoi(id)
+	if err != nil {
+
+		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
+		return
+	}
+
+	mrc, err := server.store.GetPoljeGEById(ctx, mrcID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, mrc)
+}
+
 type listMrcRequest struct {
 	PageID   int32 `form:"page_id" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`

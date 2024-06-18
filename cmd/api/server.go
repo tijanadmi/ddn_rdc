@@ -73,7 +73,8 @@ func (server *Server) setupRouter() {
 	router.GET("/obj/:id", server.getObjId)
 	router.GET("/objtsrp", server.listObjTSRP)
 	router.GET("/objheteve", server.listObjHETEVE)
-	router.GET("/poljaGE", server.listPoljaGE)
+	router.GET("/poljage", server.listPoljaGE)
+	router.GET("/poljage/:id", server.getPoljeGEById)
 
 	router.GET("/interruptionofdelivery/:id", server.getDDNInterruptionOfDeliveryById)
 	router.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryP)

@@ -434,6 +434,40 @@ func (m *OracleDBRepo) GetObjById(ctx context.Context,id int) (*models.ObjLOV, e
 	return &mrc, err
 }
 
+func (m *OracleDBRepo) GetPoljeGEById(ctx context.Context,id int) (*models.PoljaLOV, error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
+
+	query := `select P2_TRAF_ID,
+       			polje,
+       			IME_PO,
+       			S_NAP.ID NN_ID,
+       			s_nap.naziv||' '||s_nap.jedinica nn_naziv
+ 				from V_s_polje_SVA,s_nap,S_FUP
+				where NN_ID = s_nap.id
+				AND FUP_ID=S_FUP.ID
+				AND S_FUP.SIFRA='20'
+                AND P2_TRAF_ID=:1`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	var mrc models.PoljaLOV
+
+	err := row.Scan(
+		&mrc.Id,
+			&mrc.Polje,
+			&mrc.PoljeNaziv,
+			&mrc.NNId,
+			&mrc.NNNaziv,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &mrc, err
+}
+
 // type ListLimitOffsetParams struct {
 // 	Limit  int32  `json:"limit"`
 // 	Offset int32  `json:"offset"`
