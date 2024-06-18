@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	db "github.com/tijanadmi/ddn_rdc/repository"
@@ -46,7 +47,14 @@ func (server *Server) setupRouter() {
 		v.RegisterValidation("currency", validCurrency)
 	}*/
 
-	
+	// Configure CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Dodaj druge dozvoljene originse ako je potrebno
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 	router.POST("/users/login", server.loginUser)
 	router.POST("/tokens/renew_access", server.renewAccessToken)
 	router.GET("/mrc/:id", server.getMrcById)
@@ -61,10 +69,15 @@ func (server *Server) setupRouter() {
 	router.GET("/poduzrokprek", server.listPoduzrokPrek)
 	router.GET("/mernamesta/:id", server.getSMernaMestaById)
 	router.GET("/mernamesta", server.listMernaMesta)
+	router.GET("/obj/:id", server.getObjId)
+	router.GET("/objtsrp", server.listObjTSRP)
+	router.GET("/objheteve", server.listObjHETEVE)
+	router.GET("/poljaGE", server.listPoljaGE)
 
 	router.GET("/interruptionofdelivery/:id", server.getDDNInterruptionOfDeliveryById)
 	router.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryP)
 	router.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryK)
+	
 	
 
 	//authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))

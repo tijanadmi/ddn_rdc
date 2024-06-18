@@ -35,5 +35,8 @@ type DatabaseRepo interface {
 	GetSPoduzrokPrek(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SPoduzrokPrek, error)
 	GetSMernaMestaById(ctx context.Context,id int) (*models.SMernaMesta, error) 
 	GetSMernaMesta(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMernaMesta, error)
-
+	GetObjById(ctx context.Context,id int) (*models.ObjLOV, error)
+	GetObjTSRP(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error)
+	GetObjHETEVE(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error) 
+	GetPoljaGE(ctx context.Context, arg models.ListPoljaLimitOffsetParams) ([]*models.PoljaLOV, error) 
 }

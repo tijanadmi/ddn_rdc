@@ -195,6 +195,33 @@ type SMrc struct {
 	NameCir string `json:"name_cir"`
 }
 
+type ListObjectLimitOffsetParams struct {
+	Mrc  int32  `json:"mrc"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+}
+type ObjLOV struct {
+	Opis    string `json:"opis"`
+	IdSMrc1 string `json:"id_s_mrc1"`
+	ObId    string `json:"ob_id"`
+	Tipob   string `json:"tipob"`
+	SifTipob   string `json:"sif_tipob"`
+	ObSif   string `json:"ob_sif"`
+}
+
+type ListPoljaLimitOffsetParams struct {
+	ObjId  int32  `json:"obj_id"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+}
+type PoljaLOV struct {
+	Id    string `json:"polje_id"`
+	Polje    string `json:"polje"`
+	PoljeNaziv string `json:"polje_naziv"`
+	NNId    string `json:"nn_id"`
+	NNNaziv   string `json:"nn_naziv"`
+}
+
 // User is the type for users
 type User struct {
 	ID       int
