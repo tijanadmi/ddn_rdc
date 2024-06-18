@@ -12,7 +12,7 @@ func (server *Server) getMrcById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
 	if err != nil {
-		
+
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
 	}
@@ -30,7 +30,7 @@ func (server *Server) getSTipPrekById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
 	if err != nil {
-		
+
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
 	}
@@ -48,7 +48,7 @@ func (server *Server) getSVrPrekById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
 	if err != nil {
-		
+
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
 	}
@@ -66,7 +66,7 @@ func (server *Server) getSUzrokPrekById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
 	if err != nil {
-		
+
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
 	}
@@ -84,7 +84,7 @@ func (server *Server) getSPoduzrokPrekById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
 	if err != nil {
-		
+
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
 	}
@@ -102,7 +102,7 @@ func (server *Server) getSMernaMestaById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
 	if err != nil {
-		
+
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
 	}
@@ -120,7 +120,7 @@ func (server *Server) getObjId(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
 	if err != nil {
-		
+
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
 	}
@@ -266,7 +266,7 @@ func (server *Server) listMernaMesta(ctx *gin.Context) {
 }
 
 type listObjectRequest struct {
-	Mrc   int32 `form:"mrc" binding:"required,min=1"`
+	Mrc      int32 `form:"mrc" binding:"required,min=1"`
 	PageID   int32 `form:"page_id" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`
 }
@@ -279,7 +279,7 @@ func (server *Server) listObjTSRP(ctx *gin.Context) {
 	}
 
 	arg := models.ListObjectLimitOffsetParams{
-		Mrc: req.Mrc,
+		Mrc:    req.Mrc,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
@@ -300,7 +300,7 @@ func (server *Server) listObjHETEVE(ctx *gin.Context) {
 	}
 
 	arg := models.ListObjectLimitOffsetParams{
-		Mrc: req.Mrc,
+		Mrc:    req.Mrc,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
@@ -315,7 +315,7 @@ func (server *Server) listObjHETEVE(ctx *gin.Context) {
 }
 
 type listPoljaRequest struct {
-	ObjId   int32 `form:"obj_id" binding:"required,min=1"`
+	ObjId    int32 `form:"obj_id" binding:"required,min=1"`
 	PageID   int32 `form:"page_id" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`
 }
@@ -328,7 +328,7 @@ func (server *Server) listPoljaGE(ctx *gin.Context) {
 	}
 
 	arg := models.ListPoljaLimitOffsetParams{
-		ObjId: req.ObjId,
+		ObjId:  req.ObjId,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
