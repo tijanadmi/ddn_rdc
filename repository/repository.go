@@ -39,4 +39,5 @@ type DatabaseRepo interface {
 	GetObjTSRP(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error)
 	GetObjHETEVE(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error) 
 	GetPoljaGE(ctx context.Context, arg models.ListPoljaLimitOffsetParams) ([]*models.PoljaLOV, error) 
+	GetPoljeGEById(ctx context.Context,id int) (*models.PoljaLOV, error)
 }
