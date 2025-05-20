@@ -2,14 +2,16 @@ package oraclerepo
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"strings"
 
 	"github.com/tijanadmi/ddn_rdc/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Authenticate authenticates a user
-func (m *OracleDBRepo) Authenticate(ctx context.Context,username, testPassword string) error {
+func (m *OracleDBRepo) Authenticate(ctx context.Context, username, testPassword string) error {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -18,10 +20,10 @@ func (m *OracleDBRepo) Authenticate(ctx context.Context,username, testPassword s
 
 	var user models.User
 
-	query := `select id, username, password from tis_services_users where username = :1`
+	query := `select id, username, password, full_name from tis_services_users where username = :1`
 
 	row := m.DB.QueryRowContext(ctx, query, username)
-	err := row.Scan(&user.ID, &user.Username, &user.Password)
+	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.FullName)
 	if err != nil {
 		return err
 	}
@@ -35,22 +37,35 @@ func (m *OracleDBRepo) Authenticate(ctx context.Context,username, testPassword s
 	return nil
 }
 
-func (m *OracleDBRepo) GetUserByUsername(ctx context.Context,username string) (*models.User, error) {
+func (m *OracleDBRepo) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
-	query := `select id, username, password from tis_services_users where username = :1`
+	query := `select id, 
+					username, 
+					password, 
+					RTRIM(full_name)
+					from tis_services_users where username = :1`
 
 	var user models.User
+	var fullName sql.NullString
 	row := m.DB.QueryRowContext(ctx, query, username)
 
 	err := row.Scan(
 		&user.ID,
 		&user.Username,
 		&user.Password,
+		&fullName,
 	)
 
+	if fullName.Valid {
+		user.FullName = strings.TrimSpace(fullName.String)
+	} else {
+		user.FullName = ""
+	}
+
 	if err != nil {
+
 		return nil, err
 	}
 	query = `select ru.id,RU.ID_USER, RU.ID_ROLE, R.CODE, R.NAME
@@ -83,11 +98,11 @@ func (m *OracleDBRepo) GetUserByUsername(ctx context.Context,username string) (*
 	return &user, nil
 }
 
-func (m *OracleDBRepo) GetUserByID(ctx context.Context,id int) (*models.User, error) {
+func (m *OracleDBRepo) GetUserByID(ctx context.Context, id int) (*models.User, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
-	query := `select id, username, password from tis_services_users where id = :1`
+	query := `select id, username, password, full_name from tis_services_users where id = :1`
 
 	var user models.User
 	row := m.DB.QueryRowContext(ctx, query, id)
@@ -96,6 +111,7 @@ func (m *OracleDBRepo) GetUserByID(ctx context.Context,id int) (*models.User, er
 		&user.ID,
 		&user.Username,
 		&user.Password,
+		&user.FullName,
 	)
 
 	if err != nil {

@@ -20,8 +20,8 @@ type Server struct {
 }
 
 // NewServer creates a new HTTP server and set up routing.
-func NewServer( config util.Config, store db.DatabaseRepo) (*Server, error) {
-	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+func NewServer(config util.Config, store db.DatabaseRepo) (*Server, error) {
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
@@ -30,7 +30,6 @@ func NewServer( config util.Config, store db.DatabaseRepo) (*Server, error) {
 		config:     config,
 		store:      store,
 		tokenMaker: tokenMaker,
-
 	}
 	/*if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
@@ -49,14 +48,15 @@ func (server *Server) setupRouter() {
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
-		//AllowOrigins:     []string{"http://localhost:3000"}, 
-		AllowOrigins:     []string{"*"}, 
+		//AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
 	router.POST("/users/login", server.loginUser)
+	router.POST("/users/get_user_by_token", server.GetUserByToken)
 	router.POST("/tokens/renew_access", server.renewAccessToken)
 	router.GET("/mrc/:id", server.getMrcById)
 	router.GET("/mrc", server.listMrcs)
@@ -79,13 +79,12 @@ func (server *Server) setupRouter() {
 	router.GET("/interruptionofdelivery/:id", server.getDDNInterruptionOfDeliveryById)
 	router.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryP)
 	router.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryK)
-	
-	
+
+	router.GET("/mesecni", server.listPiMM)
 
 	//authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
-	
+
 	//authRoutes.GET("/accounts/:id", server.getAccount)
-	
 
 	server.router = router
 }

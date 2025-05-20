@@ -10,10 +10,7 @@ import (
 	"github.com/tijanadmi/ddn_rdc/models"
 )
 
-
-
-
-func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(ctx context.Context,Id string) error {
+func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(ctx context.Context, Id string) error {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -27,7 +24,7 @@ func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(ctx context.Context,Id st
 	return nil
 }
 
-func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context,id int) (*models.DDNInterruptionOfDelivery, error) {
+func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context, id int) (*models.DDNInterruptionOfDelivery, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	// defer cancel()
 
@@ -73,9 +70,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context,id i
    LEFT JOIN S_VRSTA_PREKIDA_P_GEN_V vp ON PI.ID_TIP_OBJEKTA_NDC=vp.ID_TIP_OBJEKTA AND PI.ID_TIP_DOGADJAJA_NDC=vp.ID_TIP_DOGADJAJA AND PI.ID_S_VR_PREK=vp.ID_S_VR_PREK
    where PI.id=:1`
 
-	row := m.DB.QueryRowContext(ctx, query,id)
-	
-	
+	row := m.DB.QueryRowContext(ctx, query, id)
 
 	var ue models.DDNInterruptionOfDelivery
 	err := row.Scan(
@@ -113,16 +108,14 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context,id i
 		&ue.IdTipDogadjajaNdc,
 		&ue.SynsoftId,
 	)
-		if err != nil {
-			return nil, err
-		}
-
-	
+	if err != nil {
+		return nil, err
+	}
 
 	return &ue, nil
 }
 
-func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg models.ListInterruptionParams) ([]*models.DDNInterruptionOfDelivery, error) {
+func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg models.ListInterruptionParams) ([]*models.DDNInterruptionOfDelivery, int, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -156,7 +149,8 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
    COALESCE(to_char(PI.ID_DOG_PREKID_P), ''),
    COALESCE(to_char(PI.ID_TIP_OBJEKTA_NDC), ''),
    COALESCE(to_char(PI.ID_TIP_DOGADJAJA_NDC), ''),
-   COALESCE(PI.SYNSOFT_ID, '')
+   COALESCE(PI.SYNSOFT_ID, ''),
+   COUNT(*) OVER () AS TOTAL_COUNT
    from ddn_prekid_isp PI
    INNER JOIN  S_MRC MR ON PI.ID_S_MRC=MR.ID
    INNER JOIN  V_S_OB O ON PI.OB_ID=O.OB_ID AND PI.ID_TIPOB=O.TIPOB
@@ -171,62 +165,67 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
    ORDER BY id
 			  OFFSET :5 ROWS FETCH NEXT :6 ROWS ONLY`
 
-			 // fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
+	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
 	var ues []*models.DDNInterruptionOfDelivery
+	var totalCount int
 
 	for rows.Next() {
 		var ue models.DDNInterruptionOfDelivery
+		var count int
+
 		err := rows.Scan(
 			&ue.Id,
-		&ue.IdSMrc,
-		&ue.Mrc,
-		&ue.IdSTipd,
-		&ue.IdSVrpd,
-		&ue.IdTipob,
-		&ue.ObId,
-		&ue.ObNaziv,
-		&ue.ObOpis,
-		&ue.Vrepoc,
-		&ue.Vrezav,
-		&ue.IdSVrPrek,
-		&ue.VrstaPrek,
-		&ue.PodvrstaPrek,
-		&ue.IdSUzrokPrek,
-		&ue.Uzrok,
-		&ue.Snaga,
-		&ue.Opis,
-		&ue.KorUneo,
-		&ue.IdSMernaMesta,
-		&ue.MernaMesta,
-		&ue.BrojMesta,
-		&ue.Ind,
-		&ue.P2TrafId,
-		&ue.PoljeNaziv,
-		&ue.PoljeOpis,
-		&ue.Bi,
-		&ue.IdSPoduzrokPrek,
-		&ue.PoduzrokPrek,
-		&ue.IdDogPrekidP,
-		&ue.IdTipObjektaNdc,
-		&ue.IdTipDogadjajaNdc,
-		&ue.SynsoftId,
+			&ue.IdSMrc,
+			&ue.Mrc,
+			&ue.IdSTipd,
+			&ue.IdSVrpd,
+			&ue.IdTipob,
+			&ue.ObId,
+			&ue.ObNaziv,
+			&ue.ObOpis,
+			&ue.Vrepoc,
+			&ue.Vrezav,
+			&ue.IdSVrPrek,
+			&ue.VrstaPrek,
+			&ue.PodvrstaPrek,
+			&ue.IdSUzrokPrek,
+			&ue.Uzrok,
+			&ue.Snaga,
+			&ue.Opis,
+			&ue.KorUneo,
+			&ue.IdSMernaMesta,
+			&ue.MernaMesta,
+			&ue.BrojMesta,
+			&ue.Ind,
+			&ue.P2TrafId,
+			&ue.PoljeNaziv,
+			&ue.PoljeOpis,
+			&ue.Bi,
+			&ue.IdSPoduzrokPrek,
+			&ue.PoduzrokPrek,
+			&ue.IdDogPrekidP,
+			&ue.IdTipObjektaNdc,
+			&ue.IdTipDogadjajaNdc,
+			&ue.SynsoftId,
+			&count,
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		ues = append(ues, &ue)
+		totalCount = count
 	}
 
-	return ues, nil
+	return ues, totalCount, nil
 }
 
 // func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context,id int) (*models.DDNInterruptionOfDelivery, error) {
@@ -285,7 +284,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
 //   			where id=:1`
 
 // 	row := m.DB.QueryRowContext(ctx, query,id)
-	
+
 // 	var  vrPrekName, uzrokPrekName, sMernaMestaName, imePo, opisPo sql.NullString
 // 	var idSMernaMesta sql.NullInt64
 
@@ -385,8 +384,6 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
 // 	return &i, nil
 // }
 
-
-
 // func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(id int) ([]*models.DDNInterruptionOfDelivery, error) {
 // 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 // 	defer cancel()
@@ -461,7 +458,6 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
 
 // 	return p, nil
 // }
-
 
 func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.DDNInterruptionOfDelivery) error {
 
