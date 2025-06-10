@@ -81,6 +81,12 @@ func (server *Server) setupRouter() {
 	router.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryK)
 
 	router.GET("/mesecni", server.listPiMM)
+	router.GET("/mesecnip", server.listPiMMByPage)
+	router.GET("/mesecnit4p", server.listPiMMT4)
+
+	router.GET("/dnevni", server.listPiDD)
+	router.GET("/dnevnip", server.listPiDDByPage)
+	router.GET("/dnevnit4p", server.listPiDDT4)
 
 	//authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 

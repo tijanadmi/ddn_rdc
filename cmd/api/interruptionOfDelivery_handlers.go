@@ -9,7 +9,7 @@ import (
 )
 
 type listInteraptionOfDeliveryRequest struct {
-	Mrc       int32  `form:"mrc" binding:"required,min=1"`
+	Mrc       string `form:"mrc" binding:"required"`
 	StartDate string `form:"start_date" binding:"required"`
 	EndDate   string `form:"end_date" binding:"required"`
 	PageID    int32  `form:"page_id" binding:"required,min=1"`
@@ -69,6 +69,12 @@ func (server *Server) listDDNInterruptionOfDeliveryP(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, rsp)
 }
 
+// Definišemo strukturu za response
+type listDDNKResponse struct {
+	Total   int                                 `json:"total"`
+	Prekidi []*models.DDNInterruptionOfDelivery `json:"prekidik"`
+}
+
 func (server *Server) listDDNInterruptionOfDeliveryK(ctx *gin.Context) {
 	var req listInteraptionOfDeliveryRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -91,7 +97,7 @@ func (server *Server) listDDNInterruptionOfDeliveryK(ctx *gin.Context) {
 		return
 	}
 
-	rsp := listDDNPResponse{
+	rsp := listDDNKResponse{
 		Total:   count,
 		Prekidi: mrcs,
 	}

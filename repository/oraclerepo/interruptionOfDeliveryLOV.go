@@ -7,8 +7,7 @@ import (
 	"github.com/tijanadmi/ddn_rdc/models"
 )
 
-
-func (m *OracleDBRepo) GetMrcById(ctx context.Context,id int) (*models.SMrc, error) {
+func (m *OracleDBRepo) GetMrcById(ctx context.Context, id int) (*models.SMrc, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -47,10 +46,11 @@ func (m *OracleDBRepo) GetSMrc(ctx context.Context, arg models.ListLimitOffsetPa
 
 	query := `select id, sifra,naziv, status, naziv_cir
 			  from s_mrc
+			  where id not in (5,7)
 			  ORDER BY id
 			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -79,8 +79,7 @@ func (m *OracleDBRepo) GetSMrc(ctx context.Context, arg models.ListLimitOffsetPa
 	return mrcs, nil
 }
 
-
-func (m *OracleDBRepo) GetSTipPrekById(ctx context.Context,id int) (*models.STipPrek, error) {
+func (m *OracleDBRepo) GetSTipPrekById(ctx context.Context, id int) (*models.STipPrek, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -116,7 +115,7 @@ func (m *OracleDBRepo) GetSTipPrek(ctx context.Context, arg models.ListLimitOffs
 			  ORDER BY id
 			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -144,8 +143,7 @@ func (m *OracleDBRepo) GetSTipPrek(ctx context.Context, arg models.ListLimitOffs
 	return tips, nil
 }
 
-
-func (m *OracleDBRepo) GetSVrPrekById(ctx context.Context,id int) (*models.SVrPrek, error) {
+func (m *OracleDBRepo) GetSVrPrekById(ctx context.Context, id int) (*models.SVrPrek, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -181,7 +179,7 @@ func (m *OracleDBRepo) GetSVrPrek(ctx context.Context, arg models.ListLimitOffse
 			  ORDER BY id
 			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -209,7 +207,7 @@ func (m *OracleDBRepo) GetSVrPrek(ctx context.Context, arg models.ListLimitOffse
 	return vrps, nil
 }
 
-func (m *OracleDBRepo) GetSUzrokPrekById(ctx context.Context,id int) (*models.SUzrokPrek, error) {
+func (m *OracleDBRepo) GetSUzrokPrekById(ctx context.Context, id int) (*models.SUzrokPrek, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -245,7 +243,7 @@ func (m *OracleDBRepo) GetSUzrokPrek(ctx context.Context, arg models.ListLimitOf
 			  ORDER BY id
 			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -273,7 +271,7 @@ func (m *OracleDBRepo) GetSUzrokPrek(ctx context.Context, arg models.ListLimitOf
 	return uzroks, nil
 }
 
-func (m *OracleDBRepo) GetSPoduzrokPrekById(ctx context.Context,id int) (*models.SPoduzrokPrek, error) {
+func (m *OracleDBRepo) GetSPoduzrokPrekById(ctx context.Context, id int) (*models.SPoduzrokPrek, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -309,7 +307,7 @@ func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context, arg models.ListLimi
 			  ORDER BY id
 			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -337,7 +335,7 @@ func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context, arg models.ListLimi
 	return poduzroks, nil
 }
 
-func (m *OracleDBRepo) GetSMernaMestaById(ctx context.Context,id int) (*models.SMernaMesta, error) {
+func (m *OracleDBRepo) GetSMernaMestaById(ctx context.Context, id int) (*models.SMernaMesta, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -373,7 +371,7 @@ func (m *OracleDBRepo) GetSMernaMesta(ctx context.Context, arg models.ListLimitO
 			  ORDER BY id
 			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -401,7 +399,7 @@ func (m *OracleDBRepo) GetSMernaMesta(ctx context.Context, arg models.ListLimitO
 	return mms, nil
 }
 
-func (m *OracleDBRepo) GetObjById(ctx context.Context,id int) (*models.ObjLOV, error) {
+func (m *OracleDBRepo) GetObjById(ctx context.Context, id int) (*models.ObjLOV, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -434,7 +432,7 @@ func (m *OracleDBRepo) GetObjById(ctx context.Context,id int) (*models.ObjLOV, e
 	return &mrc, err
 }
 
-func (m *OracleDBRepo) GetPoljeGEById(ctx context.Context,id int) (*models.PoljaLOV, error) {
+func (m *OracleDBRepo) GetPoljeGEById(ctx context.Context, id int) (*models.PoljaLOV, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -455,10 +453,10 @@ func (m *OracleDBRepo) GetPoljeGEById(ctx context.Context,id int) (*models.Polja
 
 	err := row.Scan(
 		&mrc.Id,
-			&mrc.Polje,
-			&mrc.PoljeNaziv,
-			&mrc.NNId,
-			&mrc.NNNaziv,
+		&mrc.Polje,
+		&mrc.PoljeNaziv,
+		&mrc.NNId,
+		&mrc.NNNaziv,
 	)
 
 	if err != nil {
@@ -491,7 +489,7 @@ func (m *OracleDBRepo) GetObjTSRP(ctx context.Context, arg models.ListObjectLimi
 			  ORDER BY OPIS
 			  OFFSET :4 ROWS FETCH NEXT :5 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc,arg.Mrc,arg.Mrc,arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc, arg.Mrc, arg.Mrc, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -539,7 +537,7 @@ func (m *OracleDBRepo) GetObjHETEVE(ctx context.Context, arg models.ListObjectLi
 			  ORDER BY OPIS
 			  OFFSET :4 ROWS FETCH NEXT :5 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc, arg.Mrc, arg.Mrc, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc, arg.Mrc, arg.Mrc, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -569,7 +567,6 @@ func (m *OracleDBRepo) GetObjHETEVE(ctx context.Context, arg models.ListObjectLi
 	return mrcs, nil
 }
 
-
 func (m *OracleDBRepo) GetPoljaGE(ctx context.Context, arg models.ListPoljaLimitOffsetParams) ([]*models.PoljaLOV, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
@@ -588,7 +585,7 @@ func (m *OracleDBRepo) GetPoljaGE(ctx context.Context, arg models.ListPoljaLimit
 			  	ORDER BY polje
 			  	OFFSET :2 ROWS FETCH NEXT :3 ROWS ONLY`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.ObjId,arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.ObjId, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err

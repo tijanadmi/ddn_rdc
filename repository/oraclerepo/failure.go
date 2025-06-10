@@ -3,6 +3,7 @@ package oraclerepo
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/tijanadmi/ddn_rdc/models"
 )
@@ -10,6 +11,13 @@ import (
 func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMParams) ([]*models.PiMM, int, error) {
 
 	query := `select ROWNUM AS id,
+				CASE
+  					WHEN kom1 = 1 OR kom2 = 1 OR kom3 = 1 OR kom4 = 1 OR
+       					kom5 = 1 OR kom6 = 1 OR kom7 = 1 OR kom8 = 1 THEN 1
+  					WHEN kom1 = 0 OR kom2 = 0 OR kom3 = 0 OR kom4 = 0 OR
+       					kom5 = 0 OR kom6 = 0 OR kom7 = 0 OR kom8 = 0 THEN 0
+  					ELSE NULL
+				END AS stav,
 					TIPD,
 					to_char(DATIZV,'dd.mm.yyyy'),
 					COALESCE(to_char(ID1), ''),
@@ -28,11 +36,71 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 					COALESCE(VREM_USL, ''),
       				TEKST_EXCEL,
 					COALESCE(to_char(SNAGA), ''),
+					COALESCE(TO_CHAR(ID_Z_DSDF_GL1), '') AS ID_Z_DSDF_GL1,
+					COALESCE(Z_DSDF_GL1, '') AS Z_DSDF_GL1,
+					COALESCE(TO_CHAR(ID_Z_KVAR_GL1), '') AS ID_Z_KVAR_GL1,
+					COALESCE(Z_KVAR_GL1, '') AS Z_KVAR_GL1,
+					COALESCE(TO_CHAR(ID_Z_RAPU_GL1), '') AS ID_Z_RAPU_GL1,
+					COALESCE(Z_RAPU_GL1, '') AS Z_RAPU_GL1,
+					COALESCE(TO_CHAR(ID_Z_PRST_GL1), '') AS ID_Z_PRST_GL1,
+					COALESCE(Z_PRST_GL1, '') AS Z_PRST_GL1,
+					COALESCE(TO_CHAR(ID_Z_ZMSP_GL1), '') AS ID_Z_ZMSP_GL1,
+					COALESCE(Z_ZMSP_GL1, '') AS Z_ZMSP_GL1,
+					COALESCE(TO_CHAR(ID_Z_UZMS_GL1), '') AS ID_Z_UZMS_GL1,
+					COALESCE(Z_UZMS_GL1, '') AS Z_UZMS_GL1,
+					COALESCE(TO_CHAR(Z_LOKK_GL1), '') AS Z_LOKK_GL1,
+					COALESCE(TO_CHAR(ID_Z_DSDF_GL2), '') AS ID_Z_DSDF_GL2,
+					COALESCE(Z_DSDF_GL2, '') AS Z_DSDF_GL2,
+					COALESCE(TO_CHAR(ID_Z_KVAR_GL2), '') AS ID_Z_KVAR_GL2,
+					COALESCE(Z_KVAR_GL2, '') AS Z_KVAR_GL2,
+					COALESCE(TO_CHAR(ID_Z_RAPU_GL2), '') AS ID_Z_RAPU_GL2,
+					COALESCE(Z_RAPU_GL2, '') AS Z_RAPU_GL2,
+					COALESCE(TO_CHAR(ID_Z_PRST_GL2), '') AS ID_Z_PRST_GL2,
+					COALESCE(Z_PRST_GL2, '') AS Z_PRST_GL2,
+					COALESCE(TO_CHAR(ID_Z_ZMSP_GL2), '') AS ID_Z_ZMSP_GL2,
+					COALESCE(Z_ZMSP_GL2, '') AS Z_ZMSP_GL2,
+					COALESCE(TO_CHAR(ID_Z_UZMS_GL2), '') AS ID_Z_UZMS_GL2,
+					COALESCE(Z_UZMS_GL2, '') AS Z_UZMS_GL2,
+					COALESCE(TO_CHAR(Z_LOKK_GL2), '') AS Z_LOKK_GL2,
+					COALESCE(TO_CHAR(ID_Z_DIS_REZ), '') AS ID_Z_DIS_REZ,
+					COALESCE(Z_DIS_REZ, '') AS Z_DIS_REZ,
+					COALESCE(TO_CHAR(ID_Z_KVAR_REZ), '') AS ID_Z_KVAR_REZ,
+					COALESCE(Z_KVAR_REZ, '') AS Z_KVAR_REZ,
+					COALESCE(TO_CHAR(ID_Z_PRST_REZ), '') AS ID_Z_PRST_REZ,
+					COALESCE(Z_PRST_REZ, '') AS Z_PRST_REZ,
+					COALESCE(TO_CHAR(ID_Z_ZMSP_REZ), '') AS ID_Z_ZMSP_REZ,
+					COALESCE(Z_ZMSP_REZ, '') AS Z_ZMSP_REZ,
+					COALESCE(TO_CHAR(ID_Z_PREK_VN), '') AS ID_Z_PREK_VN,
+					COALESCE(Z_PREK_VN, '') AS Z_PREK_VN,
+					COALESCE(TO_CHAR(ID_Z_PREK_NN), '') AS ID_Z_PREK_NN,
+					COALESCE(Z_PREK_NN, '') AS Z_PREK_NN,
+					COALESCE(TO_CHAR(ID_Z_NEL1), '') AS ID_Z_NEL1,
+					COALESCE(Z_NEL1, '') AS Z_NEL1,
+					COALESCE(TO_CHAR(ID_Z_NEL2), '') AS ID_Z_NEL2,
+					COALESCE(Z_NEL2, '') AS Z_NEL2,
+					COALESCE(TO_CHAR(ID_Z_NEL3), '') AS ID_Z_NEL3,
+					COALESCE(Z_NEL3, '') AS Z_NEL3,
+					COALESCE(TO_CHAR(ID_Z_SABZ_SAB), '') AS ID_Z_SABZ_SAB,
+					COALESCE(Z_SABZ_SAB, '') AS Z_SABZ_SAB,
+					COALESCE(TO_CHAR(ID_Z_OTPR_SAB), '') AS ID_Z_OTPR_SAB,
+					COALESCE(Z_OTPR_SAB, '') AS Z_OTPR_SAB,
+					COALESCE(TO_CHAR(ID_Z_JPS_VN), '') AS ID_Z_JPS_VN,
+					COALESCE(Z_JPS_VN, '') AS Z_JPS_VN,
+					COALESCE(TO_CHAR(ID_Z_JPS_NN), '') AS ID_Z_JPS_NN,
+					COALESCE(Z_JPS_NN, '') AS Z_JPS_NN,
+					COALESCE(TO_CHAR(ID_Z_TELE_POC_GL1), '') AS ID_Z_TELE_POC_GL1,
+					COALESCE(Z_TELE_POC_GL1, '') AS Z_TELE_POC_GL1,
+					COALESCE(TO_CHAR(ID_Z_TELE_KRAJ_GL1), '') AS ID_Z_TELE_KRAJ_GL1,
+					COALESCE(Z_TELE_KRAJ_GL1, '') AS Z_TELE_KRAJ_GL1,
+					COALESCE(TO_CHAR(ID_Z_TELE_POC_GL2), '') AS ID_Z_TELE_POC_GL2,
+					COALESCE(Z_TELE_POC_GL2, '') AS Z_TELE_POC_GL2,
+					COALESCE(TO_CHAR(ID_Z_TELE_KRAJ_GL2), '') AS ID_Z_TELE_KRAJ_GL2,
+					COALESCE(Z_TELE_KRAJ_GL2, '') AS Z_TELE_KRAJ_GL2,
+					FUP,
 					COUNT(*) OVER () AS TOTAL_COUNT  
 					from pgi.pi_mm_v
 					where DATIZV  BETWEEN to_date(:1,'dd.mm.yyyy') AND to_date(:2,'dd.mm.yyyy') 
    					AND TIPD LIKE UPPER(:3)
-   					and kom2=1
    					order by DATIZV,id1,id2`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
@@ -51,6 +119,7 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 		var count int
 		err := rows.Scan(
 			&ue.Id,
+			&ue.Stav,
 			&ue.Tipd,
 			&ue.Datizv,
 			&ue.Id1,
@@ -68,6 +137,305 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 			&ue.VrmUsl,
 			&ue.Tekst,
 			&ue.Snaga,
+			&ue.IdZDsdfGl1,
+			&ue.ZDsdfGl1,
+			&ue.IdZKvarGl1,
+			&ue.ZKvarGl1,
+			&ue.IdZRapuGl1,
+			&ue.ZRapuGl1,
+			&ue.IdZPrstGl1,
+			&ue.ZPrstGl1,
+			&ue.IdZZmspGl1,
+			&ue.ZZmspGl1,
+			&ue.IdZUzmsGl1,
+			&ue.ZUzmsGl1,
+			&ue.ZLokkGl1,
+
+			&ue.IdZDsdfGl2,
+			&ue.ZDsdfGl2,
+			&ue.IdZKvarGl2,
+			&ue.ZKvarGl2,
+			&ue.IdZRapuGl2,
+			&ue.ZRapuGl2,
+			&ue.IdZPrstGl2,
+			&ue.ZPrstGl2,
+			&ue.IdZZmspGl2,
+			&ue.ZZmspGl2,
+			&ue.IdZUzmsGl2,
+			&ue.ZUzmsGl2,
+			&ue.ZLokkGl2,
+
+			&ue.IdZDisRez,
+			&ue.ZDisRez,
+			&ue.IdZKvarRez,
+			&ue.ZKvarRez,
+			&ue.IdZPrstRez,
+			&ue.ZPrstRez,
+			&ue.IdZZmspRez,
+			&ue.ZZmspRez,
+			&ue.IdZPrekVn,
+			&ue.ZPrekVn,
+			&ue.IdZPrekNn,
+			&ue.ZPrekNn,
+			&ue.IdZNel1,
+			&ue.ZNel1,
+			&ue.IdZNel2,
+			&ue.ZNel2,
+			&ue.IdZNel3,
+			&ue.ZNel3,
+			&ue.IdZSabzSab,
+			&ue.ZSabzSab,
+			&ue.IdZOtprSab,
+			&ue.ZOtprSab,
+			&ue.IdZJpsVn,
+			&ue.ZJpsVn,
+			&ue.IdZJpsNn,
+			&ue.ZJpsNn,
+			&ue.IdZTelePocGl1,
+			&ue.ZTelePocGl1,
+			&ue.IdZTeleKrajGl1,
+			&ue.ZTeleKrajGl1,
+			&ue.IdZTelePocGl2,
+			&ue.ZTelePocGl2,
+			&ue.IdZTeleKrajGl2,
+			&ue.ZTeleKrajGl2,
+			&ue.Fup,
+			&count,
+		)
+
+		if err != nil {
+			return nil, 0, err
+		}
+
+		ues = append(ues, &ue)
+		totalCount = count
+	}
+
+	return ues, totalCount, nil
+}
+
+func (m *OracleDBRepo) GetPiMMByParamsByPage(ctx context.Context, arg models.ListPiMMParamsByPage) ([]*models.PiMM, int, error) {
+
+	fupParam := "%"
+	if strings.ToUpper(arg.Fup) != "ALL" {
+		fupParam = strings.ToUpper(arg.Fup)
+	}
+
+	query := `select ROWNUM AS id,
+				CASE
+  					WHEN kom1 = 1 OR kom2 = 1 OR kom3 = 1 OR kom4 = 1 OR
+       					kom5 = 1 OR kom6 = 1 OR kom7 = 1 OR kom8 = 1 THEN 1
+  					WHEN kom1 = 0 OR kom2 = 0 OR kom3 = 0 OR kom4 = 0 OR
+       					kom5 = 0 OR kom6 = 0 OR kom7 = 0 OR kom8 = 0 THEN 0
+  					ELSE NULL
+				END AS stav,
+					TIPD,
+					to_char(DATIZV,'dd.mm.yyyy'),
+					COALESCE(to_char(ID1), ''),
+					COALESCE(to_char(ID2), ''),
+   					VREPOC_EXCEL,
+   					VREZAV_EXCEL,
+   					TRAJ_EXCEL,
+   					OB_ID,
+    				TIPOB,
+   					OB_SIF,
+   					NAZOB,
+					COALESCE(POLJE_TRAFO, '') as POLJE_TRAFO,
+					COALESCE(to_char(id_s_nap), '') as id_s_nap,
+					COALESCE(to_char(TRAFO_ID), '') as TRAFO_ID,
+					COALESCE(to_char(P2_TRAF_ID), '') as P2_TRAF_ID,
+					COALESCE(NAPON, '') as NAPON,
+					COALESCE(POLJE, '') as POLJE,
+   					COALESCE(IME_PO, '') as IME_PO,
+   					COALESCE(to_char(FUNKC), '') as FUNKC,
+					COALESCE(to_char(VRPD), ''),
+   					NAZVRPD,
+   					GRUZR1 ||'/'||
+   					UZROK1,
+					GRRAZ ||'/'||
+   					RAZLOG,
+					COALESCE(VREM_USL, ''),
+      				TEKST_EXCEL,
+					COALESCE(to_char(SNAGA), ''),
+					COALESCE(TO_CHAR(ID_Z_DSDF_GL1), '') AS ID_Z_DSDF_GL1,
+					COALESCE(Z_DSDF_GL1, '') AS Z_DSDF_GL1,
+					COALESCE(TO_CHAR(ID_Z_KVAR_GL1), '') AS ID_Z_KVAR_GL1,
+					COALESCE(Z_KVAR_GL1, '') AS Z_KVAR_GL1,
+					COALESCE(TO_CHAR(ID_Z_RAPU_GL1), '') AS ID_Z_RAPU_GL1,
+					COALESCE(Z_RAPU_GL1, '') AS Z_RAPU_GL1,
+					COALESCE(TO_CHAR(ID_Z_PRST_GL1), '') AS ID_Z_PRST_GL1,
+					COALESCE(Z_PRST_GL1, '') AS Z_PRST_GL1,
+					COALESCE(TO_CHAR(ID_Z_ZMSP_GL1), '') AS ID_Z_ZMSP_GL1,
+					COALESCE(Z_ZMSP_GL1, '') AS Z_ZMSP_GL1,
+					COALESCE(TO_CHAR(ID_Z_UZMS_GL1), '') AS ID_Z_UZMS_GL1,
+					COALESCE(Z_UZMS_GL1, '') AS Z_UZMS_GL1,
+					COALESCE(TO_CHAR(Z_LOKK_GL1), '') AS Z_LOKK_GL1,
+					COALESCE(TO_CHAR(ID_Z_DSDF_GL2), '') AS ID_Z_DSDF_GL2,
+					COALESCE(Z_DSDF_GL2, '') AS Z_DSDF_GL2,
+					COALESCE(TO_CHAR(ID_Z_KVAR_GL2), '') AS ID_Z_KVAR_GL2,
+					COALESCE(Z_KVAR_GL2, '') AS Z_KVAR_GL2,
+					COALESCE(TO_CHAR(ID_Z_RAPU_GL2), '') AS ID_Z_RAPU_GL2,
+					COALESCE(Z_RAPU_GL2, '') AS Z_RAPU_GL2,
+					COALESCE(TO_CHAR(ID_Z_PRST_GL2), '') AS ID_Z_PRST_GL2,
+					COALESCE(Z_PRST_GL2, '') AS Z_PRST_GL2,
+					COALESCE(TO_CHAR(ID_Z_ZMSP_GL2), '') AS ID_Z_ZMSP_GL2,
+					COALESCE(Z_ZMSP_GL2, '') AS Z_ZMSP_GL2,
+					COALESCE(TO_CHAR(ID_Z_UZMS_GL2), '') AS ID_Z_UZMS_GL2,
+					COALESCE(Z_UZMS_GL2, '') AS Z_UZMS_GL2,
+					COALESCE(TO_CHAR(Z_LOKK_GL2), '') AS Z_LOKK_GL2,
+					COALESCE(TO_CHAR(ID_Z_DIS_REZ), '') AS ID_Z_DIS_REZ,
+					COALESCE(Z_DIS_REZ, '') AS Z_DIS_REZ,
+					COALESCE(TO_CHAR(ID_Z_KVAR_REZ), '') AS ID_Z_KVAR_REZ,
+					COALESCE(Z_KVAR_REZ, '') AS Z_KVAR_REZ,
+					COALESCE(TO_CHAR(ID_Z_PRST_REZ), '') AS ID_Z_PRST_REZ,
+					COALESCE(Z_PRST_REZ, '') AS Z_PRST_REZ,
+					COALESCE(TO_CHAR(ID_Z_ZMSP_REZ), '') AS ID_Z_ZMSP_REZ,
+					COALESCE(Z_ZMSP_REZ, '') AS Z_ZMSP_REZ,
+					COALESCE(TO_CHAR(ID_Z_PREK_VN), '') AS ID_Z_PREK_VN,
+					COALESCE(Z_PREK_VN, '') AS Z_PREK_VN,
+					COALESCE(TO_CHAR(ID_Z_PREK_NN), '') AS ID_Z_PREK_NN,
+					COALESCE(Z_PREK_NN, '') AS Z_PREK_NN,
+					COALESCE(TO_CHAR(ID_Z_NEL1), '') AS ID_Z_NEL1,
+					COALESCE(Z_NEL1, '') AS Z_NEL1,
+					COALESCE(TO_CHAR(ID_Z_NEL2), '') AS ID_Z_NEL2,
+					COALESCE(Z_NEL2, '') AS Z_NEL2,
+					COALESCE(TO_CHAR(ID_Z_NEL3), '') AS ID_Z_NEL3,
+					COALESCE(Z_NEL3, '') AS Z_NEL3,
+					COALESCE(TO_CHAR(ID_Z_SABZ_SAB), '') AS ID_Z_SABZ_SAB,
+					COALESCE(Z_SABZ_SAB, '') AS Z_SABZ_SAB,
+					COALESCE(TO_CHAR(ID_Z_OTPR_SAB), '') AS ID_Z_OTPR_SAB,
+					COALESCE(Z_OTPR_SAB, '') AS Z_OTPR_SAB,
+					COALESCE(TO_CHAR(ID_Z_JPS_VN), '') AS ID_Z_JPS_VN,
+					COALESCE(Z_JPS_VN, '') AS Z_JPS_VN,
+					COALESCE(TO_CHAR(ID_Z_JPS_NN), '') AS ID_Z_JPS_NN,
+					COALESCE(Z_JPS_NN, '') AS Z_JPS_NN,
+					COALESCE(TO_CHAR(ID_Z_TELE_POC_GL1), '') AS ID_Z_TELE_POC_GL1,
+					COALESCE(Z_TELE_POC_GL1, '') AS Z_TELE_POC_GL1,
+					COALESCE(TO_CHAR(ID_Z_TELE_KRAJ_GL1), '') AS ID_Z_TELE_KRAJ_GL1,
+					COALESCE(Z_TELE_KRAJ_GL1, '') AS Z_TELE_KRAJ_GL1,
+					COALESCE(TO_CHAR(ID_Z_TELE_POC_GL2), '') AS ID_Z_TELE_POC_GL2,
+					COALESCE(Z_TELE_POC_GL2, '') AS Z_TELE_POC_GL2,
+					COALESCE(TO_CHAR(ID_Z_TELE_KRAJ_GL2), '') AS ID_Z_TELE_KRAJ_GL2,
+					COALESCE(Z_TELE_KRAJ_GL2, '') AS Z_TELE_KRAJ_GL2,
+					FUP,
+					COUNT(*) OVER () AS TOTAL_COUNT  
+					from pgi.pi_mm_v
+					where DATIZV  BETWEEN to_date(:1,'dd.mm.yyyy') AND to_date(:2,'dd.mm.yyyy') 
+   					AND TIPD LIKE UPPER(:3)
+					AND FUP LIKE UPPER(:4)
+   					order by DATIZV,id1,id2,vrepoc
+					OFFSET :5 ROWS FETCH NEXT :6 ROWS ONLY`
+
+	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd, fupParam, arg.Offset, arg.Limit)
+	if err != nil {
+		fmt.Println("Pogresan upit ili nema rezultata upita")
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var ues []*models.PiMM
+	var totalCount int
+
+	for rows.Next() {
+		var ue models.PiMM
+		var count int
+		err := rows.Scan(
+			&ue.Id,
+			&ue.Stav,
+			&ue.Tipd,
+			&ue.Datizv,
+			&ue.Id1,
+			&ue.Id2,
+			&ue.Vrepoc,
+			&ue.Vrezav,
+			&ue.Traj,
+			&ue.ObId,
+			&ue.TipOb,
+			&ue.ObSif,
+			&ue.NazOb,
+			&ue.PoljeTrafo,
+			&ue.IdSNap,
+			&ue.TrafoId,
+			&ue.P2TrafId,
+			&ue.Napon,
+			&ue.Polje,
+			&ue.ImePo,
+			&ue.Funkc,
+			&ue.Vrpd,
+			&ue.Nazvrpd,
+			&ue.Uzrok,
+			&ue.Razlog,
+			&ue.VrmUsl,
+			&ue.Tekst,
+			&ue.Snaga,
+			/*&ue.NazSop,
+			&ue.SopNaziv,
+			&ue.IdSSop,
+			&ue.IdSop,*/
+			&ue.IdZDsdfGl1,
+			&ue.ZDsdfGl1,
+			&ue.IdZKvarGl1,
+			&ue.ZKvarGl1,
+			&ue.IdZRapuGl1,
+			&ue.ZRapuGl1,
+			&ue.IdZPrstGl1,
+			&ue.ZPrstGl1,
+			&ue.IdZZmspGl1,
+			&ue.ZZmspGl1,
+			&ue.IdZUzmsGl1,
+			&ue.ZUzmsGl1,
+			&ue.ZLokkGl1,
+
+			&ue.IdZDsdfGl2,
+			&ue.ZDsdfGl2,
+			&ue.IdZKvarGl2,
+			&ue.ZKvarGl2,
+			&ue.IdZRapuGl2,
+			&ue.ZRapuGl2,
+			&ue.IdZPrstGl2,
+			&ue.ZPrstGl2,
+			&ue.IdZZmspGl2,
+			&ue.ZZmspGl2,
+			&ue.IdZUzmsGl2,
+			&ue.ZUzmsGl2,
+			&ue.ZLokkGl2,
+
+			&ue.IdZDisRez,
+			&ue.ZDisRez,
+			&ue.IdZKvarRez,
+			&ue.ZKvarRez,
+			&ue.IdZPrstRez,
+			&ue.ZPrstRez,
+			&ue.IdZZmspRez,
+			&ue.ZZmspRez,
+			&ue.IdZPrekVn,
+			&ue.ZPrekVn,
+			&ue.IdZPrekNn,
+			&ue.ZPrekNn,
+			&ue.IdZNel1,
+			&ue.ZNel1,
+			&ue.IdZNel2,
+			&ue.ZNel2,
+			&ue.IdZNel3,
+			&ue.ZNel3,
+			&ue.IdZSabzSab,
+			&ue.ZSabzSab,
+			&ue.IdZOtprSab,
+			&ue.ZOtprSab,
+			&ue.IdZJpsVn,
+			&ue.ZJpsVn,
+			&ue.IdZJpsNn,
+			&ue.ZJpsNn,
+			&ue.IdZTelePocGl1,
+			&ue.ZTelePocGl1,
+			&ue.IdZTeleKrajGl1,
+			&ue.ZTeleKrajGl1,
+			&ue.IdZTelePocGl2,
+			&ue.ZTelePocGl2,
+			&ue.IdZTeleKrajGl2,
+			&ue.ZTeleKrajGl2,
+			&ue.Fup,
 			&count,
 		)
 

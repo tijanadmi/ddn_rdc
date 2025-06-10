@@ -41,4 +41,11 @@ type DatabaseRepo interface {
 	GetPoljeGEById(ctx context.Context, id int) (*models.PoljaLOV, error)
 
 	GetPiMMByParams(ctx context.Context, arg models.ListPiMMParams) ([]*models.PiMM, int, error)
+	GetPiMMByParamsByPage(ctx context.Context, arg models.ListPiMMParamsByPage) ([]*models.PiMM, int, error)
+
+	GetPiMMT4ByParams(ctx context.Context, arg models.ListPiMMT4Params) ([]*models.PiMMT4, int, error)
+
+	GetPiDDByParams(ctx context.Context, arg models.ListPiDDParams) ([]*models.PiDD, int, error)
+	GetPiDDByParamsByPage(ctx context.Context, arg models.ListPiDDParamsByPage) ([]*models.PiDD, int, error)
+	GetPiDDT4ByParams(ctx context.Context, arg models.ListPiDDT4Params) ([]*models.PiMMT4, int, error)
 }

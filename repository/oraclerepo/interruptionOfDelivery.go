@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/tijanadmi/ddn_rdc/models"
 )
@@ -119,6 +120,11 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
+	mrcParam := "%"
+	if strings.ToUpper(arg.Mrc) != "ALL" {
+		mrcParam = strings.ToUpper(arg.Mrc)
+	}
+
 	query := `select PI.ID,PI.ID_S_MRC,MR.naziv,
     COALESCE(to_char(PI.ID_S_TIPD), ''),
     COALESCE(to_char(PI.ID_S_VRPD), ''),
@@ -160,13 +166,13 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
    LEFT JOIN S_MERNA_MESTA M ON PI.ID_S_MERNA_MESTA=M.ID
    LEFT JOIN V_S_POLJE_SVA_AP PO ON PI.ID_P2_TRAF=PO.P2_TRAF_ID
    LEFT JOIN S_VRSTA_PREKIDA_P_GEN_V vp ON PI.ID_TIP_OBJEKTA_NDC=vp.ID_TIP_OBJEKTA AND PI.ID_TIP_DOGADJAJA_NDC=vp.ID_TIP_DOGADJAJA AND PI.ID_S_VR_PREK=vp.ID_S_VR_PREK
-	  WHERE PI.IND=:1   AND PI.ID_S_MRC=:2 AND  
+	  WHERE PI.IND=:1   AND PI.ID_S_MRC like (:2) AND  
 	(PI.VREPOC >= to_date(:3,'dd.mm.yyyy HH24:MI:SS') AND PI.VREPOC<= to_date(:4,'dd.mm.yyyy HH24:MI:SS'))
    ORDER BY id
 			  OFFSET :5 ROWS FETCH NEXT :6 ROWS ONLY`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Ind, mrcParam, arg.StartDate, arg.EndDate, arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, 0, err
