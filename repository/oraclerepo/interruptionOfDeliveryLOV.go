@@ -47,7 +47,7 @@ func (m *OracleDBRepo) GetSMrc(ctx context.Context, arg models.ListLimitOffsetPa
 	query := `select id, sifra,naziv, status, naziv_cir
 			  from s_mrc
 			  where id not in (5,7)
-			  ORDER BY id
+			  ORDER BY id desc
 			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
 
 	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
