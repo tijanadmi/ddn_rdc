@@ -79,7 +79,9 @@ func (server *Server) setupRouter() {
 
 	router.GET("/interruptionofdelivery/:id", server.getDDNInterruptionOfDeliveryById)
 	router.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryP)
+	router.GET("/interruptionofproduction_excel", server.listAllDDNInterruptionOfDeliveryP)
 	router.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryK)
+	router.GET("/interruptionofusers_excel", server.listAllDDNInterruptionOfDeliveryK)
 
 	router.GET("/mesecni", server.listPiMM)
 	router.GET("/mesecnip", server.listPiMMByPage)

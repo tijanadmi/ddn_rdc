@@ -19,6 +19,7 @@ type DDNInterruptionOfDelivery struct {
 	ObOpis            string `json:"ob_opis"`
 	Vrepoc            string `json:"vrepoc"`
 	Vrezav            string `json:"vrezav"`
+	Trajanje          string `json:"trajanje"`
 	TipDogadjaja      string `json:"tip_dogadjaja"`
 	IdSVrPrek         string `json:"id_s_vr_prek"`
 	VrstaPrek         string `json:"vrsta_prek"`
@@ -143,13 +144,20 @@ type ListLimitOffsetParams struct {
 	Offset int32 `json:"offset"`
 }
 
-type ListInterruptionParams struct {
-	Mrc       string  `json:"mrc"`
+type ListInterruptionWithPaginationParams struct {
+	Mrc       string `json:"mrc"`
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
 	Ind       string `json:"ind"`
 	Limit     int32  `json:"limit"`
 	Offset    int32  `json:"offset"`
+}
+
+type ListInterruptionParams struct {
+	Mrc       string `json:"mrc"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+	Ind       string `json:"ind"`
 }
 
 type STipPrek struct {
