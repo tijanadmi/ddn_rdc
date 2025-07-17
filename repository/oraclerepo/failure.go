@@ -12,11 +12,11 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 
 	query := `select ROWNUM AS id,
 				CASE
-  					WHEN kom1 = 1 OR kom2 = 1 OR kom3 = 1 OR kom4 = 1 OR
-       					kom5 = 1 OR kom6 = 1 OR kom7 = 1 OR kom8 = 1 THEN 1
-  					WHEN kom1 = 0 OR kom2 = 0 OR kom3 = 0 OR kom4 = 0 OR
-       					kom5 = 0 OR kom6 = 0 OR kom7 = 0 OR kom8 = 0 THEN 0
-  					ELSE NULL
+  				WHEN kom1 = 1 OR kom2 = 1 OR kom3 = 1 OR kom4 = 1 OR
+       				kom5 = 1 OR kom6 = 1 OR kom7 = 1 OR kom8 = 1 THEN '1'
+  				WHEN kom1 = 0 OR kom2 = 0 OR kom3 = 0 OR kom4 = 0 OR
+       				kom5 = 0 OR kom6 = 0 OR kom7 = 0 OR kom8 = 0 THEN '0'
+  				ELSE ''
 				END AS stav,
 					TIPD,
 					to_char(DATIZV,'dd.mm.yyyy'),
@@ -105,6 +105,8 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
 	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd)
+
+	//fmt.Println(arg.StartDate, arg.EndDate, arg.Tipd)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, 0, err
@@ -211,6 +213,7 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 		totalCount = count
 	}
 
+	//fmt.Println(totalCount)
 	return ues, totalCount, nil
 }
 
@@ -223,11 +226,11 @@ func (m *OracleDBRepo) GetPiMMByParamsByPage(ctx context.Context, arg models.Lis
 
 	query := `select ROWNUM AS id,
 				CASE
-  					WHEN kom1 = 1 OR kom2 = 1 OR kom3 = 1 OR kom4 = 1 OR
-       					kom5 = 1 OR kom6 = 1 OR kom7 = 1 OR kom8 = 1 THEN 1
-  					WHEN kom1 = 0 OR kom2 = 0 OR kom3 = 0 OR kom4 = 0 OR
-       					kom5 = 0 OR kom6 = 0 OR kom7 = 0 OR kom8 = 0 THEN 0
-  					ELSE NULL
+  				WHEN kom1 = 1 OR kom2 = 1 OR kom3 = 1 OR kom4 = 1 OR
+       				kom5 = 1 OR kom6 = 1 OR kom7 = 1 OR kom8 = 1 THEN '1'
+  				WHEN kom1 = 0 OR kom2 = 0 OR kom3 = 0 OR kom4 = 0 OR
+       				kom5 = 0 OR kom6 = 0 OR kom7 = 0 OR kom8 = 0 THEN '0'
+  				ELSE ''
 				END AS stav,
 					TIPD,
 					to_char(DATIZV,'dd.mm.yyyy'),

@@ -3,9 +3,7 @@ package oraclerepo
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/tijanadmi/ddn_rdc/models"
@@ -67,7 +65,8 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context, id 
    COALESCE(to_char(PI.ID_DOG_PREKID_P), ''),
    COALESCE(to_char(PI.ID_TIP_OBJEKTA_NDC), ''),
    COALESCE(to_char(PI.ID_TIP_DOGADJAJA_NDC), ''),
-   COALESCE(PI.SYNSOFT_ID, '')
+   COALESCE(PI.SYNSOFT_ID, ''),
+   COALESCE(PI.version, 0)
    from ddn_prekid_isp PI
    INNER JOIN  S_MRC MR ON PI.ID_S_MRC=MR.ID
    INNER JOIN  V_S_OB O ON PI.OB_ID=O.OB_ID AND PI.ID_TIPOB=O.TIPOB
@@ -77,7 +76,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context, id 
    LEFT JOIN S_MERNA_MESTA M ON PI.ID_S_MERNA_MESTA=M.ID
    LEFT JOIN V_S_POLJE_SVA_AP PO ON PI.ID_P2_TRAF=PO.P2_TRAF_ID
    LEFT JOIN S_VRSTA_PREKIDA_P_GEN_V vp ON PI.ID_TIP_OBJEKTA_NDC=vp.ID_TIP_OBJEKTA AND PI.ID_TIP_DOGADJAJA_NDC=vp.ID_TIP_DOGADJAJA AND PI.ID_S_VR_PREK=vp.ID_S_VR_PREK
-   where PI.id=:1`
+	  WHERE PI.id=:1`
 
 	row := m.DB.QueryRowContext(ctx, query, id)
 
@@ -117,6 +116,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context, id 
 		&ue.IdTipObjektaNdc,
 		&ue.IdTipDogadjajaNdc,
 		&ue.SynsoftId,
+		&ue.Version,
 	)
 	if err != nil {
 		return nil, err
@@ -173,6 +173,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
    COALESCE(to_char(PI.ID_TIP_OBJEKTA_NDC), ''),
    COALESCE(to_char(PI.ID_TIP_DOGADJAJA_NDC), ''),
    COALESCE(PI.SYNSOFT_ID, ''),
+   COALESCE(PI.version, 0),
    COUNT(*) OVER () AS TOTAL_COUNT
    from ddn_prekid_isp PI
    INNER JOIN  S_MRC MR ON PI.ID_S_MRC=MR.ID
@@ -238,6 +239,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg mod
 			&ue.IdTipObjektaNdc,
 			&ue.IdTipDogadjajaNdc,
 			&ue.SynsoftId,
+			&ue.Version,
 			&count,
 		)
 
@@ -300,6 +302,7 @@ func (m *OracleDBRepo) GetAllDDNInterruptionOfDelivery(ctx context.Context, arg 
    COALESCE(to_char(PI.ID_TIP_OBJEKTA_NDC), ''),
    COALESCE(to_char(PI.ID_TIP_DOGADJAJA_NDC), ''),
    COALESCE(PI.SYNSOFT_ID, ''),
+   COALESCE(PI.version, 0),
    COUNT(*) OVER () AS TOTAL_COUNT
    from ddn_prekid_isp PI
    INNER JOIN  S_MRC MR ON PI.ID_S_MRC=MR.ID
@@ -364,6 +367,7 @@ func (m *OracleDBRepo) GetAllDDNInterruptionOfDelivery(ctx context.Context, arg 
 			&ue.IdTipObjektaNdc,
 			&ue.IdTipDogadjajaNdc,
 			&ue.SynsoftId,
+			&ue.Version,
 			&count,
 		)
 
@@ -606,24 +610,48 @@ func (m *OracleDBRepo) GetAllDDNInterruptionOfDelivery(ctx context.Context, arg 
 // 		p = append(p, &ue)
 // 	}
 
-// 	return p, nil
-// }
+//		return p, nil
+//	}
 
-func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.DDNInterruptionOfDelivery) error {
+func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) (int, error) {
 
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
-	var status int
-	var message string
+	query := `INSERT INTO DDN_PREKID_ISP (
+		ID_S_MRC,
+		ID_S_TIPD,
+		ID_TIPOB,
+		OB_ID,
+		VREPOC,
+		VREZAV,
+		ID_S_VR_PREK,
+		ID_S_UZROK_PREK,
+		SNAGA,
+		OPIS,
+		DDN_KOR,
+		DATPRI,
+		IND,
+		ID_P2_TRAF,
+		ID_S_PODUZROK_PREK,
+		VERSION
+	) VALUES (
+		:1, :2, :3, :4,
+		to_date(:5, 'dd.mm.yyyy HH24:MI:SS'),
+		to_date(:6, 'dd.mm.yyyy HH24:MI:SS'),
+		:7, :8, :9, :10, :11,
+		SYSDATE,
+		:12, :13, :14, 0
+	) RETURNING id INTO :15`
 
-	query := `begin  ddn.synsoft.p_ddn_prekid_isp_insert(:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24); end;`
-	//var int status
-	//var string message
+	PIdSTipd := 12
+	PInd := "P"
+
+	var id int
+
 	_, err := m.DB.ExecContext(ctx, query,
 		ddnintd.IdSMrc,
-		ddnintd.IdSTipd,
-		ddnintd.IdSVrpd,
+		PIdSTipd,
 		ddnintd.IdTipob,
 		ddnintd.ObId,
 		ddnintd.Vrepoc,
@@ -633,50 +661,46 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 		ddnintd.Snaga,
 		ddnintd.Opis,
 		ddnintd.KorUneo,
-		ddnintd.IdSMernaMesta,
-		ddnintd.BrojMesta,
-		ddnintd.Ind,
+		PInd,
 		ddnintd.P2TrafId,
-		ddnintd.Bi,
 		ddnintd.IdSPoduzrokPrek,
-		ddnintd.IdDogPrekidP,
-		ddnintd.IdTipObjektaNdc,
-		ddnintd.IdTipDogadjajaNdc,
-		ddnintd.SynsoftId,
-		sql.Out{Dest: &status},
-		sql.Out{Dest: &message},
+		sql.Out{Dest: &id},
 	)
 
+	//fmt.Println(query)
+
 	if err != nil {
-		log.Println(err)
-		return err
+		return 0, err
 	}
-	//fmt.Println(pipiddn.TipMan)
-	//fmt.Println(pipiddn.DatSmene)
-	//fmt.Println(status)
-	//fmt.Println(message)
-	if status != 0 {
-		return errors.New(message)
-	} else {
-		return nil
-	}
+
+	return id, err
 }
 
-func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.DDNInterruptionOfDelivery) error {
+func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) error {
+	query := `UPDATE DDN_PREKID_ISP SET
+		ID_S_MRC = $1,
+		ID_S_TIPD = $2,
+		ID_TIPOB = $3,
+		OB_ID = $4,
+		VREPOC = $5,
+		VREZAV = $6,
+		ID_S_VR_PREK = $7,
+		ID_S_UZROK_PREK = $8,
+		SNAGA = $9,
+		OPIS = $10,
+		DDN_KOR = $11,
+		IND = $12,
+		ID_P2_TRAF = $13,
+		ID_S_PODUZROK_PREK = $14,
+		VERSION = VERSION + 1
+	WHERE id = $15 AND VERSION = $16`
 
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
+	PIdSTipd := 12
+	PInd := "P"
 
-	var status int
-	var message string
-
-	query := `begin  ddn.synsoft.p_ddn_prekid_isp_update(:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24); end;`
-	//var int status
-	//var string message
-	_, err := m.DB.ExecContext(ctx, query,
+	result, err := m.DB.ExecContext(ctx, query,
 		ddnintd.IdSMrc,
-		ddnintd.IdSTipd,
-		ddnintd.IdSVrpd,
+		PIdSTipd,
 		ddnintd.IdTipob,
 		ddnintd.ObId,
 		ddnintd.Vrepoc,
@@ -686,32 +710,25 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 		ddnintd.Snaga,
 		ddnintd.Opis,
 		ddnintd.KorUneo,
-		ddnintd.IdSMernaMesta,
-		ddnintd.BrojMesta,
-		ddnintd.Ind,
+		PInd,
 		ddnintd.P2TrafId,
-		ddnintd.Bi,
 		ddnintd.IdSPoduzrokPrek,
-		ddnintd.IdDogPrekidP,
-		ddnintd.IdTipObjektaNdc,
-		ddnintd.IdTipDogadjajaNdc,
-		ddnintd.SynsoftId,
-		sql.Out{Dest: &status},
-		sql.Out{Dest: &message},
+		id,
+		version,
 	)
 
 	if err != nil {
-		log.Println(err)
 		return err
 	}
-	//fmt.Println(pipiddn.TipMan)
-	//fmt.Println(pipiddn.DatSmene)
-	//fmt.Println(status)
-	//fmt.Println(message)
 
-	if status != 0 {
-		return errors.New(message)
-	} else {
-		return nil
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
 	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("optimistic lock failed: object may have been updated by another transaction")
+	}
+
+	return nil
 }

@@ -43,6 +43,7 @@ type DDNInterruptionOfDelivery struct {
 	IdTipObjektaNdc   string `json:"id_tip_objekta_ndc"`
 	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
 	SynsoftId         string `json:"ed_id"`
+	Version           int    `json:"version"`
 }
 
 type DDNInterruptionOfDeliveryRez struct {
@@ -79,6 +80,22 @@ type DDNInterruptionOfDeliveryRez struct {
 	IdTipObjektaNdc   int           `json:"id_tip_objekta_ndc"`
 	IdTipDogadjajaNdc int           `json:"id_tip_dogadjaja_ndc"`
 	SynsoftId         int           `json:"synsoft_id"`
+	Version           int           `json:"version"`
+}
+
+type CreateDDNInterruptionOfDeliveryPParams struct {
+	IdSMrc          int    `json:"id_s_mrc"`
+	IdTipob         int    `json:"id_tipob"`
+	ObId            int    `json:"ob_id"`
+	Vrepoc          string `json:"vrepoc"`
+	Vrezav          string `json:"vrezav"`
+	IdSVrPrek       int    `json:"id_s_vr_prek"`
+	IdSUzrokPrek    int    `json:"id_s_uzrok_prek"`
+	Snaga           string `json:"snaga"`
+	Opis            string `json:"opis"`
+	KorUneo         string `json:"kor_uneo"`
+	P2TrafId        int    `json:"p2_traf_id"`
+	IdSPoduzrokPrek int    `json:"id_s_poduzrok_prek"`
 }
 
 type DDNInterruptionOfDeliveryPayload struct {
@@ -96,6 +113,7 @@ type DDNInterruptionOfDeliveryPayload struct {
 	P2TrafId     string `json:"p2_traf_id"`
 	TipObjekta   string `json:"tip_objekta"`
 	SynsoftId    string `json:"ed_id"`
+	Version      int    `json:"version"`
 }
 
 type VSOb struct {
@@ -333,7 +351,7 @@ type FailuresAll struct {
 
 type PiMM struct {
 	Id         int    `json:"id"`
-	Stav       int    `json:"stav"`
+	Stav       string `json:"stav"`
 	Tipd       string `json:"tipd"`
 	Datizv     string `json:"datizv"`
 	Id1        string `json:"id1"`
