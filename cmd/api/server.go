@@ -78,14 +78,17 @@ func (server *Server) setupRouter() {
 	router.GET("/poljage/:id", server.getPoljeGEById)
 
 	router.GET("/interruptionofdelivery/:id", server.getDDNInterruptionOfDeliveryById)
-	router.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryP)
-	router.GET("/interruptionofproduction_excel", server.listAllDDNInterruptionOfDeliveryP)
-	router.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryK)
-	router.GET("/interruptionofusers_excel", server.listAllDDNInterruptionOfDeliveryK)
+	router.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryPByPage)
+	router.GET("/interruptionofproduction_all", server.listAllDDNInterruptionOfDeliveryP)
+	router.GET("/interruptionofproduction_excel", server.listExcelDDNInterruptionOfDeliveryP)
+	router.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryKByPage)
+	router.GET("/interruptionofusers_all", server.listAllDDNInterruptionOfDeliveryK)
+	router.GET("/interruptionofusers_excel", server.listExcelDDNInterruptionOfDeliveryK)
 
 	router.GET("/mesecni", server.listPiMM)
 	router.GET("/mesecnip", server.listPiMMByPage)
-	router.GET("/mesecnit4p", server.listPiMMT4)
+	router.GET("/mesecnit4", server.listPiMMT4)
+	router.GET("/mesecnit4p", server.listPiMMT4ByPage)
 
 	router.GET("/dnevni", server.listPiDD)
 	router.GET("/dnevnip", server.listPiDDByPage)

@@ -162,6 +162,13 @@ type ListLimitOffsetParams struct {
 	Offset int32 `json:"offset"`
 }
 
+type ListInterruptionWithParams struct {
+	Mrc       string `json:"mrc"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+	Ind       string `json:"ind"`
+}
+
 type ListInterruptionWithPaginationParams struct {
 	Mrc       string `json:"mrc"`
 	StartDate string `json:"start_date"`
@@ -481,6 +488,11 @@ type ListPiMMParamsByPage struct {
 	Offset    int32  `json:"offset"`
 }
 type ListPiMMT4Params struct {
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+}
+
+type ListPiMMT4ParamsByPage struct {
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
 	Limit     int32  `json:"limit"`

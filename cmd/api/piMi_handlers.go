@@ -25,6 +25,11 @@ type listPiMmByPageRequest struct {
 type listPiMmT4Request struct {
 	StartDate string `form:"start_date" binding:"required"`
 	EndDate   string `form:"end_date" binding:"required"`
+}
+
+type listPiMmT4ByPageRequest struct {
+	StartDate string `form:"start_date" binding:"required"`
+	EndDate   string `form:"end_date" binding:"required"`
 	PageID    int32  `form:"page_id" binding:"required,min=1"`
 	PageSize  int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
@@ -76,11 +81,36 @@ func (server *Server) listPiMMT4(ctx *gin.Context) {
 	arg := models.ListPiMMT4Params{
 		StartDate: req.StartDate,
 		EndDate:   req.EndDate,
+	}
+
+	pimm, count, err := server.store.GetPiMMT4ByParams(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	rsp := listPiMmT4Response{
+		Total:       count,
+		DogadjajiT4: pimm,
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+func (server *Server) listPiMMT4ByPage(ctx *gin.Context) {
+	var req listPiMmT4ByPageRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := models.ListPiMMT4ParamsByPage{
+		StartDate: req.StartDate,
+		EndDate:   req.EndDate,
 		Limit:     req.PageSize,
 		Offset:    (req.PageID - 1) * req.PageSize,
 	}
 
-	pimm, count, err := server.store.GetPiMMT4ByParams(ctx, arg)
+	pimm, count, err := server.store.GetPiMMT4ByParamsByPage(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

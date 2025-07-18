@@ -125,7 +125,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context, id 
 	return &ue, nil
 }
 
-func (m *OracleDBRepo) GetDDNInterruptionOfDelivery(ctx context.Context, arg models.ListInterruptionWithPaginationParams) ([]*models.DDNInterruptionOfDelivery, int, error) {
+func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryByPage(ctx context.Context, arg models.ListInterruptionWithPaginationParams) ([]*models.DDNInterruptionOfDelivery, int, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 

@@ -11,7 +11,7 @@ import (
 	"github.com/tijanadmi/ddn_rdc/token"
 )
 
-type listInteraptionOfDeliveryRequest struct {
+type listInteraptionOfDeliveryByPageRequest struct {
 	Mrc       string `form:"mrc" binding:"required"`
 	StartDate string `form:"start_date" binding:"required"`
 	EndDate   string `form:"end_date" binding:"required"`
@@ -71,7 +71,7 @@ type listDDNPAllResponse struct {
 	Prekidi []*DDNInterruptionOfDeliveryPExcel `json:"prekidip"`
 }
 
-func (server *Server) listAllDDNInterruptionOfDeliveryP(ctx *gin.Context) {
+func (server *Server) listExcelDDNInterruptionOfDeliveryP(ctx *gin.Context) {
 	var req listAllInteraptionOfDeliveryRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -116,8 +116,36 @@ func (server *Server) listAllDDNInterruptionOfDeliveryP(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, rsp)
 }
 
-func (server *Server) listDDNInterruptionOfDeliveryP(ctx *gin.Context) {
-	var req listInteraptionOfDeliveryRequest
+func (server *Server) listAllDDNInterruptionOfDeliveryP(ctx *gin.Context) {
+	var req listAllInteraptionOfDeliveryRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := models.ListInterruptionParams{
+		Mrc:       req.Mrc,
+		StartDate: req.StartDate,
+		EndDate:   req.EndDate,
+		Ind:       "P",
+	}
+
+	mrcs, count, err := server.store.GetAllDDNInterruptionOfDelivery(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := listDDNPResponse{
+		Total:   count,
+		Prekidi: mrcs,
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+func (server *Server) listDDNInterruptionOfDeliveryPByPage(ctx *gin.Context) {
+	var req listInteraptionOfDeliveryByPageRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -132,7 +160,7 @@ func (server *Server) listDDNInterruptionOfDeliveryP(ctx *gin.Context) {
 		Offset:    (req.PageID - 1) * req.PageSize,
 	}
 
-	mrcs, count, err := server.store.GetDDNInterruptionOfDelivery(ctx, arg)
+	mrcs, count, err := server.store.GetDDNInterruptionOfDeliveryByPage(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -151,8 +179,8 @@ type listDDNKResponse struct {
 	Prekidi []*models.DDNInterruptionOfDelivery `json:"prekidik"`
 }
 
-func (server *Server) listDDNInterruptionOfDeliveryK(ctx *gin.Context) {
-	var req listInteraptionOfDeliveryRequest
+func (server *Server) listDDNInterruptionOfDeliveryKByPage(ctx *gin.Context) {
+	var req listInteraptionOfDeliveryByPageRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -167,7 +195,7 @@ func (server *Server) listDDNInterruptionOfDeliveryK(ctx *gin.Context) {
 		Offset:    (req.PageID - 1) * req.PageSize,
 	}
 
-	mrcs, count, err := server.store.GetDDNInterruptionOfDelivery(ctx, arg)
+	mrcs, count, err := server.store.GetDDNInterruptionOfDeliveryByPage(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -203,7 +231,7 @@ type listDDNKAllResponse struct {
 	Prekidi []*DDNInterruptionOfDeliveryKExcel `json:"prekidik"`
 }
 
-func (server *Server) listAllDDNInterruptionOfDeliveryK(ctx *gin.Context) {
+func (server *Server) listExcelDDNInterruptionOfDeliveryK(ctx *gin.Context) {
 	var req listAllInteraptionOfDeliveryRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -243,6 +271,34 @@ func (server *Server) listAllDDNInterruptionOfDeliveryK(ctx *gin.Context) {
 			Opis:         m.Opis,
 			Bi:           m.Bi,
 		})
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+func (server *Server) listAllDDNInterruptionOfDeliveryK(ctx *gin.Context) {
+	var req listAllInteraptionOfDeliveryRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := models.ListInterruptionParams{
+		Mrc:       req.Mrc,
+		StartDate: req.StartDate,
+		EndDate:   req.EndDate,
+		Ind:       "K",
+	}
+
+	mrcs, count, err := server.store.GetAllDDNInterruptionOfDelivery(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := listDDNKResponse{
+		Total:   count,
+		Prekidi: mrcs,
 	}
 
 	ctx.JSON(http.StatusOK, rsp)

@@ -18,7 +18,8 @@ type DatabaseRepo interface {
 
 	DeleteDDNInterruptionOfDelivery(ctx context.Context, Id string) error
 	GetDDNInterruptionOfDeliveryById(ctx context.Context, id int) (*models.DDNInterruptionOfDelivery, error)
-	GetDDNInterruptionOfDelivery(ctx context.Context, arg models.ListInterruptionWithPaginationParams) ([]*models.DDNInterruptionOfDelivery, int, error)
+	
+	GetDDNInterruptionOfDeliveryByPage(ctx context.Context, arg models.ListInterruptionWithPaginationParams) ([]*models.DDNInterruptionOfDelivery, int, error)
 	GetAllDDNInterruptionOfDelivery(ctx context.Context, arg models.ListInterruptionParams) ([]*models.DDNInterruptionOfDelivery, int, error)
 	InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) (int, error)
 	UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) error
@@ -45,6 +46,7 @@ type DatabaseRepo interface {
 	GetPiMMByParamsByPage(ctx context.Context, arg models.ListPiMMParamsByPage) ([]*models.PiMM, int, error)
 
 	GetPiMMT4ByParams(ctx context.Context, arg models.ListPiMMT4Params) ([]*models.PiMMT4, int, error)
+	GetPiMMT4ByParamsByPage(ctx context.Context, arg models.ListPiMMT4ParamsByPage) ([]*models.PiMMT4, int, error)
 
 	GetPiDDByParams(ctx context.Context, arg models.ListPiDDParams) ([]*models.PiDD, int, error)
 	GetPiDDByParamsByPage(ctx context.Context, arg models.ListPiDDParamsByPage) ([]*models.PiDD, int, error)
