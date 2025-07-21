@@ -9,7 +9,7 @@ import (
 	"github.com/tijanadmi/ddn_rdc/models"
 )
 
-func (m *OracleDBRepo) GetPiDDT4ByParams(ctx context.Context, arg models.ListPiDDT4Params) ([]*models.PiMMT4, int, error) {
+func (m *OracleDBRepo) GetPiPIT4ByParams(ctx context.Context, arg models.ListPiDDT4Params) ([]*models.PiMMT4, int, error) {
 
 	var query string
 	var rows *sql.Rows
@@ -60,11 +60,10 @@ func (m *OracleDBRepo) GetPiDDT4ByParams(ctx context.Context, arg models.ListPiD
 			'' AS kom8,
 			'' AS opist4,
 			COUNT(*) OVER () AS TOTAL_COUNT
-		FROM PI_DD
+		FROM PI_PI
 		WHERE DATIZV = to_date(:1,'dd.mm.yyyy') 
 			AND id_s_tipd = 4
 			AND id_s_mrc = :2
-			and id1 is not null
 		ORDER BY datizv, id_s_tipd, id1`
 
 		rows, err = m.DB.QueryContext(ctx, query, arg.Datizv, arg.IdSMrc)

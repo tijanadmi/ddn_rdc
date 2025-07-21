@@ -94,6 +94,10 @@ func (server *Server) setupRouter() {
 	router.GET("/dnevnip", server.listPiDDByPage)
 	router.GET("/dnevnit4p", server.listPiDDT4)
 
+	router.GET("/pogonski", server.listPiPI)
+	router.GET("/pogonskip", server.listPiPIByPage)
+	router.GET("/pogonskit4", server.listPiPIT4)
+
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
 	authRoutes.POST("/createinterruptionofproduction", server.CreateDDNPrekidIsp)
