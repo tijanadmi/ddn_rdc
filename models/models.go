@@ -477,6 +477,7 @@ type ListPiMMParams struct {
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
 	Tipd      int    `json:"tipd"`
+	Fup       string `json:"fup"`
 }
 
 type ListPiMMParamsByPage struct {
@@ -619,6 +620,7 @@ type ListPiDDParams struct {
 	Datizv string `json:"datizv"`
 	Tipd   int    `json:"tipd"`
 	IdSMrc string `json:"id_s_mrc"`
+	Fup    string `json:"fup"`
 }
 
 type ListPiDDParamsByPage struct {
@@ -633,6 +635,20 @@ type ListPiDDParamsByPage struct {
 type PiDDResponse struct {
 	PiDD  []PiDD `json:"pi_dd"`
 	Count int    `json:"count"`
+}
+
+
+type ListPGD struct {
+	Godina string `json:"godina"`
+}
+
+type PGDRadapuMes struct {
+	MesecBr string `json:"mesec_br"`
+	Mesec string `json:"mesec"`
+	Godina string `json:"godina"`
+	Napon string `json:"napon"`
+	BrojApu string `json:"broj_apu"`
+	BrojApuN string `json:"broj_apu_n"`
 }
 
 /*func (u *User) PasswordMatches(plainText string) (bool, error) {

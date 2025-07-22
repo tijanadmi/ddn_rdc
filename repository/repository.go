@@ -55,4 +55,6 @@ type DatabaseRepo interface {
 	GetPiPIByParams(ctx context.Context, arg models.ListPiDDParams) ([]*models.PiDD, int, error)
 	GetPiPIByParamsByPage(ctx context.Context, arg models.ListPiDDParamsByPage) ([]*models.PiDD, int, error)
 	GetPiPIT4ByParams(ctx context.Context, arg models.ListPiDDT4Params) ([]*models.PiMMT4, int, error)
+
+	GetPGDRadapuMes(ctx context.Context, arg models.ListPGD) ([]*models.PGDRadapuMes, error)
 }

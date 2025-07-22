@@ -11,6 +11,7 @@ type listPiMmRequest struct {
 	StartDate string `form:"start_date" binding:"required"`
 	EndDate   string `form:"end_date" binding:"required"`
 	TipD      int    `form:"tipd" binding:"required,min=1"`
+	Fup       string `form:"fup" binding:"required"`
 }
 
 type listPiMmByPageRequest struct {
@@ -56,6 +57,7 @@ func (server *Server) listPiMM(ctx *gin.Context) {
 		StartDate: req.StartDate,
 		EndDate:   req.EndDate,
 		Tipd:      req.TipD,
+		Fup:       req.Fup,
 	}
 
 	pimm, count, err := server.store.GetPiMMByParams(ctx, arg)

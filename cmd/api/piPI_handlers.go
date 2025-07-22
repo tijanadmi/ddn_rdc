@@ -23,6 +23,7 @@ func (server *Server) listPiPI(ctx *gin.Context) {
 		Datizv: req.Datizv,
 		Tipd:   req.TipD,
 		IdSMrc: req.IdSMrc,
+		Fup:    req.Fup,
 	}
 
 	pidd, count, err := server.store.GetPiPIByParams(ctx, arg)

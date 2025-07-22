@@ -98,6 +98,8 @@ func (server *Server) setupRouter() {
 	router.GET("/pogonskip", server.listPiPIByPage)
 	router.GET("/pogonskit4", server.listPiPIT4)
 
+	router.GET("/radapu_mes", server.listPGDRadapuMes)
+
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
 	authRoutes.POST("/createinterruptionofproduction", server.CreateDDNPrekidIsp)

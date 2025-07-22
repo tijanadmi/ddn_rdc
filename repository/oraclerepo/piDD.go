@@ -15,6 +15,11 @@ func (m *OracleDBRepo) GetPiDDByParams(ctx context.Context, arg models.ListPiDDP
 		mrcParam = strings.ToUpper(arg.IdSMrc)
 	}
 
+	fupParam := "%"
+	if strings.ToUpper(arg.Fup) != "ALL" {
+		fupParam = strings.ToUpper(arg.Fup)
+	}
+
 	query := `select ROWNUM AS id,
                 	id_s_mrc,
                 	mrc,
@@ -115,15 +120,16 @@ func (m *OracleDBRepo) GetPiDDByParams(ctx context.Context, arg models.ListPiDDP
                     COALESCE(TO_CHAR(ID_Z_TELE_KRAJ_GL2), '') AS ID_Z_TELE_KRAJ_GL2,
                     COALESCE(Z_TELE_KRAJ_GL2, '') AS Z_TELE_KRAJ_GL2,
                     FUP,
-                    COUNT(*) OVER () AS TOTAL_COUNT  
+                    COUNT(*) OVER () AS TOTAL_COUNT 
                     from pgi.pi_dd_v
                     where DATIZV  = to_date(:1,'dd.mm.yyyy') 
                        AND TIPD LIKE UPPER(:2)
                     and id_s_mrc like (:3)
+					AND FUP LIKE UPPER(:4)
                        order by DATIZV,id1,id2,vrepoc`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.Datizv, arg.Tipd, mrcParam)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Datizv, arg.Tipd, mrcParam, fupParam)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, 0, err

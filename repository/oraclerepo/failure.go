@@ -10,6 +10,11 @@ import (
 
 func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMParams) ([]*models.PiMM, int, error) {
 
+	fupParam := "%"
+	if strings.ToUpper(arg.Fup) != "ALL" {
+		fupParam = strings.ToUpper(arg.Fup)
+	}
+
 	query := `select ROWNUM AS id,
 				CASE
   				WHEN kom1 = 1 OR kom2 = 1 OR kom3 = 1 OR kom4 = 1 OR
@@ -29,10 +34,20 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
     				TIPOB,
    					OB_SIF,
    					NAZOB,
+					COALESCE(POLJE_TRAFO, '') as POLJE_TRAFO,
+					COALESCE(to_char(id_s_nap), '') as id_s_nap,
+					COALESCE(to_char(TRAFO_ID), '') as TRAFO_ID,
+					COALESCE(to_char(P2_TRAF_ID), '') as P2_TRAF_ID,
+					COALESCE(NAPON, '') as NAPON,
+					COALESCE(POLJE, '') as POLJE,
+   					COALESCE(IME_PO, '') as IME_PO,
+   					COALESCE(to_char(FUNKC), '') as FUNKC,
 					COALESCE(to_char(VRPD), ''),
    					NAZVRPD,
    					GRUZR1 ||'/'||
    					UZROK1,
+					GRRAZ ||'/'||
+   					RAZLOG,
 					COALESCE(VREM_USL, ''),
       				TEKST_EXCEL,
 					COALESCE(to_char(SNAGA), ''),
@@ -97,14 +112,15 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 					COALESCE(TO_CHAR(ID_Z_TELE_KRAJ_GL2), '') AS ID_Z_TELE_KRAJ_GL2,
 					COALESCE(Z_TELE_KRAJ_GL2, '') AS Z_TELE_KRAJ_GL2,
 					FUP,
-					COUNT(*) OVER () AS TOTAL_COUNT  
+					COUNT(*) OVER () AS TOTAL_COUNT   
 					from pgi.pi_mm_v
 					where DATIZV  BETWEEN to_date(:1,'dd.mm.yyyy') AND to_date(:2,'dd.mm.yyyy') 
    					AND TIPD LIKE UPPER(:3)
+					AND FUP LIKE UPPER(:4)
    					order by DATIZV,id1,id2`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd)
+	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd, fupParam)
 
 	//fmt.Println(arg.StartDate, arg.EndDate, arg.Tipd)
 	if err != nil {
@@ -133,12 +149,25 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 			&ue.TipOb,
 			&ue.ObSif,
 			&ue.NazOb,
+			&ue.PoljeTrafo,
+			&ue.IdSNap,
+			&ue.TrafoId,
+			&ue.P2TrafId,
+			&ue.Napon,
+			&ue.Polje,
+			&ue.ImePo,
+			&ue.Funkc,
 			&ue.Vrpd,
 			&ue.Nazvrpd,
 			&ue.Uzrok,
+			&ue.Razlog,
 			&ue.VrmUsl,
 			&ue.Tekst,
 			&ue.Snaga,
+			/*&ue.NazSop,
+			&ue.SopNaziv,
+			&ue.IdSSop,
+			&ue.IdSop,*/
 			&ue.IdZDsdfGl1,
 			&ue.ZDsdfGl1,
 			&ue.IdZKvarGl1,

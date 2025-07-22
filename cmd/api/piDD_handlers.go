@@ -11,6 +11,7 @@ type listPiDDRequest struct {
 	Datizv string `form:"datizv" binding:"required"`
 	TipD   int    `form:"tipd" binding:"required,min=1"`
 	IdSMrc string `form:"id_s_mrc" binding:"required"`
+	Fup    string `form:"fup" binding:"required"`
 }
 
 type listPiDDByPageRequest struct {
@@ -49,6 +50,7 @@ func (server *Server) listPiDD(ctx *gin.Context) {
 		Datizv: req.Datizv,
 		Tipd:   req.TipD,
 		IdSMrc: req.IdSMrc,
+		Fup:       req.Fup,
 	}
 
 	pidd, count, err := server.store.GetPiDDByParams(ctx, arg)
