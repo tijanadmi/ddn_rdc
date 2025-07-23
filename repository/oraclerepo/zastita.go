@@ -11,7 +11,7 @@ func (m *OracleDBRepo) GetPGDRadapuMes(ctx context.Context, arg models.ListPGD) 
 
 	query := `select a.mesec,td_nazivi.td_daj_sif('s_meseci','naziv','broj',a.mesec,'Q') mesec_naz,
          a.godina,a.napon,decode(c.broj_apu,null,0,c.broj_apu) broj_apu,decode(b.broj_apu_n,null,0,b.broj_apu_n) broj_apu_n
-from (select distinct EXTRACT(MONTH from datizv) mesec,EXTRACT(year from datizv) godina,s_nap.naziv||' '||s_nap.jedinica napon,s_nap.id
+from (select distinct EXTRACT(MONTH from datizv) mesec,EXTRACT(year from datizv) godina,s_nap.naziv napon,s_nap.id
       from s_nap,pi_dd
       where naziv > 100
         and EXTRACT(year from datizv) like :1) a,

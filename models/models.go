@@ -637,18 +637,17 @@ type PiDDResponse struct {
 	Count int    `json:"count"`
 }
 
-
 type ListPGD struct {
 	Godina string `json:"godina"`
 }
 
 type PGDRadapuMes struct {
-	MesecBr string `json:"mesec_br"`
-	Mesec string `json:"mesec"`
-	Godina string `json:"godina"`
-	Napon string `json:"napon"`
-	BrojApu string `json:"broj_apu"`
-	BrojApuN string `json:"broj_apu_n"`
+	MesecBr  int    `json:"mesec_br"`
+	Mesec    string `json:"mesec"`
+	Godina   int    `json:"godina"`
+	Napon    int    `json:"napon"`
+	BrojApu  int    `json:"broj_apu"`
+	BrojApuN int    `json:"broj_apu_n"`
 }
 
 /*func (u *User) PasswordMatches(plainText string) (bool, error) {
