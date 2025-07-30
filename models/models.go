@@ -650,6 +650,22 @@ type PGDRadapuMes struct {
 	BrojApuN int    `json:"broj_apu_n"`
 }
 
+type PGDDapuA struct {
+	Godina   int     `json:"godina"`
+	Napon    int     `json:"napon"`
+	NapNaziv string  `json:"nap_nelp"`
+	Uspe     int     `json:"uspe"`
+	PUspe    float64 `json:"puspe"`
+	Ntrk     int     `json:"ntrk"`
+	PNtrk    float64 `json:"pntrk"`
+	Nesm     int     `json:"nesm"`
+	PNesm    float64 `json:"nesm"`
+	Nnpz     int     `json:"nnpz"`
+	PNnpz    float64 `json:"pnnpz"`
+	Zata     int     `json:"zata"`
+	PZata    float64 `json:"pzata"`
+}
+
 /*func (u *User) PasswordMatches(plainText string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plainText))
 	if err != nil {

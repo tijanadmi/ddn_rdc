@@ -99,6 +99,7 @@ func (server *Server) setupRouter() {
 	router.GET("/pogonskit4", server.listPiPIT4)
 
 	router.GET("/radapu_mes", server.listPGDRadapuMes)
+	router.GET("/dapua", server.listPGDDapuA)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 

@@ -89,3 +89,68 @@ order by godina desc,mesec asc,napon desc`
 	//fmt.Println(totalCount)
 	return ues, nil
 }
+
+func (m *OracleDBRepo) GetPGDDapuA(ctx context.Context, arg models.ListPGD) ([]*models.PGDDapuA, error) {
+
+	query := `SELECT GOD,NAPON,
+       td_nazivi.tab_col_val('s_nao','naziv||'' ''||jedinica',napon,'Q') NAZ_NELP,
+       USPE, NVL(USPE,0)*100/NVL(UKU,1) PUSPE,
+       NTRK, NVL(NTRK,0)*100/NVL(UKU,1) PNTRK,
+       NESM, NVL(NESM,0)*100/NVL(UKU,1) PNESM,
+       NNPZ, NVL(NNPZ,0)*100/NVL(UKU,1) PNNPZ,
+       ZATA, NVL(ZATA,0)*100/NVL(UKU,1) PZATA          
+FROM (SELECT god,NAPON,
+       MAX(DECODE(radapu_id,'1',PROC,0)) USPE,
+       MAX(DECODE(radapu_id,'2',PROC,0)) NTRK,
+       MAX(DECODE(radapu_id,'3',PROC,0)) NESM,
+       MAX(DECODE(radapu_id,'4',PROC,0)) NNPZ,
+       MAX(DECODE(RADAPU_ID,'6',PROC,0)) ZATA,
+       SUM(PROC) uku
+     FROM (SELECT god,NAPON,RADAPU_ID,SUM(UBD) PROC
+          FROM pgd.PD_RAPU1_A_V  WHERE 
+                 GOD     = :1 
+            AND RADAPU_ID IN ('1','2','3','4','6') 
+          GROUP BY god,NAPON,RADAPU_ID)
+       GROUP BY god,NAPON) A`
+
+	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Godina)
+
+	//fmt.Println(arg.StartDate, arg.EndDate, arg.Tipd)
+	if err != nil {
+		fmt.Println("Pogresan upit ili nema rezultata upita")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ues []*models.PGDDapuA
+
+	for rows.Next() {
+		var ue models.PGDDapuA
+		err := rows.Scan(
+			&ue.Godina,
+			&ue.Napon,
+			&ue.NapNaziv,
+			&ue.Uspe,
+			&ue.PUspe,
+			&ue.Ntrk,
+			&ue.PNtrk,
+			&ue.Nesm,
+			&ue.PNesm,
+			&ue.Nnpz,
+			&ue.PNnpz,
+			&ue.Zata,
+			&ue.PZata,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ues = append(ues, &ue)
+
+	}
+
+	//fmt.Println(totalCount)
+	return ues, nil
+}

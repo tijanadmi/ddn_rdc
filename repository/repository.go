@@ -57,4 +57,5 @@ type DatabaseRepo interface {
 	GetPiPIT4ByParams(ctx context.Context, arg models.ListPiDDT4Params) ([]*models.PiMMT4, int, error)
 
 	GetPGDRadapuMes(ctx context.Context, arg models.ListPGD) ([]*models.PGDRadapuMes, error)
+	GetPGDDapuA(ctx context.Context, arg models.ListPGD) ([]*models.PGDDapuA, error)
 }

@@ -31,3 +31,24 @@ func (server *Server) listPGDRadapuMes(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+func (server *Server) listPGDDapuA(ctx *gin.Context) {
+	var req listGDRadapuMesRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := models.ListPGD{
+		Godina: req.Godina,
+	}
+
+	pimm, err := server.store.GetPGDDapuA(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	rsp := pimm
+
+	ctx.JSON(http.StatusOK, rsp)
+}
