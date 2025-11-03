@@ -68,32 +68,30 @@ func (m *OracleDBRepo) GetUserByUsername(ctx context.Context, username string) (
 
 		return nil, err
 	}
-	query = `select ru.id,RU.ID_USER, RU.ID_ROLE, R.CODE, R.NAME
+	query = `select RU.ID_ROLE, R.CODE, R.NAME
 	from tis_services_role_user ru, tis_services_roles r
 	where RU.ID_USER =:1
 	and ru.id_role = r.id
 	`
 
-	var roles []models.UserRole
+	var roles []string
 	rows, _ := m.DB.QueryContext(ctx, query, user.ID)
 	defer rows.Close()
 
 	for rows.Next() {
-		var r models.UserRole
+		var r models.Role
 		err := rows.Scan(
 			&r.ID,
-			&r.IdUser,
-			&r.IdRole,
-			&r.RoleCode,
-			&r.RoleName,
+			&r.Code,
+			&r.Name,
 		)
 
 		if err != nil {
 			return nil, err
 		}
-		roles = append(roles, r)
+		roles = append(roles, r.Code)
 	}
-	user.UserRole = roles
+	user.Role = roles
 
 	return &user, nil
 }
@@ -118,32 +116,28 @@ func (m *OracleDBRepo) GetUserByID(ctx context.Context, id int) (*models.User, e
 		return nil, err
 	}
 
-	query = `select ru.id,RU.ID_USER, RU.ID_ROLE, R.CODE, R.NAME
+	query = `select  R.code
 	from tis_services_role_user ru, tis_services_roles r
 	where RU.ID_USER =:1
 	and ru.id_role = r.id
 	`
 
-	var roles []models.UserRole
+	var roles []string
 	rows, _ := m.DB.QueryContext(ctx, query, id)
 	defer rows.Close()
 
 	for rows.Next() {
-		var r models.UserRole
+		var r models.Role
 		err := rows.Scan(
-			&r.ID,
-			&r.IdUser,
-			&r.IdRole,
-			&r.RoleCode,
-			&r.RoleName,
+			&r.Code,
 		)
 
 		if err != nil {
 			return nil, err
 		}
-		roles = append(roles, r)
+		roles = append(roles, r.Code)
 	}
-	user.UserRole = roles
+	user.Role = roles
 
 	return &user, nil
 }

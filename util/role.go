@@ -1,6 +1,6 @@
 package util
 
 const (
-	DepositorRole = "depositor"
+	DepositorRole = "despositor"
 	BankerRole    = "banker"
 )

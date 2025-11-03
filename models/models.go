@@ -261,7 +261,7 @@ type User struct {
 	Username string
 	Password string
 	FullName string
-	UserRole []UserRole
+	Role     []string
 }
 
 type Role struct {
@@ -659,7 +659,7 @@ type PGDDapuA struct {
 	Ntrk     int     `json:"ntrk"`
 	PNtrk    float64 `json:"pntrk"`
 	Nesm     int     `json:"nesm"`
-	PNesm    float64 `json:"nesm"`
+	PNesm    float64 `json:"pnesm"`
 	Nnpz     int     `json:"nnpz"`
 	PNnpz    float64 `json:"pnnpz"`
 	Zata     int     `json:"zata"`

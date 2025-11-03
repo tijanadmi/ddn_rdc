@@ -19,16 +19,16 @@ type createUserRequest struct {
 }
 
 type userResponse struct {
-	Username string            `json:"username"`
-	FullName string            `json:"full_name"`
-	UserRole []models.UserRole `json:"user_role"`
+	Username string   `json:"username"`
+	FullName string   `json:"full_name"`
+	Role     []string `json:"user_role"`
 }
 
 func newUserResponse(user *models.User) userResponse {
 	return userResponse{
 		Username: user.Username,
 		FullName: user.FullName,
-		UserRole: user.UserRole,
+		Role:     user.Role,
 	}
 }
 
@@ -68,8 +68,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
-		/*user.Role,*/
-		"depositor",
+		user.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -79,8 +78,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	refreshToken, _, err := server.tokenMaker.CreateToken(
 		user.Username,
-		//user.Role,
-		"depositor",
+		user.Role,
 		server.config.RefreshTokenDuration,
 	)
 	if err != nil {
@@ -103,7 +101,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}*/
 
 	// **Set HttpOnly cookie za refresh token**
-	ctx.SetCookie(
+	/*ctx.SetCookie(
 		"refresh_token",
 		refreshToken,
 		int(server.config.RefreshTokenDuration.Seconds()),
@@ -111,7 +109,28 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		"",              // domen (prazno = trenutni)
 		true,            // Secure (HTTPS)
 		true,            // HttpOnly
-	)
+	)*/
+
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:  "access_token",
+		Value: accessToken,
+		Path:  "/",
+		// Domain:   "localhost",
+		MaxAge:   int(server.config.AccessTokenDuration.Seconds()),
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	})
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:  "refresh_token",
+		Value: refreshToken,
+		Path:  "/",
+		// Domain:   "localhost",
+		MaxAge:   int(server.config.RefreshTokenDuration.Seconds()),
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	})
 
 	rsp := loginUserResponse{
 		//SessionID:             session.ID,
@@ -137,7 +156,6 @@ func (server *Server) loginUser(ctx *gin.Context) {
 // type GetUserByTokenRequest struct {
 // 	AccessToken string `json:"access_token" binding:"required,jwt"`
 // }
-
 
 type GetUserByTokenRequest struct {
 	AccessToken string `json:"access_token" binding:"required"`
@@ -179,7 +197,7 @@ func (server *Server) GetUserByToken(ctx *gin.Context) {
 	rsp := userResponse{
 		Username: user.Username,
 		FullName: user.FullName,
-		UserRole: user.UserRole,
+		Role:     user.Role,
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }
