@@ -77,7 +77,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+	refreshToken, _, err := server.tokenMaker.CreateToken(
 		user.Username,
 		//user.Role,
 		"depositor",
@@ -102,13 +102,24 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}*/
 
+	// **Set HttpOnly cookie za refresh token**
+	ctx.SetCookie(
+		"refresh_token",
+		refreshToken,
+		int(server.config.RefreshTokenDuration.Seconds()),
+		"/auth/refresh", // putanja za refresh
+		"",              // domen (prazno = trenutni)
+		true,            // Secure (HTTPS)
+		true,            // HttpOnly
+	)
+
 	rsp := loginUserResponse{
 		//SessionID:             session.ID,
-		AccessToken:           accessToken,
-		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
-		User:                  newUserResponse(user),
+		AccessToken:          accessToken,
+		AccessTokenExpiresAt: accessPayload.ExpiredAt,
+		//RefreshToken:          refreshToken,
+		//RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		User: newUserResponse(user),
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
@@ -126,6 +137,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 // type GetUserByTokenRequest struct {
 // 	AccessToken string `json:"access_token" binding:"required,jwt"`
 // }
+
 
 type GetUserByTokenRequest struct {
 	AccessToken string `json:"access_token" binding:"required"`
