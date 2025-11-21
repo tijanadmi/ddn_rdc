@@ -1,13 +1,12 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tijanadmi/ddn_rdc/token"
+	"github.com/tijanadmi/ddn_rdc/util"
 )
 
 const (
@@ -19,7 +18,7 @@ const (
 // AuthMiddleware creates a gin middleware for authorization
 func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
+		/*authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
 
 		if len(authorizationHeader) == 0 {
 			err := errors.New("authorization header is not provided")
@@ -39,16 +38,32 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			err := fmt.Errorf("unsupported authorization type %s", authorizationType)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
+		}*/
+		token, err := util.GetAccessToken(ctx)
+		if err != nil {
+			fmt.Println("Error getting access token:", err)
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.Abort()
+			return
 		}
-
-		accessToken := fields[1]
+		if token == "" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "No token provided"})
+			ctx.Abort()
+			return
+		}
+		accessToken := token
+		fmt.Println("Pre verify token:", err)
+		//accessToken := fields[1]
 		payload, err := tokenMaker.VerifyToken(accessToken)
 		if err != nil {
+			fmt.Println("Uhvacena greska kod verify token:", err)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
-
+		fmt.Println("Posle verify token:", err)
 		ctx.Set(authorizationPayloadKey, payload)
+		// c.Set("userId", claims.UserId)
+		// c.Set("role", claims.Role)
 		ctx.Next()
 	}
 }

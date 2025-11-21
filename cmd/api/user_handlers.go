@@ -111,25 +111,46 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		true,            // HttpOnly
 	)*/
 
+	// http.SetCookie(ctx.Writer, &http.Cookie{
+	// 	Name:  "access_token",
+	// 	Value: accessToken,
+	// 	Path:  "/",
+	// 	// Domain:   "localhost",
+	// 	MaxAge: int(server.config.AccessTokenDuration.Seconds()),
+	// 	Secure: false, //samo u dev modu
+	// 	// Secure:   true,
+	// 	HttpOnly: true,
+	// 	SameSite: http.SameSiteNoneMode,
+	// })
+	// http.SetCookie(ctx.Writer, &http.Cookie{
+	// 	Name:  "refresh_token",
+	// 	Value: refreshToken,
+	// 	Path:  "/",
+	// 	// Domain:   "localhost",
+	// 	MaxAge: int(server.config.RefreshTokenDuration.Seconds()),
+	// 	Secure: false, //samo u dev modu
+	// 	// Secure:   true,
+	// 	HttpOnly: true,
+	// 	SameSite: http.SameSiteNoneMode,
+	// })
+
 	http.SetCookie(ctx.Writer, &http.Cookie{
-		Name:  "access_token",
-		Value: accessToken,
-		Path:  "/",
-		// Domain:   "localhost",
+		Name:     "access_token",
+		Value:    accessToken,
+		Path:     "/",
 		MaxAge:   int(server.config.AccessTokenDuration.Seconds()),
-		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
+		Secure:   true, // obavezno!
 	})
 	http.SetCookie(ctx.Writer, &http.Cookie{
-		Name:  "refresh_token",
-		Value: refreshToken,
-		Path:  "/",
-		// Domain:   "localhost",
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Path:     "/",
 		MaxAge:   int(server.config.RefreshTokenDuration.Seconds()),
-		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	})
 
 	rsp := loginUserResponse{
@@ -142,6 +163,48 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
+
+}
+
+func (server *Server) logoutUser(ctx *gin.Context) {
+	// Clear the access_token cookie
+
+	/*var UserLogout struct {
+		UserId string `json:"user_id"`
+	}*/
+
+	/*err := ctx.ShouldBindJSON(&UserLogout)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("invalid request payload")))
+		return
+	}*/
+
+	// key := ctx.Get("authorizationPayloadKey")
+
+	// fmt.Println("User ID from Logout request:", key.ID)
+
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:  "access_token",
+		Value: "",
+		Path:  "/",
+		// Domain:   "localhost",
+		MaxAge:   -1,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	})
+
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	})
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
 // // Custom JWT regex: 3 dela razdvojena tačkama
@@ -172,14 +235,22 @@ func (server *Server) GetUserByToken(ctx *gin.Context) {
 	// // Registruj custom validator
 	// validate.RegisterValidation("jwt", validateJWT)
 
-	var req GetUserByTokenRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	// var req GetUserByTokenRequest
+	// if err := ctx.ShouldBindJSON(&req); err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	// 	return
+	// }
+	// fmt.Println("request je ", req)
+	// accessToken := req.AccessToken
+
+	token, err := util.GetAccessToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(fmt.Errorf("nije pronađen access token u cookie-ju: %w", err)))
 		return
 	}
-	fmt.Println(req)
-	accessToken := req.AccessToken
-	payload, err := server.tokenMaker.VerifyToken(accessToken)
+
+	fmt.Println("access token je ", token)
+	payload, err := server.tokenMaker.VerifyToken(token)
 	if err != nil {
 		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

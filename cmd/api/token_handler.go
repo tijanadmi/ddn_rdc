@@ -18,49 +18,21 @@ type renewAccessTokenResponse struct {
 }
 
 func (server *Server) renewAccessToken(ctx *gin.Context) {
-	var req renewAccessTokenRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+
+	refreshToken, err := ctx.Cookie("refresh_token")
+	if err != nil {
+		fmt.Println("error", err.Error())
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve refresh token from cookie"})
 		return
 	}
 
-	refreshPayload, err := server.tokenMaker.VerifyToken(req.RefreshToken)
+	refreshPayload, err := server.tokenMaker.VerifyToken(refreshToken)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
-	session, err := server.store.GetSession(refreshPayload.ID)
-	if err != nil {
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
-		return
-	}
-
-	if session.IsBlocked {
-		err := fmt.Errorf("blocked session")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
-	if session.Username != refreshPayload.Username {
-		err := fmt.Errorf("incorrect session user")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
-	if session.RefreshToken != req.RefreshToken {
-		err := fmt.Errorf("mismatched session token")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
-	if time.Now().After(session.ExpiresAt) {
-		err := fmt.Errorf("expired session")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
+	newAccessToken, _, err := server.tokenMaker.CreateToken(
 		refreshPayload.Username,
 		refreshPayload.Role,
 		server.config.AccessTokenDuration,
@@ -70,9 +42,18 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	rsp := renewAccessTokenResponse{
-		AccessToken:          accessToken,
-		AccessTokenExpiresAt: accessPayload.ExpiredAt,
+	newRefreshToken, _, err := server.tokenMaker.CreateToken(
+		refreshPayload.Username,
+		refreshPayload.Role,
+		server.config.RefreshTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
-	ctx.JSON(http.StatusOK, rsp)
+
+	ctx.SetCookie("access_token", newAccessToken, int(server.config.AccessTokenDuration.Seconds()), "/", "localhost", true, true)
+	ctx.SetCookie("refresh_token", newRefreshToken, int(server.config.RefreshTokenDuration.Seconds()), "/", "localhost", true, true)
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Tokens refreshed"})
 }
