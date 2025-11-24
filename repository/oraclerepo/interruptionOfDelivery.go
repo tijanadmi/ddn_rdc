@@ -185,7 +185,8 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryByPage(ctx context.Context, a
    LEFT JOIN V_S_POLJE_SVA_AP PO ON PI.ID_P2_TRAF=PO.P2_TRAF_ID
    LEFT JOIN S_VRSTA_PREKIDA_P_GEN_V vp ON PI.ID_TIP_OBJEKTA_NDC=vp.ID_TIP_OBJEKTA AND PI.ID_TIP_DOGADJAJA_NDC=vp.ID_TIP_DOGADJAJA AND PI.ID_S_VR_PREK=vp.ID_S_VR_PREK
 	  WHERE PI.IND=:1   AND PI.ID_S_MRC like (:2) AND  
-	(PI.VREPOC >= to_date(:3,'dd.mm.yyyy HH24:MI:SS') AND PI.VREPOC<= to_date(:4,'dd.mm.yyyy HH24:MI:SS'))
+	(TRUNC(PI.VREPOC) BETWEEN TO_DATE(:3, 'dd.mm.yyyy')
+                           AND TO_DATE(:4, 'dd.mm.yyyy'))
    ORDER BY id
 			  OFFSET :5 ROWS FETCH NEXT :6 ROWS ONLY`
 
@@ -314,7 +315,8 @@ func (m *OracleDBRepo) GetAllDDNInterruptionOfDelivery(ctx context.Context, arg 
    LEFT JOIN V_S_POLJE_SVA_AP PO ON PI.ID_P2_TRAF=PO.P2_TRAF_ID
    LEFT JOIN S_VRSTA_PREKIDA_P_GEN_V vp ON PI.ID_TIP_OBJEKTA_NDC=vp.ID_TIP_OBJEKTA AND PI.ID_TIP_DOGADJAJA_NDC=vp.ID_TIP_DOGADJAJA AND PI.ID_S_VR_PREK=vp.ID_S_VR_PREK
 	  WHERE PI.IND=:1   AND PI.ID_S_MRC like (:2) AND  
-	(PI.VREPOC >= to_date(:3,'dd.mm.yyyy HH24:MI:SS') AND PI.VREPOC<= to_date(:4,'dd.mm.yyyy HH24:MI:SS'))
+	(TRUNC(PI.VREPOC) BETWEEN TO_DATE(:3, 'dd.mm.yyyy')
+                           AND TO_DATE(:4, 'dd.mm.yyyy'))
    ORDER BY id`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
