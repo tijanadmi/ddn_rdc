@@ -134,7 +134,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	// 	SameSite: http.SameSiteNoneMode,
 	// })
 
-	http.SetCookie(ctx.Writer, &http.Cookie{
+	// kod koji radi za localhost
+
+	/*http.SetCookie(ctx.Writer, &http.Cookie{
 		Name:     "access_token",
 		Value:    accessToken,
 		Path:     "/",
@@ -151,6 +153,29 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
 		Secure:   true,
+	})*/
+
+	// kod koji radi za produkciju
+
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "access_token",
+		Value:    accessToken,
+		Path:     "/",
+		Domain:   server.config.FrontendDomain,
+		MaxAge:   int(server.config.AccessTokenDuration.Seconds()),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,       // ⬅ radi bez HTTPS inace ako je HTTPS http.SameSiteNoneMode
+		Secure:   server.config.SecureCookie, // ⬅ važno za HTTP inace je true ako je HTTPS
+	})
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Path:     "/",
+		Domain:   server.config.FrontendDomain,
+		MaxAge:   int(server.config.RefreshTokenDuration.Seconds()),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,       // ⬅ radi bez HTTPS inace ako je HTTPS http.SameSiteNoneMode
+		Secure:   server.config.SecureCookie, // ⬅ važno za HTTP inace je true ako je HTTPS
 	})
 
 	rsp := loginUserResponse{
@@ -183,7 +208,9 @@ func (server *Server) logoutUser(ctx *gin.Context) {
 
 	// fmt.Println("User ID from Logout request:", key.ID)
 
-	http.SetCookie(ctx.Writer, &http.Cookie{
+	// kod za localhost
+
+	/*http.SetCookie(ctx.Writer, &http.Cookie{
 		Name:  "access_token",
 		Value: "",
 		Path:  "/",
@@ -202,6 +229,30 @@ func (server *Server) logoutUser(ctx *gin.Context) {
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
+	})*/
+
+	// kod za produkciju
+
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Path:     "/",
+		Domain:   server.config.FrontendDomain,
+		MaxAge:   -1,
+		Secure:   server.config.SecureCookie, // ⬅ važno za HTTP inace je true ako je HTTPS
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode, // ⬅ radi bez HTTPS inace ako je HTTPS http.SameSiteNoneMode
+	})
+
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Path:     "/",
+		Domain:   server.config.FrontendDomain,
+		MaxAge:   -1,
+		Secure:   server.config.SecureCookie,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 	})
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -46,11 +47,23 @@ func (server *Server) setupRouter() {
 		v.RegisterValidation("currency", validCurrency)
 	}*/
 
+	allowedOrigins := server.config.AllowedOrigins
+	var origins []string
+	if allowedOrigins != "" {
+		origins = strings.Split(allowedOrigins, ",")
+		for i := range origins {
+			origins[i] = strings.TrimSpace(origins[i])
+			fmt.Println("Allowed Origin:", origins[i])
+		}
+	} else {
+		origins = []string{"http://localhost:5173"}
+		fmt.Println("Allowed Origin: http://localhost:5173")
+	}
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
-		//AllowOrigins:     []string{"http://localhost:3000"},
-		//AllowOrigins:     []string{"http://192.168.36.188", "http://192.168.36.197"},
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins: origins,
+		// AllowOrigins: []string{"http://192.168.36.188", "http://192.168.29.68:5173", "http://localhost:5173", "http://192.168.72.147:4000"},
+		// AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
