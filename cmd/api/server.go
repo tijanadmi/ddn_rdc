@@ -142,6 +142,11 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/interruptionofproduction", server.listDDNInterruptionOfDeliveryPByPage)
 	authRoutes.GET("/interruptionofproduction_all", server.listAllDDNInterruptionOfDeliveryP)
 	authRoutes.GET("/interruptionofproduction_excel", server.listExcelDDNInterruptionOfDeliveryP)
+
+	authRoutes.POST("/interruptionofdelivery", server.CreateDDNPrekidIsp)
+	authRoutes.PUT("/interruptionofdelivery/:id/:version", server.UpdateDDNPrekidIsp)
+	authRoutes.PUT("/interruptionofdelivery/:id/:version/bi", server.UpdateDDNPrekidIspBI)
+
 	authRoutes.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryKByPage)
 	authRoutes.GET("/interruptionofusers_all", server.listAllDDNInterruptionOfDeliveryK)
 	authRoutes.GET("/interruptionofusers_excel", server.listExcelDDNInterruptionOfDeliveryK)

@@ -23,6 +23,7 @@ type DatabaseRepo interface {
 	GetAllDDNInterruptionOfDelivery(ctx context.Context, arg models.ListInterruptionParams) ([]*models.DDNInterruptionOfDelivery, int, error)
 	InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) (int, error)
 	UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) error
+	UpdateDDNInterruptionOfDeliveryBI(ctx context.Context, id int, version int, bi int) error
 
 	GetMrcById(ctx context.Context, id int) (*models.SMrc, error)
 	GetSMrc(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMrc, error)

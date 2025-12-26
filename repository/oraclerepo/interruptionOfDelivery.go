@@ -734,3 +734,42 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id 
 
 	return nil
 }
+
+func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryBI(ctx context.Context, id int, version int, bi int) error {
+
+	query := `UPDATE DDN_PREKID_ISP
+	SET
+		BI = $1,
+		VERSION = VERSION + 1
+	WHERE id = $2 AND VERSION = $3`
+
+	// mapiranje ulaznog podatka na DB vrednost
+	var biValue interface{}
+	if bi == 1 {
+		biValue = 1
+	} else {
+		biValue = nil
+	}
+
+	result, err := m.DB.ExecContext(
+		ctx,
+		query,
+		biValue,
+		id,
+		version,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("optimistic lock failed: object may have been updated by another transaction")
+	}
+
+	return nil
+}
