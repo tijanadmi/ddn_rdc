@@ -158,18 +158,37 @@ type listMrcRequest struct {
 }
 
 func (server *Server) listMrcs(ctx *gin.Context) {
-	var req listMrcRequest
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	// var req listMrcRequest
+	// if err := ctx.ShouldBindQuery(&req); err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	// 	return
+	// }
+
+	/*arg := models.ListLimitOffsetParams{
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
+	}*/
+	mrcs, err := server.store.GetSMrc(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	arg := models.ListLimitOffsetParams{
+	ctx.JSON(http.StatusOK, mrcs)
+}
+
+func (server *Server) listMrcsForInsert(ctx *gin.Context) {
+	// var req listMrcRequest
+	// if err := ctx.ShouldBindQuery(&req); err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	// 	return
+	// }
+
+	/*arg := models.ListLimitOffsetParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
-	}
-
-	mrcs, err := server.store.GetSMrc(ctx, arg)
+	}*/
+	mrcs, err := server.store.GetSMrcForInsert(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -179,7 +198,7 @@ func (server *Server) listMrcs(ctx *gin.Context) {
 }
 
 func (server *Server) listTipPrek(ctx *gin.Context) {
-	var req listMrcRequest
+	/*var req listMrcRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -188,9 +207,9 @@ func (server *Server) listTipPrek(ctx *gin.Context) {
 	arg := models.ListLimitOffsetParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
-	}
+	}*/
 
-	mrcs, err := server.store.GetSTipPrek(ctx, arg)
+	mrcs, err := server.store.GetSTipPrek(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -200,7 +219,7 @@ func (server *Server) listTipPrek(ctx *gin.Context) {
 }
 
 func (server *Server) listVrPrek(ctx *gin.Context) {
-	var req listMrcRequest
+	/*var req listMrcRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -209,9 +228,20 @@ func (server *Server) listVrPrek(ctx *gin.Context) {
 	arg := models.ListLimitOffsetParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
+	}*/
+
+	mrcs, err := server.store.GetSVrPrek(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
-	mrcs, err := server.store.GetSVrPrek(ctx, arg)
+	ctx.JSON(http.StatusOK, mrcs)
+}
+
+func (server *Server) listPodVrPrek(ctx *gin.Context) {
+
+	mrcs, err := server.store.GetSPodVrPrek(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -221,7 +251,7 @@ func (server *Server) listVrPrek(ctx *gin.Context) {
 }
 
 func (server *Server) listUzrokPrek(ctx *gin.Context) {
-	var req listMrcRequest
+	/*var req listMrcRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -230,9 +260,9 @@ func (server *Server) listUzrokPrek(ctx *gin.Context) {
 	arg := models.ListLimitOffsetParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
-	}
+	}*/
 
-	mrcs, err := server.store.GetSUzrokPrek(ctx, arg)
+	mrcs, err := server.store.GetSUzrokPrek(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -242,7 +272,7 @@ func (server *Server) listUzrokPrek(ctx *gin.Context) {
 }
 
 func (server *Server) listPoduzrokPrek(ctx *gin.Context) {
-	var req listMrcRequest
+	/*var req listMrcRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -251,9 +281,9 @@ func (server *Server) listPoduzrokPrek(ctx *gin.Context) {
 	arg := models.ListLimitOffsetParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
-	}
+	}*/
 
-	mrcs, err := server.store.GetSPoduzrokPrek(ctx, arg)
+	mrcs, err := server.store.GetSPoduzrokPrek(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -263,7 +293,7 @@ func (server *Server) listPoduzrokPrek(ctx *gin.Context) {
 }
 
 func (server *Server) listMernaMesta(ctx *gin.Context) {
-	var req listMrcRequest
+	/*var req listMrcRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -272,9 +302,9 @@ func (server *Server) listMernaMesta(ctx *gin.Context) {
 	arg := models.ListLimitOffsetParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
-	}
+	}*/
 
-	mrcs, err := server.store.GetSMernaMesta(ctx, arg)
+	mrcs, err := server.store.GetSMernaMesta(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -284,9 +314,9 @@ func (server *Server) listMernaMesta(ctx *gin.Context) {
 }
 
 type listObjectRequest struct {
-	Mrc      int32 `form:"mrc" binding:"required,min=1"`
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`
+	Mrc int32 `form:"mrc" binding:"required,min=1"`
+	/*PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`*/
 }
 
 func (server *Server) listObjTSRP(ctx *gin.Context) {
@@ -297,9 +327,9 @@ func (server *Server) listObjTSRP(ctx *gin.Context) {
 	}
 
 	arg := models.ListObjectLimitOffsetParams{
-		Mrc:    req.Mrc,
-		Limit:  req.PageSize,
-		Offset: (req.PageID - 1) * req.PageSize,
+		Mrc: req.Mrc,
+		/*Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,*/
 	}
 
 	mrcs, err := server.store.GetObjTSRP(ctx, arg)
@@ -317,10 +347,10 @@ func (server *Server) listObjHETEVE(ctx *gin.Context) {
 		return
 	}
 
-	arg := models.ListObjectLimitOffsetParams{
-		Mrc:    req.Mrc,
-		Limit:  req.PageSize,
-		Offset: (req.PageID - 1) * req.PageSize,
+	arg := models.ListObjectParams{
+		Mrc: req.Mrc,
+		/*Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,*/
 	}
 
 	mrcs, err := server.store.GetObjHETEVE(ctx, arg)
@@ -333,9 +363,9 @@ func (server *Server) listObjHETEVE(ctx *gin.Context) {
 }
 
 type listPoljaRequest struct {
-	ObjId    int32 `form:"obj_id" binding:"required,min=1"`
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`
+	ObjId int32 `form:"obj_id" binding:"required,min=1"`
+	/*PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`*/
 }
 
 func (server *Server) listPoljaGE(ctx *gin.Context) {
@@ -346,9 +376,9 @@ func (server *Server) listPoljaGE(ctx *gin.Context) {
 	}
 
 	arg := models.ListPoljaLimitOffsetParams{
-		ObjId:  req.ObjId,
-		Limit:  req.PageSize,
-		Offset: (req.PageID - 1) * req.PageSize,
+		ObjId: req.ObjId,
+		/*Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,*/
 	}
 
 	mrcs, err := server.store.GetPoljaGE(ctx, arg)

@@ -84,18 +84,20 @@ type DDNInterruptionOfDeliveryRez struct {
 }
 
 type CreateDDNInterruptionOfDeliveryPParams struct {
-	IdSMrc          int    `json:"id_s_mrc"`
-	IdTipob         int    `json:"id_tipob"`
-	ObId            int    `json:"ob_id"`
-	Vrepoc          string `json:"vrepoc"`
-	Vrezav          string `json:"vrezav"`
-	IdSVrPrek       int    `json:"id_s_vr_prek"`
-	IdSUzrokPrek    int    `json:"id_s_uzrok_prek"`
-	Snaga           string `json:"snaga"`
-	Opis            string `json:"opis"`
-	KorUneo         string `json:"kor_uneo"`
-	P2TrafId        int    `json:"p2_traf_id"`
-	IdSPoduzrokPrek int    `json:"id_s_poduzrok_prek"`
+	IdSMrc            int    `json:"id_s_mrc"`
+	IdTipob           int    `json:"id_tipob"`
+	ObId              int    `json:"ob_id"`
+	Vrepoc            string `json:"vrepoc"`
+	Vrezav            string `json:"vrezav"`
+	IdSVrPrek         int    `json:"id_s_vr_prek"`
+	IdSUzrokPrek      int    `json:"id_s_uzrok_prek"`
+	Snaga             string `json:"snaga"`
+	Opis              string `json:"opis"`
+	KorUneo           string `json:"kor_uneo"`
+	P2TrafId          int    `json:"p2_traf_id"`
+	IdSPoduzrokPrek   int    `json:"id_s_poduzrok_prek"`
+	IdTipObjektaNdc   string `json:"id_tip_objekta_ndc"`
+	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
 }
 
 type DDNInterruptionOfDeliveryPayload struct {
@@ -199,6 +201,14 @@ type SVrPrek struct {
 	Status string `json:"status"`
 }
 
+type SPodVrPrek struct {
+	IdTipObjekta   string `json:"id_tip_objekta"`
+	Opis           string `json:"opis"`
+	IdTipDogadjaja string `json:"id_tip_dogadjaja"`
+	IdSVrPrek      int    `json:"id_s_vr_prek"`
+	Naziv          string `json:"naziv"`
+}
+
 type SUzrokPrek struct {
 	ID     int    `json:"id"`
 	Code   string `json:"code"`
@@ -233,6 +243,10 @@ type ListObjectLimitOffsetParams struct {
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
+
+type ListObjectParams struct {
+	Mrc int32 `json:"mrc"`
+}
 type ObjLOV struct {
 	Opis     string `json:"opis"`
 	IdSMrc1  string `json:"id_s_mrc1"`
@@ -243,9 +257,9 @@ type ObjLOV struct {
 }
 
 type ListPoljaLimitOffsetParams struct {
-	ObjId  int32 `json:"obj_id"`
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	ObjId int32 `json:"obj_id"`
+	/*Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`*/
 }
 type PoljaLOV struct {
 	Id         string `json:"polje_id"`

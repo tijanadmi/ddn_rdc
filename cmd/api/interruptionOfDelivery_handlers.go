@@ -307,17 +307,35 @@ func (server *Server) listAllDDNInterruptionOfDeliveryK(ctx *gin.Context) {
 /***************** Create Prekid Proizvodnje ***************/
 
 type createDDNPrekidIspRequest struct {
-	IdSMrc          int    `json:"id_s_mrc" binding:"required"`
-	IdTipob         int    `json:"id_tipob" binding:"required"`
-	ObId            int    `json:"ob_id" binding:"required"`
-	Vrepoc          string `json:"vrepoc" binding:"required"`
-	Vrezav          string `json:"vrezav"`
-	IdSVrPrek       int    `json:"id_s_vr_prek" binding:"required"`
-	IdSUzrokPrek    int    `json:"id_s_uzrok_prek"`
-	Snaga           string `json:"snaga"`
-	Opis            string `json:"opis"`
-	P2TrafId        int    `json:"p2_traf_id"`
-	IdSPoduzrokPrek int    `json:"id_s_poduzrok_prek"`
+	IdSMrc            int    `json:"id_s_mrc" binding:"required"`
+	IdTipob           int    `json:"id_tipob" binding:"required"`
+	ObId              int    `json:"ob_id" binding:"required"`
+	Vrepoc            string `json:"vrepoc" binding:"required"`
+	Vrezav            string `json:"vrezav"`
+	IdSVrPrek         int    `json:"id_s_vr_prek" binding:"required"`
+	IdSUzrokPrek      int    `json:"id_s_uzrok_prek"`
+	Snaga             string `json:"snaga"`
+	Opis              string `json:"opis"`
+	P2TrafId          int    `json:"p2_traf_id"`
+	IdSPoduzrokPrek   int    `json:"id_s_poduzrok_prek"`
+	IdTipObjektaNdc   string `json:"id_tip_objekta_ndc"`
+	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
+}
+
+type createDDNPrekidPrRequest struct {
+	IdSMrc            int    `json:"id_s_mrc" binding:"required"`
+	IdTipob           int    `json:"id_tipob" binding:"required"`
+	ObId              int    `json:"ob_id" binding:"required"`
+	Vrepoc            string `json:"vrepoc" binding:"required"`
+	Vrezav            string `json:"vrezav"`
+	IdSVrPrek         int    `json:"id_s_vr_prek" binding:"required"`
+	IdSUzrokPrek      int    `json:"id_s_uzrok_prek"`
+	Snaga             string `json:"snaga"`
+	Opis              string `json:"opis"`
+	P2TrafId          int    `json:"p2_traf_id"`
+	IdSPoduzrokPrek   int    `json:"id_s_poduzrok_prek"`
+	IdTipObjektaNdc   string `json:"id_tip_objekta_ndc"`
+	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
 }
 
 func parseDateTime(value string) (time.Time, error) {
@@ -325,7 +343,7 @@ func parseDateTime(value string) (time.Time, error) {
 	return time.Parse(layout, value)
 }
 
-func validateDDNPrekidIspInput(req createDDNPrekidIspRequest) error {
+func validateDDNPrekidPrInput(req createDDNPrekidPrRequest) error {
 	vrepoc, err := parseDateTime(req.Vrepoc)
 	if err != nil {
 		return fmt.Errorf("неисправан формат за време почетка (dd.mm.yyyy hh:mi)")
@@ -353,16 +371,16 @@ func validateDDNPrekidIspInput(req createDDNPrekidIspRequest) error {
 	return nil
 }
 
-func (server *Server) CreateDDNPrekidIsp(ctx *gin.Context) {
+func (server *Server) CreateDDNPrekidPr(ctx *gin.Context) {
 
-	var req createDDNPrekidIspRequest
+	var req createDDNPrekidPrRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
 	// Validacija
-	err := validateDDNPrekidIspInput(req)
+	err := validateDDNPrekidPrInput(req)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -371,18 +389,20 @@ func (server *Server) CreateDDNPrekidIsp(ctx *gin.Context) {
 	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	arg := models.CreateDDNInterruptionOfDeliveryPParams{
-		IdSMrc:          req.IdSMrc,
-		IdTipob:         req.IdTipob,
-		ObId:            req.ObId,
-		Vrepoc:          req.Vrepoc,
-		Vrezav:          req.Vrezav,
-		IdSVrPrek:       req.IdSVrPrek,
-		IdSUzrokPrek:    req.IdSUzrokPrek,
-		Snaga:           req.Snaga,
-		Opis:            req.Opis,
-		KorUneo:         payload.Username,
-		P2TrafId:        req.P2TrafId,
-		IdSPoduzrokPrek: req.IdSPoduzrokPrek,
+		IdSMrc:            req.IdSMrc,
+		IdTipob:           req.IdTipob,
+		ObId:              req.ObId,
+		Vrepoc:            req.Vrepoc,
+		Vrezav:            req.Vrezav,
+		IdSVrPrek:         req.IdSVrPrek,
+		IdSUzrokPrek:      req.IdSUzrokPrek,
+		Snaga:             req.Snaga,
+		Opis:              req.Opis,
+		KorUneo:           payload.Username,
+		P2TrafId:          req.P2TrafId,
+		IdSPoduzrokPrek:   req.IdSPoduzrokPrek,
+		IdTipObjektaNdc:   req.IdTipObjektaNdc,
+		IdTipDogadjajaNdc: req.IdTipDogadjajaNdc,
 	}
 
 	id, err := server.store.InsertDDNInterruptionOfDeliveryP(ctx, arg)
@@ -445,18 +465,20 @@ func (server *Server) CreateDDNPrekidIsp(ctx *gin.Context) {
 }*/
 
 /***************** Start Update Prekid Proizvodnje ***************/
-type updateDDNPrekidIspRequest struct {
-	IdSMrc          int    `json:"id_s_mrc" binding:"required"`
-	IdTipob         int    `json:"id_tipob" binding:"required"`
-	ObId            int    `json:"ob_id" binding:"required"`
-	Vrepoc          string `json:"vrepoc" binding:"required"`
-	Vrezav          string `json:"vrezav"`
-	IdSVrPrek       int    `json:"id_s_vr_prek" binding:"required"`
-	IdSUzrokPrek    int    `json:"id_s_uzrok_prek"`
-	Snaga           string `json:"snaga"`
-	Opis            string `json:"opis"`
-	P2TrafId        int    `json:"p2_traf_id"`
-	IdSPoduzrokPrek int    `json:"id_s_poduzrok_prek"`
+type updateDDNPrekidPrRequest struct {
+	IdSMrc            int    `json:"id_s_mrc" binding:"required"`
+	IdTipob           int    `json:"id_tipob" binding:"required"`
+	ObId              int    `json:"ob_id" binding:"required"`
+	Vrepoc            string `json:"vrepoc" binding:"required"`
+	Vrezav            string `json:"vrezav"`
+	IdSVrPrek         int    `json:"id_s_vr_prek" binding:"required"`
+	IdSUzrokPrek      int    `json:"id_s_uzrok_prek"`
+	Snaga             string `json:"snaga"`
+	Opis              string `json:"opis"`
+	P2TrafId          int    `json:"p2_traf_id"`
+	IdSPoduzrokPrek   int    `json:"id_s_poduzrok_prek"`
+	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
+	IdTipObjektaNdc   string `json:"id_tip_objekta_ndc"`
 }
 
 // func validateUpdateDDNPrekidIspInput(req updateDDNPrekidIspRequest) error {
@@ -488,7 +510,7 @@ type updateDDNPrekidIspRequest struct {
 // 	return nil
 // }
 
-func (server *Server) UpdateDDNPrekidIsp(ctx *gin.Context) {
+func (server *Server) UpdateDDNPrekidPr(ctx *gin.Context) {
 
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -502,14 +524,29 @@ func (server *Server) UpdateDDNPrekidIsp(ctx *gin.Context) {
 		return
 	}
 
-	var req updateDDNPrekidIspRequest
+	var req updateDDNPrekidPrRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
+	createReq := createDDNPrekidPrRequest{
+		IdSMrc:            req.IdSMrc,
+		IdTipob:           req.IdTipob,
+		ObId:              req.ObId,
+		Vrepoc:            req.Vrepoc,
+		Vrezav:            req.Vrezav,
+		IdSVrPrek:         req.IdSVrPrek,
+		IdSUzrokPrek:      req.IdSUzrokPrek,
+		Snaga:             req.Snaga,
+		Opis:              req.Opis,
+		P2TrafId:          req.P2TrafId,
+		IdSPoduzrokPrek:   req.IdSPoduzrokPrek,
+		IdTipObjektaNdc:   req.IdTipObjektaNdc,
+		IdTipDogadjajaNdc: req.IdTipDogadjajaNdc,
+	}
 	// Validacija – ista kao kod create
-	if err := validateDDNPrekidIspInput(createDDNPrekidIspRequest(req)); err != nil {
+	if err := validateDDNPrekidPrInput(createReq); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -594,3 +631,30 @@ func (server *Server) UpdateDDNPrekidIspBI(ctx *gin.Context) {
 }
 
 /***************** End Update Prekid Proizvodnje BI ***************/
+
+/***** Delete Prekid Isporuke **********/
+
+func (server *Server) deleteDDNInterruptionOfDelivery(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("neispravan id")))
+		return
+	}
+
+	version, err := strconv.Atoi(ctx.Param("version"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("neispravna verzija")))
+		return
+	}
+
+	err = server.store.DeleteDDNInterruptionOfDelivery(ctx, id, version)
+	if err != nil {
+		// optimistic locking → pogrešna verzija
+		ctx.JSON(http.StatusConflict, errorResponse(err))
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
+
+/***** Delete Prekid Isporuke **********/

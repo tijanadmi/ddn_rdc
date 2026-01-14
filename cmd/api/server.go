@@ -122,10 +122,12 @@ func (server *Server) setupRouter() {
 	// authRoutes.POST("/tokens/renew_access", server.renewAccessToken)
 	authRoutes.GET("/mrc/:id", server.getMrcById)
 	authRoutes.GET("/mrc", server.listMrcs)
+	authRoutes.GET("/mrciu", server.listMrcsForInsert)
 	authRoutes.GET("/tipprek/:id", server.getSTipPrekById)
 	authRoutes.GET("/tipprek", server.listTipPrek)
 	authRoutes.GET("/vrprek/:id", server.getSVrPrekById)
 	authRoutes.GET("/vrprek", server.listVrPrek)
+	authRoutes.GET("/podvrprek", server.listPodVrPrek)
 	authRoutes.GET("/uzrokprek/:id", server.getSUzrokPrekById)
 	authRoutes.GET("/uzrokprek", server.listUzrokPrek)
 	authRoutes.GET("/poduzrokprek/:id", server.getSPoduzrokPrekById)
@@ -143,8 +145,8 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/interruptionofproduction_all", server.listAllDDNInterruptionOfDeliveryP)
 	authRoutes.GET("/interruptionofproduction_excel", server.listExcelDDNInterruptionOfDeliveryP)
 
-	authRoutes.POST("/interruptionofdelivery", server.CreateDDNPrekidIsp)
-	authRoutes.PUT("/interruptionofdelivery/:id/:version", server.UpdateDDNPrekidIsp)
+	authRoutes.POST("/interruptionofdelivery", server.CreateDDNPrekidPr)
+	authRoutes.PUT("/interruptionofdelivery/:id/:version", server.UpdateDDNPrekidPr)
 	authRoutes.PUT("/interruptionofdelivery/:id/:version/bi", server.UpdateDDNPrekidIspBI)
 
 	authRoutes.GET("/interruptionofusers", server.listDDNInterruptionOfDeliveryKByPage)
@@ -167,7 +169,10 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/radapu_mes", server.listPGDRadapuMes)
 	authRoutes.GET("/dapua", server.listPGDDapuA)
 
-	authRoutes.POST("/createinterruptionofproduction", server.CreateDDNPrekidIsp)
+	authRoutes.POST("/createinterruptionofproduction", server.CreateDDNPrekidPr)
+	authRoutes.PUT("/interruptionofproduction//:id/:version", server.UpdateDDNPrekidPr)
+	authRoutes.PUT("/interruptionofdelivery/bi/:id/:version", server.UpdateDDNPrekidIspBI)
+	authRoutes.DELETE("/interruptionofdelivery/:id/:version", server.deleteDDNInterruptionOfDelivery)
 
 	server.router = router
 }

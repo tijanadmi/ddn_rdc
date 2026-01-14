@@ -40,19 +40,14 @@ func (m *OracleDBRepo) GetMrcById(ctx context.Context, id int) (*models.SMrc, er
 // }
 
 // Get returns all s_mrc and error, if any
-func (m *OracleDBRepo) GetSMrc(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMrc, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-
-	query := `select id, sifra,naziv, status, naziv_cir
+func (m *OracleDBRepo) GetSMrc(ctx context.Context) ([]*models.SMrc, error) {
+	query := `select id, sifra, naziv, status, naziv_cir
 			  from s_mrc
 			  where id not in (5,7)
-			  ORDER BY id desc
-			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
+			  ORDER BY id desc`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
 	}
 	defer rows.Close()
@@ -61,18 +56,47 @@ func (m *OracleDBRepo) GetSMrc(ctx context.Context, arg models.ListLimitOffsetPa
 
 	for rows.Next() {
 		var mrc models.SMrc
-		err := rows.Scan(
+		if err := rows.Scan(
 			&mrc.ID,
 			&mrc.Code,
 			&mrc.Name,
 			&mrc.Status,
 			&mrc.NameCir,
-		)
-
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
+		mrcs = append(mrcs, &mrc)
+	}
 
+	return mrcs, nil
+}
+
+// Get returns  s_mrc for Lov for create/update forms and error, if any
+func (m *OracleDBRepo) GetSMrcForInsert(ctx context.Context) ([]*models.SMrc, error) {
+	query := `select id, sifra, naziv, status, naziv_cir
+			  from s_mrc
+			  where id not in (5,7,9)
+			  ORDER BY id desc`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var mrcs []*models.SMrc
+
+	for rows.Next() {
+		var mrc models.SMrc
+		if err := rows.Scan(
+			&mrc.ID,
+			&mrc.Code,
+			&mrc.Name,
+			&mrc.Status,
+			&mrc.NameCir,
+		); err != nil {
+			return nil, err
+		}
 		mrcs = append(mrcs, &mrc)
 	}
 
@@ -106,18 +130,13 @@ func (m *OracleDBRepo) GetSTipPrekById(ctx context.Context, id int) (*models.STi
 }
 
 // Get returns all s_tip_prek and error, if any
-func (m *OracleDBRepo) GetSTipPrek(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.STipPrek, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-
-	query := `select id, sifra,naziv, status
+func (m *OracleDBRepo) GetSTipPrek(ctx context.Context) ([]*models.STipPrek, error) {
+	query := `select id, sifra, naziv, status
 			  from s_tip_prek
-			  ORDER BY id
-			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
+			  ORDER BY id`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
 	}
 	defer rows.Close()
@@ -126,17 +145,14 @@ func (m *OracleDBRepo) GetSTipPrek(ctx context.Context, arg models.ListLimitOffs
 
 	for rows.Next() {
 		var tip models.STipPrek
-		err := rows.Scan(
+		if err := rows.Scan(
 			&tip.ID,
 			&tip.Code,
 			&tip.Name,
 			&tip.Status,
-		)
-
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
-
 		tips = append(tips, &tip)
 	}
 
@@ -170,18 +186,13 @@ func (m *OracleDBRepo) GetSVrPrekById(ctx context.Context, id int) (*models.SVrP
 }
 
 // Get returns all s_vr_prek and error, if any
-func (m *OracleDBRepo) GetSVrPrek(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SVrPrek, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-
-	query := `select id, sifra,naziv, status
+func (m *OracleDBRepo) GetSVrPrek(ctx context.Context) ([]*models.SVrPrek, error) {
+	query := `select id, sifra, naziv, status
 			  from s_vr_prek
-			  ORDER BY id
-			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
+			  ORDER BY id`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
 	}
 	defer rows.Close()
@@ -190,17 +201,48 @@ func (m *OracleDBRepo) GetSVrPrek(ctx context.Context, arg models.ListLimitOffse
 
 	for rows.Next() {
 		var vr models.SVrPrek
-		err := rows.Scan(
+		if err := rows.Scan(
 			&vr.ID,
 			&vr.Code,
 			&vr.Name,
 			&vr.Status,
-		)
-
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
+		vrps = append(vrps, &vr)
+	}
 
+	return vrps, nil
+}
+
+// Get returns all S_VRSTA_PREKIDA_P_GEN_V and error, if any
+func (m *OracleDBRepo) GetSPodVrPrek(ctx context.Context) ([]*models.SPodVrPrek, error) {
+	query := `select   a.ID_TIP_OBJEKTA,
+   			  a.OPIS,
+   			  a.ID_TIP_DOGADJAJA, a.id_s_vr_prek, B.NAZIV
+			  from S_VRSTA_PREKIDA_P_GEN_V a, s_vr_prek b
+			  where a.id_s_vr_prek=b.id
+			  and pasiva is null`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var vrps []*models.SPodVrPrek
+
+	for rows.Next() {
+		var vr models.SPodVrPrek
+		if err := rows.Scan(
+			&vr.IdTipObjekta,
+			&vr.Opis,
+			&vr.IdTipDogadjaja,
+			&vr.IdSVrPrek,
+			&vr.Naziv,
+		); err != nil {
+			return nil, err
+		}
 		vrps = append(vrps, &vr)
 	}
 
@@ -234,18 +276,13 @@ func (m *OracleDBRepo) GetSUzrokPrekById(ctx context.Context, id int) (*models.S
 }
 
 // Get returns all s_uzrok_prek and error, if any
-func (m *OracleDBRepo) GetSUzrokPrek(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SUzrokPrek, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-
-	query := `select id, sifra,naziv, status
+func (m *OracleDBRepo) GetSUzrokPrek(ctx context.Context) ([]*models.SUzrokPrek, error) {
+	query := `select id, sifra, naziv, status
 			  from s_uzrok_prek
-			  ORDER BY id
-			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
+			  ORDER BY id`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
 	}
 	defer rows.Close()
@@ -254,17 +291,14 @@ func (m *OracleDBRepo) GetSUzrokPrek(ctx context.Context, arg models.ListLimitOf
 
 	for rows.Next() {
 		var uzrok models.SUzrokPrek
-		err := rows.Scan(
+		if err := rows.Scan(
 			&uzrok.ID,
 			&uzrok.Code,
 			&uzrok.Name,
 			&uzrok.Status,
-		)
-
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
-
 		uzroks = append(uzroks, &uzrok)
 	}
 
@@ -298,18 +332,13 @@ func (m *OracleDBRepo) GetSPoduzrokPrekById(ctx context.Context, id int) (*model
 }
 
 // Get returns all s_poduzrok_prek and error, if any
-func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SPoduzrokPrek, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-
-	query := `select id, sifra,naziv, status
+func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context) ([]*models.SPoduzrokPrek, error) {
+	query := `select id, sifra, naziv, status
 			  from s_poduzrok_prek
-			  ORDER BY id
-			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
+			  ORDER BY id`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
 	}
 	defer rows.Close()
@@ -318,17 +347,14 @@ func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context, arg models.ListLimi
 
 	for rows.Next() {
 		var poduzrok models.SPoduzrokPrek
-		err := rows.Scan(
+		if err := rows.Scan(
 			&poduzrok.ID,
 			&poduzrok.Code,
 			&poduzrok.Name,
 			&poduzrok.Status,
-		)
-
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
-
 		poduzroks = append(poduzroks, &poduzrok)
 	}
 
@@ -362,18 +388,13 @@ func (m *OracleDBRepo) GetSMernaMestaById(ctx context.Context, id int) (*models.
 }
 
 // Get returns all s_poduzrok_prek and error, if any
-func (m *OracleDBRepo) GetSMernaMesta(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMernaMesta, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-
-	query := `select id, sifra,naziv, status
+func (m *OracleDBRepo) GetSMernaMesta(ctx context.Context) ([]*models.SMernaMesta, error) {
+	query := `select id, sifra, naziv, status
 			  from s_merna_mesta
-			  ORDER BY id
-			  OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`
+			  ORDER BY id`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
 	}
 	defer rows.Close()
@@ -382,17 +403,14 @@ func (m *OracleDBRepo) GetSMernaMesta(ctx context.Context, arg models.ListLimitO
 
 	for rows.Next() {
 		var mm models.SMernaMesta
-		err := rows.Scan(
+		if err := rows.Scan(
 			&mm.ID,
 			&mm.Code,
 			&mm.Name,
 			&mm.Status,
-		)
-
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
-
 		mms = append(mms, &mm)
 	}
 
@@ -520,7 +538,7 @@ func (m *OracleDBRepo) GetObjTSRP(ctx context.Context, arg models.ListObjectLimi
 }
 
 // Get returns all s_mrc and error, if any
-func (m *OracleDBRepo) GetObjHETEVE(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error) {
+func (m *OracleDBRepo) GetObjHETEVE(ctx context.Context, arg models.ListObjectParams) ([]*models.ObjLOV, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -534,10 +552,9 @@ func (m *OracleDBRepo) GetObjHETEVE(ctx context.Context, arg models.ListObjectLi
 				where   ( :1=8 OR (id_s_mrc1 = :2  or NVL(id_s_mrc2,0) = :3 )  )
 				and upper(status) = 'A'
 				AND  SUBSTR(OPIS,1,2) IN ('HE','TE','VE','RH')
-			  ORDER BY OPIS
-			  OFFSET :4 ROWS FETCH NEXT :5 ROWS ONLY`
+			  ORDER BY OPIS`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc, arg.Mrc, arg.Mrc, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc, arg.Mrc, arg.Mrc)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err
@@ -582,10 +599,9 @@ func (m *OracleDBRepo) GetPoljaGE(ctx context.Context, arg models.ListPoljaLimit
 				AND FUP_ID=S_FUP.ID
 				AND S_FUP.SIFRA='20'
 				AND upper(V_S_POLJE_SVA.STATUS) = 'A'
-			  	ORDER BY polje
-			  	OFFSET :2 ROWS FETCH NEXT :3 ROWS ONLY`
+			  	ORDER BY polje`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.ObjId, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.ObjId)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err

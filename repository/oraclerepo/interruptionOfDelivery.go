@@ -9,15 +9,26 @@ import (
 	"github.com/tijanadmi/ddn_rdc/models"
 )
 
-func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(ctx context.Context, Id string) error {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
+func (m *OracleDBRepo) DeleteDDNInterruptionOfDelivery(ctx context.Context, id int, version int) error {
 
-	stmt := `delete from ddn_prekid_isp where id = :1`
+	stmt := `
+		DELETE FROM ddn_prekid_isp
+		WHERE id = :1
+		  AND version = :2
+	`
 
-	_, err := m.DB.ExecContext(ctx, stmt, Id)
+	res, err := m.DB.ExecContext(ctx, stmt, id, version)
 	if err != nil {
 		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return fmt.Errorf("zapis ne postoji ili je verzija zastarela")
 	}
 
 	return nil
@@ -34,8 +45,8 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context, id 
     COALESCE(to_char(PI.OB_ID), ''),
     COALESCE(to_char(O.NAZOB), ''),
     COALESCE(to_char(O.OPIS), ''),
-   to_char(PI.VREPOC,'dd.mm.yyyy HH24:MI:SS'),
-   to_char(PI.VREZAV,'dd.mm.yyyy HH24:MI:SS'),
+   to_char(PI.VREPOC,'dd.mm.yyyy HH24:MI'),
+   to_char(PI.VREZAV,'dd.mm.yyyy HH24:MI'),
    case
    when PI.VREZAV is not null
    then
@@ -141,8 +152,8 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryByPage(ctx context.Context, a
     COALESCE(to_char(PI.OB_ID), ''),
     COALESCE(to_char(O.NAZOB), ''),
     COALESCE(to_char(O.OPIS), ''),
-   to_char(PI.VREPOC,'dd.mm.yyyy HH24:MI:SS'),
-   to_char(PI.VREZAV,'dd.mm.yyyy HH24:MI:SS'),
+   to_char(PI.VREPOC,'dd.mm.yyyy HH24:MI'),
+   to_char(PI.VREZAV,'dd.mm.yyyy HH24:MI'),
    case
    when PI.VREZAV is not null
    then
@@ -271,8 +282,8 @@ func (m *OracleDBRepo) GetAllDDNInterruptionOfDelivery(ctx context.Context, arg 
     COALESCE(to_char(PI.OB_ID), ''),
     COALESCE(to_char(O.NAZOB), ''),
     COALESCE(to_char(O.OPIS), ''),
-   to_char(PI.VREPOC,'dd.mm.yyyy HH24:MI:SS'),
-   to_char(PI.VREZAV,'dd.mm.yyyy HH24:MI:SS'),
+   to_char(PI.VREPOC,'dd.mm.yyyy HH24:MI'),
+   to_char(PI.VREZAV,'dd.mm.yyyy HH24:MI'),
    case
    when PI.VREZAV is not null
    then
@@ -636,6 +647,8 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 		IND,
 		ID_P2_TRAF,
 		ID_S_PODUZROK_PREK,
+		ID_TIP_OBJEKTA_NDC,
+		ID_TIP_DOGADJAJA_NDC,
 		VERSION
 	) VALUES (
 		:1, :2, :3, :4,
@@ -643,8 +656,8 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 		to_date(:6, 'dd.mm.yyyy HH24:MI:SS'),
 		:7, :8, :9, :10, :11,
 		SYSDATE,
-		:12, :13, :14, 0
-	) RETURNING id INTO :15`
+		:12, :13, :14,:15,:16, 0
+	) RETURNING id INTO :17`
 
 	PIdSTipd := 12
 	PInd := "P"
@@ -666,6 +679,8 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 		PInd,
 		ddnintd.P2TrafId,
 		ddnintd.IdSPoduzrokPrek,
+		ddnintd.IdTipObjektaNdc,
+		ddnintd.IdTipDogadjajaNdc,
 		sql.Out{Dest: &id},
 	)
 
@@ -680,22 +695,22 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 
 func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) error {
 	query := `UPDATE DDN_PREKID_ISP SET
-		ID_S_MRC = $1,
-		ID_S_TIPD = $2,
-		ID_TIPOB = $3,
-		OB_ID = $4,
-		VREPOC = $5,
-		VREZAV = $6,
-		ID_S_VR_PREK = $7,
-		ID_S_UZROK_PREK = $8,
-		SNAGA = $9,
-		OPIS = $10,
-		DDN_KOR = $11,
-		IND = $12,
-		ID_P2_TRAF = $13,
-		ID_S_PODUZROK_PREK = $14,
+		ID_S_MRC = :1,
+		ID_S_TIPD = :2,
+		ID_TIPOB = :3,
+		OB_ID = :4,
+		VREPOC = to_date(:5, 'dd.mm.yyyy HH24:MI:SS'),
+		VREZAV = to_date(:6, 'dd.mm.yyyy HH24:MI:SS'),
+		ID_S_VR_PREK = :7,
+		ID_S_UZROK_PREK = :8,
+		SNAGA = :9,
+		OPIS = :10,
+		DDN_KOR = :11,
+		IND = :12,
+		ID_P2_TRAF = :13,
+		ID_S_PODUZROK_PREK = :14,
 		VERSION = VERSION + 1
-	WHERE id = $15 AND VERSION = $16`
+	WHERE id = :15 AND VERSION = :16`
 
 	PIdSTipd := 12
 	PInd := "P"
@@ -739,9 +754,9 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryBI(ctx context.Context, id
 
 	query := `UPDATE DDN_PREKID_ISP
 	SET
-		BI = $1,
+		BI = :1,
 		VERSION = VERSION + 1
-	WHERE id = $2 AND VERSION = $3`
+	WHERE id = :2 AND VERSION = :3`
 
 	// mapiranje ulaznog podatka na DB vrednost
 	var biValue interface{}
