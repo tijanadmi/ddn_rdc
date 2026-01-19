@@ -100,6 +100,22 @@ type CreateDDNInterruptionOfDeliveryPParams struct {
 	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
 }
 
+type CreateDDNInterruptionOfDeliveryKParams struct {
+	IdSMrc          int    `json:"id_s_mrc"`
+	IdTipob         int    `json:"id_tipob"`
+	ObId            int    `json:"ob_id"`
+	Vrepoc          string `json:"vrepoc"`
+	Vrezav          string `json:"vrezav"`
+	IdSVrPrek       int    `json:"id_s_vr_prek"`
+	IdSUzrokPrek    int    `json:"id_s_uzrok_prek"`
+	Snaga           string `json:"snaga"`
+	Opis            string `json:"opis"`
+	KorUneo         string `json:"kor_uneo"`
+	IdSPoduzrokPrek int    `json:"id_s_poduzrok_prek"`
+	IdSMernaMesta   int    `json:"id_s_merna_mesta"`
+	BrojMesta       string `json:"broj_mesta"`
+}
+
 type DDNInterruptionOfDeliveryPayload struct {
 	IdSMrc       string `json:"id_s_mrc"`
 	IdSTipd      string `json:"id_s_tipd"`

@@ -174,6 +174,9 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/interruptionofdelivery/bi/:id/:version", server.UpdateDDNPrekidIspBI)
 	authRoutes.DELETE("/interruptionofdelivery/:id/:version", server.deleteDDNInterruptionOfDelivery)
 
+	authRoutes.POST("/createinterruptionofusers", server.CreateDDNPrekidK)
+	authRoutes.PUT("/interruptionofusers/:id/:version", server.UpdateDDNPrekidK)
+
 	server.router = router
 }
 

@@ -421,48 +421,100 @@ func (server *Server) CreateDDNPrekidPr(ctx *gin.Context) {
 }
 
 /***************** End Create Prekid Proizvodnje ***************/
+/***************** Start Create Prekid Korisnika ***************/
 
-/*func (server *Server) updateDDNPrekidIsp(ctx *gin.Context) {
-	var req updateDDNPrekidIspRequest
+type createDDNPrekidKRequest struct {
+	IdSMrc          int    `json:"id_s_mrc" binding:"required"`
+	IdTipob         int    `json:"id_tipob" binding:"required"`
+	ObId            int    `json:"ob_id" binding:"required"`
+	Vrepoc          string `json:"vrepoc" binding:"required"`
+	Vrezav          string `json:"vrezav"`
+	IdSVrPrek       int    `json:"id_s_vr_prek" binding:"required"`
+	IdSUzrokPrek    int    `json:"id_s_uzrok_prek"`
+	Snaga           string `json:"snaga"`
+	Opis            string `json:"opis"`
+	IdSPoduzrokPrek int    `json:"id_s_poduzrok_prek"`
+	IdSMernaMesta   int    `json:"id_s_merna_mesta"`
+	BrojMesta       string `json:"broj_mesta"`
+}
+
+func validateDDNPrekidKInput(req createDDNPrekidKRequest) error {
+	vrepoc, err := parseDateTime(req.Vrepoc)
+	if err != nil {
+		return fmt.Errorf("неисправан формат за време почетка (dd.mm.yyyy hh:mi)")
+	}
+
+	var vrezav time.Time
+	if req.Vrezav != "" {
+		vrezav, err = parseDateTime(req.Vrezav)
+		if err != nil {
+			return fmt.Errorf("неисправан формат за време завршетка (dd.mm.yyyy hh:mi)")
+		}
+		if vrezav.Before(vrepoc) {
+			return fmt.Errorf("време завршетка не може бити пре времена почетка")
+		}
+	}
+
+	if req.IdSVrPrek != 1 && req.IdSUzrokPrek == 0 {
+		return fmt.Errorf("узрок прекида је обавезан ако врста прекида није 1")
+	}
+
+	if req.IdSUzrokPrek == 1 && req.IdSPoduzrokPrek == 0 {
+		return fmt.Errorf("подузрок прекида је обавезан када је узрок прекида 1")
+	}
+
+	return nil
+}
+
+func (server *Server) CreateDDNPrekidK(ctx *gin.Context) {
+
+	var req createDDNPrekidKRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	vrepoc, vrezav, err := validateDDNPrekidIspInput(req.Data)
+	// Validacija
+	err := validateDDNPrekidKInput(req)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
 	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	arg := db.CreateDDNInterruptionOfDeliveryPParams{
-		IdSMrc:          req.Data.IdSMrc,
-		IdTipob:         req.Data.IdTipob,
-		ObId:            req.Data.ObId,
-		Vrepoc:          vrepoc,
-		Vrezav:          vrezav,
-		IdSVrPrek:       req.Data.IdSVrPrek,
-		IdSUzrokPrek:    req.Data.IdSUzrokPrek,
-		Snaga:           req.Data.Snaga,
-		Opis:            req.Data.Opis,
+
+	arg := models.CreateDDNInterruptionOfDeliveryKParams{
+		IdSMrc:          req.IdSMrc,
+		IdTipob:         req.IdTipob,
+		ObId:            req.ObId,
+		Vrepoc:          req.Vrepoc,
+		Vrezav:          req.Vrezav,
+		IdSVrPrek:       req.IdSVrPrek,
+		IdSUzrokPrek:    req.IdSUzrokPrek,
+		Snaga:           req.Snaga,
+		Opis:            req.Opis,
 		KorUneo:         payload.Username,
-		P2TrafId:        req.Data.P2TrafId,
-		IdSPoduzrokPrek: req.Data.IdSPoduzrokPrek,
+		IdSPoduzrokPrek: req.IdSPoduzrokPrek,
+		IdSMernaMesta:   req.IdSMernaMesta,
+		BrojMesta:       req.BrojMesta,
 	}
 
-	err = server.store.UpdateDDNInterruptionOfDeliveryP(ctx, req.Id, req.Version, arg)
+	id, err := server.store.InsertDDNInterruptionOfDeliveryK(ctx, arg)
 	if err != nil {
-		if err.Error() == "optimistic lock failed: object may have been updated by another transaction" {
-			ctx.JSON(http.StatusConflict, errorResponse(err))
-			return
-		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"success": true})
-}*/
+	pr, err := server.store.GetDDNInterruptionOfDeliveryById(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, pr)
+}
+
+/***************** End Create Prekid Korisnika ***************/
 
 /***************** Start Update Prekid Proizvodnje ***************/
 type updateDDNPrekidPrRequest struct {
@@ -480,35 +532,6 @@ type updateDDNPrekidPrRequest struct {
 	IdTipDogadjajaNdc string `json:"id_tip_dogadjaja_ndc"`
 	IdTipObjektaNdc   string `json:"id_tip_objekta_ndc"`
 }
-
-// func validateUpdateDDNPrekidIspInput(req updateDDNPrekidIspRequest) error {
-
-// 	vrepoc, err := parseDateTime(req.Vrepoc)
-// 	if err != nil {
-// 		return fmt.Errorf("неисправан формат за време почетка (dd.mm.yyyy hh:mi)")
-// 	}
-
-// 	var vrezav time.Time
-// 	if req.Vrezav != "" {
-// 		vrezav, err = parseDateTime(req.Vrezav)
-// 		if err != nil {
-// 			return fmt.Errorf("неисправан формат за време завршетка (dd.mm.yyyy hh:mi)")
-// 		}
-// 		if vrezav.Before(vrepoc) {
-// 			return fmt.Errorf("време завршетка не може бити пре времена почетка")
-// 		}
-// 	}
-
-// 	if req.IdSVrPrek != 1 && req.IdSUzrokPrek == 0 {
-// 		return fmt.Errorf("узрок прекида је обавезан ако врста прекида није 1")
-// 	}
-
-// 	if req.IdSUzrokPrek == 1 && req.IdSPoduzrokPrek == 0 {
-// 		return fmt.Errorf("подузрок прекида је обавезан када је узрок прекида 1")
-// 	}
-
-// 	return nil
-// }
 
 func (server *Server) UpdateDDNPrekidPr(ctx *gin.Context) {
 
@@ -554,18 +577,20 @@ func (server *Server) UpdateDDNPrekidPr(ctx *gin.Context) {
 	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	arg := models.CreateDDNInterruptionOfDeliveryPParams{
-		IdSMrc:          req.IdSMrc,
-		IdTipob:         req.IdTipob,
-		ObId:            req.ObId,
-		Vrepoc:          req.Vrepoc,
-		Vrezav:          req.Vrezav,
-		IdSVrPrek:       req.IdSVrPrek,
-		IdSUzrokPrek:    req.IdSUzrokPrek,
-		Snaga:           req.Snaga,
-		Opis:            req.Opis,
-		KorUneo:         payload.Username,
-		P2TrafId:        req.P2TrafId,
-		IdSPoduzrokPrek: req.IdSPoduzrokPrek,
+		IdSMrc:            req.IdSMrc,
+		IdTipob:           req.IdTipob,
+		ObId:              req.ObId,
+		Vrepoc:            req.Vrepoc,
+		Vrezav:            req.Vrezav,
+		IdSVrPrek:         req.IdSVrPrek,
+		IdSUzrokPrek:      req.IdSUzrokPrek,
+		Snaga:             req.Snaga,
+		Opis:              req.Opis,
+		KorUneo:           payload.Username,
+		P2TrafId:          req.P2TrafId,
+		IdSPoduzrokPrek:   req.IdSPoduzrokPrek,
+		IdTipObjektaNdc:   req.IdTipObjektaNdc,
+		IdTipDogadjajaNdc: req.IdTipDogadjajaNdc,
 	}
 
 	err = server.store.UpdateDDNInterruptionOfDeliveryP(ctx, id, version, arg)
@@ -584,6 +609,98 @@ func (server *Server) UpdateDDNPrekidPr(ctx *gin.Context) {
 }
 
 /***************** End Update Prekid Proizvodnje ***************/
+
+/***************** Start Update Prekid Korisnika ***************/
+
+type updateDDNPrekidKRequest struct {
+	IdSMrc          int    `json:"id_s_mrc" binding:"required"`
+	IdTipob         int    `json:"id_tipob" binding:"required"`
+	ObId            int    `json:"ob_id" binding:"required"`
+	Vrepoc          string `json:"vrepoc" binding:"required"`
+	Vrezav          string `json:"vrezav"`
+	IdSVrPrek       int    `json:"id_s_vr_prek" binding:"required"`
+	IdSUzrokPrek    int    `json:"id_s_uzrok_prek"`
+	Snaga           string `json:"snaga"`
+	Opis            string `json:"opis"`
+	IdSPoduzrokPrek int    `json:"id_s_poduzrok_prek"`
+	IdSMernaMesta   int    `json:"id_s_merna_mesta"`
+	BrojMesta       string `json:"broj_mesta"`
+}
+
+func (server *Server) UpdateDDNPrekidK(ctx *gin.Context) {
+
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("neispravan id")))
+		return
+	}
+
+	version, err := strconv.Atoi(ctx.Param("version"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("neispravna verzija")))
+		return
+	}
+
+	var req updateDDNPrekidKRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	createReq := createDDNPrekidKRequest{
+		IdSMrc:          req.IdSMrc,
+		IdTipob:         req.IdTipob,
+		ObId:            req.ObId,
+		Vrepoc:          req.Vrepoc,
+		Vrezav:          req.Vrezav,
+		IdSVrPrek:       req.IdSVrPrek,
+		IdSUzrokPrek:    req.IdSUzrokPrek,
+		Snaga:           req.Snaga,
+		Opis:            req.Opis,
+		IdSPoduzrokPrek: req.IdSPoduzrokPrek,
+		IdSMernaMesta:   req.IdSMernaMesta,
+		BrojMesta:       req.BrojMesta,
+	}
+	// Validacija – ista kao kod create
+	if err := validateDDNPrekidKInput(createReq); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	arg := models.CreateDDNInterruptionOfDeliveryKParams{
+		IdSMrc:          req.IdSMrc,
+		IdTipob:         req.IdTipob,
+		ObId:            req.ObId,
+		Vrepoc:          req.Vrepoc,
+		Vrezav:          req.Vrezav,
+		IdSVrPrek:       req.IdSVrPrek,
+		IdSUzrokPrek:    req.IdSUzrokPrek,
+		Snaga:           req.Snaga,
+		Opis:            req.Opis,
+		KorUneo:         payload.Username,
+		IdSPoduzrokPrek: req.IdSPoduzrokPrek,
+		IdSMernaMesta:   req.IdSMernaMesta,
+		BrojMesta:       req.BrojMesta,
+	}
+
+	err = server.store.UpdateDDNInterruptionOfDeliveryK(ctx, id, version, arg)
+	if err != nil {
+		ctx.JSON(http.StatusConflict, errorResponse(err))
+		return
+	}
+
+	pr, err := server.store.GetDDNInterruptionOfDeliveryById(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, pr)
+}
+
+/***************** End Update Prekid Korisnika ***************/
 
 /***************** Start Update Prekid Proizvodnje BI ***************/
 type updateDDNPrekidIspBIRequest struct {

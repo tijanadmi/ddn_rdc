@@ -490,7 +490,7 @@ func (m *OracleDBRepo) GetPoljeGEById(ctx context.Context, id int) (*models.Polj
 // }
 
 // Get returns all s_mrc and error, if any
-func (m *OracleDBRepo) GetObjTSRP(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error) {
+func (m *OracleDBRepo) GetObjTSRP(ctx context.Context, arg models.ListObjectParams) ([]*models.ObjLOV, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
@@ -504,10 +504,9 @@ func (m *OracleDBRepo) GetObjTSRP(ctx context.Context, arg models.ListObjectLimi
 				where   ( :1=8 OR (id_s_mrc1 = :2  or NVL(id_s_mrc2,0) = :3 )  )
 				and upper(status) = 'A'
 				AND ted.TD_NAZIVI.TD_DAJ_SIF('S_TIPOB','SIFRA','ID',TIPOB,'Q')  IN ('TS','TT','RP','TP')
-			  ORDER BY OPIS
-			  OFFSET :4 ROWS FETCH NEXT :5 ROWS ONLY`
+			  ORDER BY OPIS`
 
-	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc, arg.Mrc, arg.Mrc, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.Mrc, arg.Mrc, arg.Mrc)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, err

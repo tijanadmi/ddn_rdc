@@ -25,6 +25,9 @@ type DatabaseRepo interface {
 	UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) error
 	UpdateDDNInterruptionOfDeliveryBI(ctx context.Context, id int, version int, bi int) error
 
+	InsertDDNInterruptionOfDeliveryK(ctx context.Context, ddnintd models.CreateDDNInterruptionOfDeliveryKParams) (int, error)
+	UpdateDDNInterruptionOfDeliveryK(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryKParams) error
+
 	GetMrcById(ctx context.Context, id int) (*models.SMrc, error)
 	// GetSMrc(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMrc, error)
 	GetSMrc(ctx context.Context) ([]*models.SMrc, error)
@@ -46,7 +49,7 @@ type DatabaseRepo interface {
 	// GetSMernaMesta(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMernaMesta, error)
 	GetSMernaMesta(ctx context.Context) ([]*models.SMernaMesta, error)
 	GetObjById(ctx context.Context, id int) (*models.ObjLOV, error)
-	GetObjTSRP(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error)
+	GetObjTSRP(ctx context.Context, arg models.ListObjectParams) ([]*models.ObjLOV, error)
 	// GetObjHETEVE(ctx context.Context, arg models.ListObjectLimitOffsetParams) ([]*models.ObjLOV, error)
 	GetObjHETEVE(ctx context.Context, arg models.ListObjectParams) ([]*models.ObjLOV, error)
 	GetPoljaGE(ctx context.Context, arg models.ListPoljaLimitOffsetParams) ([]*models.PoljaLOV, error)

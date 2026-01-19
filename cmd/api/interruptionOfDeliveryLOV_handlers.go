@@ -326,7 +326,7 @@ func (server *Server) listObjTSRP(ctx *gin.Context) {
 		return
 	}
 
-	arg := models.ListObjectLimitOffsetParams{
+	arg := models.ListObjectParams{
 		Mrc: req.Mrc,
 		/*Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,*/

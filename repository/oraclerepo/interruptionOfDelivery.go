@@ -709,8 +709,10 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id 
 		IND = :12,
 		ID_P2_TRAF = :13,
 		ID_S_PODUZROK_PREK = :14,
+		ID_TIP_OBJEKTA_NDC = :15,
+		ID_TIP_DOGADJAJA_NDC = :16,
 		VERSION = VERSION + 1
-	WHERE id = :15 AND VERSION = :16`
+	WHERE id = :17 AND VERSION = :18`
 
 	PIdSTipd := 12
 	PInd := "P"
@@ -730,6 +732,8 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id 
 		PInd,
 		ddnintd.P2TrafId,
 		ddnintd.IdSPoduzrokPrek,
+		ddnintd.IdTipObjektaNdc,
+		ddnintd.IdTipDogadjajaNdc,
 		id,
 		version,
 	)
@@ -773,6 +777,130 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryBI(ctx context.Context, id
 		id,
 		version,
 	)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("optimistic lock failed: object may have been updated by another transaction")
+	}
+
+	return nil
+}
+
+func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryK(ctx context.Context, ddnintd models.CreateDDNInterruptionOfDeliveryKParams) (int, error) {
+
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// defer cancel()
+
+	query := `INSERT INTO DDN_PREKID_ISP (
+		ID_S_MRC,
+		ID_S_TIPD,
+		ID_TIPOB,
+		OB_ID,
+		VREPOC,
+		VREZAV,
+		ID_S_VR_PREK,
+		ID_S_UZROK_PREK,
+		SNAGA,
+		OPIS,
+		DDN_KOR,
+		DATPRI,
+		IND,
+		ID_S_PODUZROK_PREK,
+		ID_S_MERNA_MESTA,
+		BROJ_MMESTA,
+		VERSION
+	) VALUES (
+		:1, :2, :3, :4,
+		to_date(:5, 'dd.mm.yyyy HH24:MI:SS'),
+		to_date(:6, 'dd.mm.yyyy HH24:MI:SS'),
+		:7, :8, :9, :10, :11,
+		SYSDATE,
+		:12, :13, :14,:15, 0
+	) RETURNING id INTO :16`
+
+	PIdSTipd := 11
+	PInd := "K"
+
+	var id int
+
+	_, err := m.DB.ExecContext(ctx, query,
+		ddnintd.IdSMrc,
+		PIdSTipd,
+		ddnintd.IdTipob,
+		ddnintd.ObId,
+		ddnintd.Vrepoc,
+		ddnintd.Vrezav,
+		ddnintd.IdSVrPrek,
+		ddnintd.IdSUzrokPrek,
+		ddnintd.Snaga,
+		ddnintd.Opis,
+		ddnintd.KorUneo,
+		PInd,
+		ddnintd.IdSPoduzrokPrek,
+		ddnintd.IdSMernaMesta,
+		ddnintd.BrojMesta,
+		sql.Out{Dest: &id},
+	)
+
+	//fmt.Println(query)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return id, err
+}
+
+func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryK(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryKParams) error {
+	query := `UPDATE DDN_PREKID_ISP SET
+		ID_S_MRC = :1,
+		ID_S_TIPD = :2,
+		ID_TIPOB = :3,
+		OB_ID = :4,
+		VREPOC = to_date(:5, 'dd.mm.yyyy HH24:MI:SS'),
+		VREZAV = to_date(:6, 'dd.mm.yyyy HH24:MI:SS'),
+		ID_S_VR_PREK = :7,
+		ID_S_UZROK_PREK = :8,
+		SNAGA = :9,
+		OPIS = :10,
+		DDN_KOR = :11,
+		IND = :12,
+		ID_S_PODUZROK_PREK = :14,
+		ID_S_MERNA_MESTA = :13,
+		BROJ_MMESTA = :15,
+		VERSION = VERSION + 1
+	WHERE id = :16 AND VERSION = :17`
+
+	PIdSTipd := 11
+	PInd := "K"
+
+	result, err := m.DB.ExecContext(ctx, query,
+		ddnintd.IdSMrc,
+		PIdSTipd,
+		ddnintd.IdTipob,
+		ddnintd.ObId,
+		ddnintd.Vrepoc,
+		ddnintd.Vrezav,
+		ddnintd.IdSVrPrek,
+		ddnintd.IdSUzrokPrek,
+		ddnintd.Snaga,
+		ddnintd.Opis,
+		ddnintd.KorUneo,
+		PInd,
+		ddnintd.IdSPoduzrokPrek,
+		ddnintd.IdSMernaMesta,
+		ddnintd.BrojMesta,
+		id,
+		version,
+	)
+
 	if err != nil {
 		return err
 	}
