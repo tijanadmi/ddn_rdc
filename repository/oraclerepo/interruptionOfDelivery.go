@@ -762,6 +762,8 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryBI(ctx context.Context, id
 		VERSION = VERSION + 1
 	WHERE id = :2 AND VERSION = :3`
 
+	
+
 	// mapiranje ulaznog podatka na DB vrednost
 	var biValue interface{}
 	if bi == 1 {

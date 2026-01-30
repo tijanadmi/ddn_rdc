@@ -72,6 +72,8 @@ func (server *Server) setupRouter() {
 	router.POST("/users/login", server.loginUser)
 	router.POST("/users/logout", server.logoutUser)
 	router.POST("/tokens/renew_access", server.renewAccessToken)
+	router.GET("/reports/pi-mm/pdf", server.getPiMMReportPDF)
+
 	// router.POST("/users/get_user_by_token", server.GetUserByToken)
 	// router.POST("/tokens/renew_access", server.renewAccessToken)
 	// router.GET("/mrc/:id", server.getMrcById)
@@ -176,6 +178,8 @@ func (server *Server) setupRouter() {
 
 	authRoutes.POST("/createinterruptionofusers", server.CreateDDNPrekidK)
 	authRoutes.PUT("/interruptionofusers/:id/:version", server.UpdateDDNPrekidK)
+
+	// authRoutes.GET("/reports/pi-mm/pdf", server.getPiMMReportPDF)
 
 	server.router = router
 }
