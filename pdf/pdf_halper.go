@@ -1,0 +1,40 @@
+package pdf
+
+import (
+	"strings"
+
+	"github.com/jung-kurt/gofpdf"
+)
+
+func fitText(pdf *gofpdf.Fpdf, txt string, maxWidth float64) string {
+	if txt == "" {
+		return ""
+	}
+
+	if pdf.GetStringWidth(txt) <= maxWidth {
+		return txt
+	}
+
+	runes := []rune(txt)
+	for len(runes) > 0 {
+		runes = runes[:len(runes)-1]
+		candidate := string(runes) + "…"
+		if pdf.GetStringWidth(candidate) <= maxWidth {
+			return candidate
+		}
+	}
+	return ""
+}
+
+func formatTrajanje(traj string, tipd string) string {
+	if tipd != "1" {
+		return traj
+	}
+
+	// očekujemo dd:hh:mm
+	parts := strings.Split(traj, ":")
+	if len(parts) == 3 {
+		return parts[1] + ":" + parts[2]
+	}
+	return traj
+}

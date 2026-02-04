@@ -17,13 +17,12 @@ import (
 	"github.com/tijanadmi/ddn_rdc/util"
 )
 
-func main(){
+func main() {
 	config, err := util.LoadConfig(".")
-	if err != nil{
+	if err != nil {
 		log.Fatal().Err(err).Msg("cannot load config")
 	}
 
-	
 	if config.Environment == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
@@ -56,7 +55,8 @@ func openDB(dbDriver string, dns string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	err = db.PingContext(ctx)

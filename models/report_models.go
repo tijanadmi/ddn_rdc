@@ -9,6 +9,8 @@ type ListPiMMByParam struct {
 
 type Report struct {
 	TipdGroups []TipdGroup
+	StartDate  string
+	EndDate    string
 }
 
 type TipdGroup struct {
@@ -39,4 +41,5 @@ type DetailRow struct {
 	VrstaDogadjaja string
 	GrupaUzroka    string
 	Uzrok          string
+	VremUsl        string
 }

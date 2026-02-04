@@ -37,7 +37,8 @@ SELECT
     COALESCE(to_char(PI_DD.SNAGA), '') SNAGA,
     ted.td_nazivi.td_daj_sif('S_VRPD','NAZIV','ID',PI_DD.ID_S_VRPD,'Q') AS VRSTA_DOG,
     ted.TD_NAZIVI.TD_DAJ_SIF('S_GRUZR','NAZIV','ID',PI_DD.ID1_S_GRUZR,'Q') AS GRUZR,
-    ted.TD_NAZIVI.TD_DAJ_SIF('S_UZROK','NAZIV','ID',PI_DD.ID1_S_UZROK,'Q') AS UZROK
+    ted.TD_NAZIVI.TD_DAJ_SIF('S_UZROK','NAZIV','ID',PI_DD.ID1_S_UZROK,'Q') AS UZROK,
+	ted.td_nazivi.tab_col_val('s_vrem_usl','naziv',pi_dd.id_s_vrem_usl,'Q') vrem_usl
 FROM PI_DDD
 JOIN PI_DD
   ON PI_DDD.DATIZV = PI_DD.DATIZV
@@ -122,6 +123,7 @@ ORDER BY TIPD, PI_DDD.DATIZV, PI_DDD.ID1, PI_DD.VREPOC
 			&row.VrstaDogadjaja,
 			&row.GrupaUzroka,
 			&row.Uzrok,
+			&row.VremUsl,
 		)
 		if err != nil {
 			return nil, err
@@ -158,6 +160,7 @@ ORDER BY TIPD, PI_DDD.DATIZV, PI_DDD.ID1, PI_DD.VREPOC
 
 		currentEvent.Rows = append(currentEvent.Rows, row)
 	}
-
+	report.StartDate = arg.StartDate
+	report.EndDate = arg.EndDate
 	return &report, nil
 }
