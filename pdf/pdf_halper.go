@@ -38,3 +38,14 @@ func formatTrajanje(traj string, tipd string) string {
 	}
 	return traj
 }
+
+func resetX(pdf *gofpdf.Fpdf) {
+	left, _, _, _ := pdf.GetMargins()
+	pdf.SetX(left)
+}
+
+func withLayout(pdf *gofpdf.Fpdf, fn func()) {
+	x, y := pdf.GetXY()
+	fn()
+	pdf.SetXY(x, y)
+}

@@ -15,31 +15,33 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 	var currentTipd *models.TipdGroup
 	tableHeaderPrintedOnPage := false
 
+	currentPage := 0
+
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetMargins(10, 40, 10) // ⬅ veća gornja margina zbog headera
 	pdf.SetAutoPageBreak(true, 15)
 
 	// === PAGE BREAK HANDLER ===
-	pdf.SetAcceptPageBreakFunc(func() bool {
-		pdf.AddPage()
+	// pdf.SetAcceptPageBreakFunc(func() bool {
+	// 	pdf.AddPage()
 
-		tableHeaderPrintedOnPage = false
+	// 	tableHeaderPrintedOnPage = false
 
-		if currentTipd != nil {
-			pdf.SetFont("DejaVu", "B", 11)
-			pdf.Cell(0, 8, fmt.Sprintf(
-				"Тачка: %s : %s",
-				currentTipd.Tipd,
-				currentTipd.Naziv,
-			))
-			pdf.Ln(10)
+	// 	if currentTipd != nil {
+	// 		pdf.SetFont("DejaVu", "B", 11)
+	// 		pdf.Cell(0, 8, fmt.Sprintf(
+	// 			"Тачка: %s : %s",
+	// 			currentTipd.Tipd,
+	// 			currentTipd.Naziv,
+	// 		))
+	// 		pdf.Ln(10)
 
-			// ⬅⬅⬅ KLJUČNO: vrati font za normalan sadržaj
-			pdf.SetFont("DejaVu", "", 8)
-		}
+	// 		// ⬅⬅⬅ KLJUČNO: vrati font za normalan sadržaj
+	// 		pdf.SetFont("DejaVu", "", 8)
+	// 	}
 
-		return false
-	})
+	// 	return false
+	// })
 
 	// === REGISTRACIJA UTF-8 FONTOVA ===
 	pdf.AddUTF8Font("DejaVu", "", "assets/fonts/DejaVuSans.ttf")
@@ -72,16 +74,34 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 					row.Traj = formatTrajanje(row.Traj, tipd.Tipd)
 
 					// proveri da li treba nova stranica
-					if ensureSpaceForRow(pdf, 10) {
-						// AcceptPageBreakFunc se već pozva
+					// if ensureSpaceForRow(pdf, 10) {
+					// 	// AcceptPageBreakFunc se već pozva
+					// }
+
+					// ensureSpaceForTableRow(pdf, 10, &tableHeaderPrintedOnPage)
+
+					// 1. Ako smo već na novoj strani
+					if pdf.PageNo() != currentPage {
+						tableHeaderPrintedOnPage = false
+						currentPage = pdf.PageNo()
 					}
 
-					// TABLE HEADER – samo jednom po stranici
+					// 2. PROVERI DA LI RED STANE (može da doda stranu)
+					ensureSpaceForTableRow(pdf, 10, &tableHeaderPrintedOnPage, currentTipd)
+
+					// 3. Ako je ensureSpaceForTableRow napravio novu stranu
+					if pdf.PageNo() != currentPage {
+						tableHeaderPrintedOnPage = false
+						currentPage = pdf.PageNo()
+					}
+
+					// 4. Header tabele — TAČNO JEDNOM
 					if !tableHeaderPrintedOnPage {
 						tableHeader(pdf)
 						tableHeaderPrintedOnPage = true
 					}
 
+					// 5. Red
 					tableRow(pdf, row, rowIdx)
 					rowIdx++
 				}
@@ -106,15 +126,55 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func ensureSpaceForRow(pdf *gofpdf.Fpdf, rowHeight float64) bool {
+// func ensureSpaceForRow(pdf *gofpdf.Fpdf, rowHeight float64) bool {
+// 	_, pageH := pdf.GetPageSize()
+// 	_, _, _, bottom := pdf.GetMargins()
+
+// 	if pdf.GetY()+rowHeight > pageH-bottom {
+// 		pdf.AddPage()
+// 		return true // nova stranica je dodata
+// 	}
+// 	return false
+// }
+
+/*** prethodno ispravno ***/
+// func ensureSpaceForTableRow(pdf *gofpdf.Fpdf, rowHeight float64, headerPrinted *bool) {
+// 	_, pageH := pdf.GetPageSize()
+// 	_, _, _, bottom := pdf.GetMargins()
+
+// 	if pdf.GetY()+rowHeight > pageH-bottom {
+// 		pdf.AddPage()
+// 		*headerPrinted = false
+// 	}
+// }
+
+func ensureSpaceForTableRow(
+	pdf *gofpdf.Fpdf,
+	rowHeight float64,
+	headerPrinted *bool,
+	currentTipd *models.TipdGroup,
+) {
 	_, pageH := pdf.GetPageSize()
 	_, _, _, bottom := pdf.GetMargins()
 
 	if pdf.GetY()+rowHeight > pageH-bottom {
+
 		pdf.AddPage()
-		return true // nova stranica je dodata
+
+		// TIPD header na vrhu nove strane
+		if currentTipd != nil {
+			pdf.SetFont("DejaVu", "B", 11)
+			pdf.Cell(0, 8, fmt.Sprintf(
+				"Тачка: %s : %s",
+				currentTipd.Tipd,
+				currentTipd.Naziv,
+			))
+			pdf.Ln(10)
+			pdf.SetFont("DejaVu", "", 8)
+		}
+
+		// *headerPrinted = false
 	}
-	return false
 }
 
 func registerPiMMHeader(
@@ -148,8 +208,10 @@ func registerPiMMHeader(
 		// ===== NASLOV =====
 		// pdf.Ln(1)
 
+		pdf.SetX(left) // ✅ KRITIČNO
 		pdf.SetFont("DejaVu", "B", 12)
 		pdf.CellFormat(0, 6, "МЕСЕЧНИ ИЗВЕШТАЈ", "", 1, "C", false, 0, "")
+		pdf.SetX(left) // ✅ KRITIČNO
 		pdf.SetFont("DejaVu", "", 10)
 		pdf.CellFormat(0, 5, fmt.Sprintf("за период од %s до %s", periodFrom, periodTo), "", 1, "C", false, 0, "")
 		pdf.Ln(5)
@@ -159,6 +221,9 @@ func registerPiMMHeader(
 }
 
 func tableHeader(pdf *gofpdf.Fpdf) {
+	left, _, _, _ := pdf.GetMargins()
+	pdf.SetX(left)
+
 	pdf.SetFont("DejaVu", "B", 7)
 
 	pdf.SetFillColor(198, 224, 180) // svetlo zelena (kao u Excelu)
@@ -184,6 +249,8 @@ func tableHeader(pdf *gofpdf.Fpdf) {
 	pdf.CellFormat(45, 5, "Временски услови", "LB", 1, "", true, 0, "")
 
 	pdf.SetFillColor(255, 255, 255)
+
+	resetX(pdf) // ✅ KRITIČNO
 
 }
 
@@ -214,9 +281,14 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	pdf.CellFormat(30, 5, "", "", 0, "", false, 0, "")
 	pdf.CellFormat(45, 5, vremUsl, "", 1, "", false, 0, "")
 
+	resetX(pdf)
+
 }
 
 func drawTableBottom(pdf *gofpdf.Fpdf) {
+	left, _, _, _ := pdf.GetMargins()
+	pdf.SetX(left)
+
 	pdf.CellFormat(6, 0, "", "T", 0, "", false, 0, "")
 	pdf.CellFormat(25, 0, "", "T", 0, "", false, 0, "")
 	pdf.CellFormat(10, 0, "", "T", 0, "", false, 0, "")
@@ -224,6 +296,8 @@ func drawTableBottom(pdf *gofpdf.Fpdf) {
 	pdf.CellFormat(12, 0, "", "T", 0, "", false, 0, "")
 	pdf.CellFormat(30, 0, "", "T", 0, "", false, 0, "")
 	pdf.CellFormat(45, 0, "", "T", 1, "", false, 0, "")
+
+	resetX(pdf)
 }
 
 // func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
