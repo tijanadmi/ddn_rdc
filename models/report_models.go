@@ -42,4 +42,6 @@ type DetailRow struct {
 	GrupaUzroka    string
 	Uzrok          string
 	VremUsl        string
+	GrRazlog       string
+	Razlog         string
 }

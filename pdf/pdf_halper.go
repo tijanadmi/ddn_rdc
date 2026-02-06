@@ -27,16 +27,34 @@ func fitText(pdf *gofpdf.Fpdf, txt string, maxWidth float64) string {
 }
 
 func formatTrajanje(traj string, tipd string) string {
-	if tipd != "1" {
+	parts := strings.Split(traj, ":")
+
+	switch tipd {
+
+	case "1":
+		// dd:hh:mm → hh:mm
+		if len(parts) == 3 {
+			return parts[1] + ":" + parts[2]
+		}
+		return traj
+
+	case "3":
+		// dd:hh:mm → dddd:mm
+		if len(parts) == 3 {
+			return parts[0] + ":" + parts[2]
+		}
+		return traj
+
+	case "2":
+		// dd:hh:mm → hh:mm
+		if len(parts) == 3 {
+			return parts[1] + ":" + parts[2]
+		}
+		return traj
+
+	default:
 		return traj
 	}
-
-	// očekujemo dd:hh:mm
-	parts := strings.Split(traj, ":")
-	if len(parts) == 3 {
-		return parts[1] + ":" + parts[2]
-	}
-	return traj
 }
 
 func resetX(pdf *gofpdf.Fpdf) {

@@ -38,7 +38,9 @@ SELECT
     ted.td_nazivi.td_daj_sif('S_VRPD','NAZIV','ID',PI_DD.ID_S_VRPD,'Q') AS VRSTA_DOG,
     ted.TD_NAZIVI.TD_DAJ_SIF('S_GRUZR','NAZIV','ID',PI_DD.ID1_S_GRUZR,'Q') AS GRUZR,
     ted.TD_NAZIVI.TD_DAJ_SIF('S_UZROK','NAZIV','ID',PI_DD.ID1_S_UZROK,'Q') AS UZROK,
-	ted.td_nazivi.tab_col_val('s_vrem_usl','naziv',pi_dd.id_s_vrem_usl,'Q') vrem_usl
+	ted.td_nazivi.tab_col_val('s_vrem_usl','naziv',pi_dd.id_s_vrem_usl,'Q') vrem_usl,
+	ted.TD_NAZIVI.TD_DAJ_SIF('S_GRRAZ','NAZIV','ID',PI_DD.ID_S_GRRAZ,'Q') GRRAZ, 
+	ted.TD_NAZIVI.TD_DAJ_SIF('S_RAZLOG','NAZIV','ID',PI_DD.ID_S_RAZLOG,'Q') RAZLOG
 FROM PI_DDD
 JOIN PI_DD
   ON PI_DDD.DATIZV = PI_DD.DATIZV
@@ -124,6 +126,8 @@ ORDER BY TIPD, PI_DDD.DATIZV, PI_DDD.ID1, PI_DD.VREPOC
 			&row.GrupaUzroka,
 			&row.Uzrok,
 			&row.VremUsl,
+			&row.GrRazlog,
+			&row.Razlog,
 		)
 		if err != nil {
 			return nil, err

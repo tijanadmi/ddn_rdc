@@ -10,6 +10,118 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
+/*** Interface za layout tabele, da možemo imati različite layout-e za različite izveštaje ***/
+type TableLayout interface {
+	DrawHeader(pdf *gofpdf.Fpdf)
+	DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int)
+	RowHeight() float64
+}
+
+/*Layout za TAČKU 1 i 3*/
+type TableLayoutT1 struct {
+	TrajLabel string // "(hh:mm)" ili "(dddd:hh)"
+}
+
+func (l TableLayoutT1) RowHeight() float64 {
+	return 10
+}
+
+func (l TableLayoutT1) DrawHeader(pdf *gofpdf.Fpdf) {
+	left, _, _, _ := pdf.GetMargins()
+	pdf.SetX(left)
+	pdf.SetFont("DejaVu", "B", 7)
+	pdf.SetFillColor(198, 224, 180)
+
+	pdf.CellFormat(6, 5, "Р.", "RT", 0, "C", true, 0, "")
+	pdf.CellFormat(24, 5, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(14, 5, "Трај.", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(60, 5, "Објекат", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(12, 5, "Снага", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(30, 5, "Врста догађаја", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(45, 5, "Примарни узрок дог.", "LT", 1, "", true, 0, "")
+
+	pdf.CellFormat(6, 5, "бр", "RB", 0, "C", true, 0, "")
+	pdf.CellFormat(24, 5, "", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(14, 5, l.TrajLabel, "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(60, 5, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(12, 5, "MW", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(30, 5, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(45, 5, "Временски услови", "LB", 1, "", true, 0, "")
+}
+
+func (l TableLayoutT1) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
+	tableRow(pdf, r, idx)
+}
+
+/***** Layout za TAČKU 2  *****/
+type TableLayoutT2 struct{}
+
+func (l TableLayoutT2) RowHeight() float64 {
+	return 10
+}
+
+func (l TableLayoutT2) DrawHeader(pdf *gofpdf.Fpdf) {
+	left, _, _, _ := pdf.GetMargins()
+	pdf.SetX(left)
+	pdf.SetFont("DejaVu", "B", 7)
+	pdf.SetFillColor(198, 224, 180)
+
+	pdf.CellFormat(6, 5, "Р.", "RT", 0, "C", true, 0, "")
+	pdf.CellFormat(24, 5, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(14, 5, "Трај.", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(70, 5, "Објекат", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(30, 5, "Врста догађаја", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(50, 5, "Разлог", "LT", 1, "", true, 0, "")
+
+	pdf.CellFormat(6, 5, "бр", "RB", 0, "C", true, 0, "")
+	pdf.CellFormat(24, 5, "", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(14, 5, "hh:mm", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(70, 5, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(30, 5, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(50, 5, "укључења / искључења", "LB", 1, "", true, 0, "")
+}
+
+func (l TableLayoutT2) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
+	pdf.SetFont("DejaVu", "", 7)
+
+	objekat := fitText(pdf, r.Objekat, 70)
+	vrsta := fitText(pdf, r.VrstaDogadjaja, 30)
+	polje := fitText(pdf, r.Polje+" "+r.ImePolja, 70)
+	razlog := fitText(pdf, r.Razlog, 50)
+
+	// RED 1
+	pdf.CellFormat(6, 5, fmt.Sprint(idx), "", 0, "C", false, 0, "")
+	pdf.CellFormat(24, 5, r.Vrepoc, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, 5, r.Traj, "", 0, "C", false, 0, "")
+	pdf.CellFormat(70, 5, objekat, "", 0, "", false, 0, "")
+	pdf.CellFormat(30, 5, vrsta, "", 0, "", false, 0, "")
+	pdf.CellFormat(50, 5, razlog, "", 1, "", false, 0, "")
+
+	// RED 2
+	pdf.CellFormat(6, 5, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(24, 5, r.Vrezav, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, 5, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(70, 5, polje, "", 0, "", false, 0, "")
+	pdf.CellFormat(30, 5, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(50, 5, "", "", 1, "", false, 0, "")
+
+	resetX(pdf)
+}
+
+/*********** Factory: bira layout po Tipd-u  ***********/
+func getTableLayout(tipd string) TableLayout {
+	switch tipd {
+	case "1":
+		return TableLayoutT1{TrajLabel: "hh:mm"}
+	case "3":
+		return TableLayoutT1{TrajLabel: "dddd:hh"}
+	case "2":
+		return TableLayoutT2{}
+	default:
+		return TableLayoutT1{TrajLabel: "hh:mm"}
+	}
+}
+
 func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 	var currentTipd *models.TipdGroup
@@ -67,18 +179,13 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 		tableHeaderPrintedOnPage = false
 
+		layout := getTableLayout(tipd.Tipd)
+
 		for _, day := range tipd.Days {
 			for _, event := range day.Events {
 				// ===== TABELA REDOVI =====
 				for _, row := range event.Rows {
 					row.Traj = formatTrajanje(row.Traj, tipd.Tipd)
-
-					// proveri da li treba nova stranica
-					// if ensureSpaceForRow(pdf, 10) {
-					// 	// AcceptPageBreakFunc se već pozva
-					// }
-
-					// ensureSpaceForTableRow(pdf, 10, &tableHeaderPrintedOnPage)
 
 					// 1. Ako smo već na novoj strani
 					if pdf.PageNo() != currentPage {
@@ -87,7 +194,8 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 					}
 
 					// 2. PROVERI DA LI RED STANE (može da doda stranu)
-					ensureSpaceForTableRow(pdf, 10, &tableHeaderPrintedOnPage, currentTipd)
+					// ensureSpaceForTableRow(pdf, 10, &tableHeaderPrintedOnPage, currentTipd)
+					ensureSpaceForTableRow(pdf, layout.RowHeight(), &tableHeaderPrintedOnPage, currentTipd)
 
 					// 3. Ako je ensureSpaceForTableRow napravio novu stranu
 					if pdf.PageNo() != currentPage {
@@ -97,12 +205,14 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 					// 4. Header tabele — TAČNO JEDNOM
 					if !tableHeaderPrintedOnPage {
-						tableHeader(pdf)
+						// tableHeader(pdf)
+						layout.DrawHeader(pdf)
 						tableHeaderPrintedOnPage = true
 					}
 
 					// 5. Red
-					tableRow(pdf, row, rowIdx)
+					// tableRow(pdf, row, rowIdx)
+					layout.DrawRow(pdf, row, rowIdx)
 					rowIdx++
 				}
 
@@ -125,28 +235,6 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 	return buf.Bytes(), nil
 }
-
-// func ensureSpaceForRow(pdf *gofpdf.Fpdf, rowHeight float64) bool {
-// 	_, pageH := pdf.GetPageSize()
-// 	_, _, _, bottom := pdf.GetMargins()
-
-// 	if pdf.GetY()+rowHeight > pageH-bottom {
-// 		pdf.AddPage()
-// 		return true // nova stranica je dodata
-// 	}
-// 	return false
-// }
-
-/*** prethodno ispravno ***/
-// func ensureSpaceForTableRow(pdf *gofpdf.Fpdf, rowHeight float64, headerPrinted *bool) {
-// 	_, pageH := pdf.GetPageSize()
-// 	_, _, _, bottom := pdf.GetMargins()
-
-// 	if pdf.GetY()+rowHeight > pageH-bottom {
-// 		pdf.AddPage()
-// 		*headerPrinted = false
-// 	}
-// }
 
 func ensureSpaceForTableRow(
 	pdf *gofpdf.Fpdf,
@@ -232,18 +320,18 @@ func tableHeader(pdf *gofpdf.Fpdf) {
 
 	// PRVI RED
 	pdf.CellFormat(6, 5, "Р.", "RT", 0, "C", true, 0, "")
-	pdf.CellFormat(25, 5, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
-	pdf.CellFormat(10, 5, "Трај.", "LRT", 0, "C", true, 0, "")
-	pdf.CellFormat(62, 5, "Објекат", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(24, 5, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(14, 5, "Трај.", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(60, 5, "Објекат", "LRT", 0, "", true, 0, "")
 	pdf.CellFormat(12, 5, "Снага", "LRT", 0, "C", true, 0, "")
 	pdf.CellFormat(30, 5, "Врста догађаја", "LRT", 0, "", true, 0, "")
 	pdf.CellFormat(45, 5, "Примарни узрок дог.", "LT", 1, "", true, 0, "")
 
 	// DRUGI RED
 	pdf.CellFormat(6, 5, "бр", "RB", 0, "C", true, 0, "")
-	pdf.CellFormat(25, 5, "(hh:mm)", "LRB", 0, "C", true, 0, "")
-	pdf.CellFormat(10, 5, "", "LRB", 0, "C", true, 0, "")
-	pdf.CellFormat(62, 5, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(24, 5, "", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(14, 5, "hh:mm", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(60, 5, "", "LRB", 0, "", true, 0, "")
 	pdf.CellFormat(12, 5, "MW", "LRB", 0, "C", true, 0, "")
 	pdf.CellFormat(30, 5, "", "LRB", 0, "", true, 0, "")
 	pdf.CellFormat(45, 5, "Временски услови", "LB", 1, "", true, 0, "")
@@ -265,18 +353,18 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 
 	// RED 1
 	pdf.CellFormat(6, 5, fmt.Sprint(idx), "", 0, "C", false, 0, "")
-	pdf.CellFormat(25, 5, r.Vrepoc, "", 0, "", false, 0, "")
-	pdf.CellFormat(10, 5, r.Traj, "", 0, "C", false, 0, "")
-	pdf.CellFormat(62, 5, objekat, "", 0, "", false, 0, "")
+	pdf.CellFormat(24, 5, r.Vrepoc, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, 5, r.Traj, "", 0, "C", false, 0, "")
+	pdf.CellFormat(60, 5, objekat, "", 0, "", false, 0, "")
 	pdf.CellFormat(12, 5, r.Snaga, "", 0, "C", false, 0, "")
 	pdf.CellFormat(30, 5, vrsta, "", 0, "", false, 0, "")
 	pdf.CellFormat(45, 5, uzrok, "", 1, "", false, 0, "")
 
 	// RED 2
 	pdf.CellFormat(6, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(25, 5, r.Vrezav, "", 0, "", false, 0, "")
-	pdf.CellFormat(10, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(62, 5, polje, "", 0, "", false, 0, "")
+	pdf.CellFormat(24, 5, r.Vrezav, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, 5, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(60, 5, polje, "", 0, "", false, 0, "")
 	pdf.CellFormat(12, 5, "", "", 0, "", false, 0, "")
 	pdf.CellFormat(30, 5, "", "", 0, "", false, 0, "")
 	pdf.CellFormat(45, 5, vremUsl, "", 1, "", false, 0, "")

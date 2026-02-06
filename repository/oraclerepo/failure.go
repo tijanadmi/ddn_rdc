@@ -3,6 +3,7 @@ package oraclerepo
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/tijanadmi/ddn_rdc/models"
@@ -117,14 +118,33 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 					where DATIZV  BETWEEN to_date(:1,'dd.mm.yyyy') AND to_date(:2,'dd.mm.yyyy') 
    					AND TIPD LIKE UPPER(:3)
 					AND FUP LIKE UPPER(:4)
+					AND (
+        					(:5 = '0' AND (
+            					KOM1='1' OR KOM2='1' OR KOM3='1' OR KOM4='1' OR
+            					KOM5='1' OR KOM6='1' OR KOM7='1' OR KOM8='1'
+        					))
+        					OR (:6 <> '0' AND
+            					DECODE(:7,
+                					'1', KOM1,
+                					'2', KOM2,
+                					'3', KOM3,
+                					'4', KOM4,
+                					'5', KOM5,
+                					'6', KOM6,
+                					'7', KOM7,
+                					'8', KOM8
+            					) = '1'
+        					)
+  						)
    					order by DATIZV,id1,id2`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd, fupParam)
+	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd, fupParam, "0", "0", "0")
 
 	//fmt.Println(arg.StartDate, arg.EndDate, arg.Tipd)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
+		log.Println("SQL ERROR:", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -355,11 +375,29 @@ func (m *OracleDBRepo) GetPiMMByParamsByPage(ctx context.Context, arg models.Lis
 					where DATIZV  BETWEEN to_date(:1,'dd.mm.yyyy') AND to_date(:2,'dd.mm.yyyy') 
    					AND TIPD LIKE UPPER(:3)
 					AND FUP LIKE UPPER(:4)
+					AND (
+        					(:5 = '0' AND (
+            					KOM1='1' OR KOM2='1' OR KOM3='1' OR KOM4='1' OR
+            					KOM5='1' OR KOM6='1' OR KOM7='1' OR KOM8='1'
+        					))
+        					OR (:6 <> '0' AND
+            					DECODE(:7,
+                					'1', KOM1,
+                					'2', KOM2,
+                					'3', KOM3,
+                					'4', KOM4,
+                					'5', KOM5,
+                					'6', KOM6,
+                					'7', KOM7,
+                					'8', KOM8
+            					) = '1'
+        					)
+  						)
    					order by DATIZV,id1,id2,vrepoc
-					OFFSET :5 ROWS FETCH NEXT :6 ROWS ONLY`
+					OFFSET :8 ROWS FETCH NEXT :9 ROWS ONLY`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd, fupParam, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Tipd, fupParam, "0", "0", "0", arg.Offset, arg.Limit)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
 		return nil, 0, err
