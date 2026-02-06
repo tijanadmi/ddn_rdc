@@ -33,10 +33,28 @@ func (m *OracleDBRepo) GetPiMMT4ByParams(ctx context.Context, arg models.ListPiM
             COUNT(*) OVER () AS TOTAL_COUNT
        FROM PI_T4_MM_V
       where DATIZV  BETWEEN to_date(:1,'dd.mm.yyyy') AND to_date(:2,'dd.mm.yyyy') 
+	  AND (
+        					(:3 = '0' AND (
+            					KOM1='1' OR KOM2='1' OR KOM3='1' OR KOM4='1' OR
+            					KOM5='1' OR KOM6='1' OR KOM7='1' OR KOM8='1'
+        					))
+        					OR (:4 <> '0' AND
+            					DECODE(:5,
+                					'1', KOM1,
+                					'2', KOM2,
+                					'3', KOM3,
+                					'4', KOM4,
+                					'5', KOM5,
+                					'6', KOM6,
+                					'7', KOM7,
+                					'8', KOM8
+            					) = '1'
+        					)
+  						)
       order by datizv,id_s_tipd,id1`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate)
+	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, "0", "0", "0")
 	//fmt.Println("Upit za PiMM T4:", query)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")
@@ -106,11 +124,29 @@ func (m *OracleDBRepo) GetPiMMT4ByParamsByPage(ctx context.Context, arg models.L
             COUNT(*) OVER () AS TOTAL_COUNT
        FROM PI_T4_MM_V
       where DATIZV  BETWEEN to_date(:1,'dd.mm.yyyy') AND to_date(:2,'dd.mm.yyyy') 
+	  AND (
+        					(:3 = '0' AND (
+            					KOM1='1' OR KOM2='1' OR KOM3='1' OR KOM4='1' OR
+            					KOM5='1' OR KOM6='1' OR KOM7='1' OR KOM8='1'
+        					))
+        					OR (:4 <> '0' AND
+            					DECODE(:5,
+                					'1', KOM1,
+                					'2', KOM2,
+                					'3', KOM3,
+                					'4', KOM4,
+                					'5', KOM5,
+                					'6', KOM6,
+                					'7', KOM7,
+                					'8', KOM8
+            					) = '1'
+        					)
+  						)
       order by datizv,id_s_tipd,id1
-	  OFFSET :3 ROWS FETCH NEXT :4 ROWS ONLY`
+	  OFFSET :6 ROWS FETCH NEXT :7 ROWS ONLY`
 
 	// fmt.Println(arg.Ind, arg.Mrc, arg.StartDate, arg.EndDate, arg.Offset,arg.Limit)
-	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, arg.Offset, arg.Limit)
+	rows, err := m.DB.QueryContext(ctx, query, arg.StartDate, arg.EndDate, "0", "0", "0", arg.Offset, arg.Limit)
 	//fmt.Println("Upit za PiMM T4:", query)
 	if err != nil {
 		fmt.Println("Pogresan upit ili nema rezultata upita")

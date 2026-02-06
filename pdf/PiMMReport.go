@@ -122,7 +122,99 @@ func getTableLayout(tipd string) TableLayout {
 	}
 }
 
-func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
+/****** Interface za renderovanje različitih TIPD grupa *******/
+type TipdRenderer interface {
+	Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup)
+}
+
+/****** Rander za T4 **************/
+type TipdRendererT4 struct{}
+
+func (r TipdRendererT4) Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
+
+	pdf.SetFont("DejaVu", "", 9)
+
+	for _, day := range tipd.Days {
+
+		// ===== DATUM =====
+		pdf.SetFont("DejaVu", "B", 9)
+		pdf.Cell(0, 6, "Дан: "+day.Date) // npr 04.01.2026
+		pdf.Ln(6)
+
+		pdf.SetFont("DejaVu", "", 9)
+
+		for _, event := range day.Events {
+			if event.Tekst != "" {
+				pdf.MultiCell(0, 5, event.Tekst, "", "", false)
+				pdf.Ln(3)
+			}
+		}
+
+		pdf.Ln(4)
+	}
+}
+
+/*************** Rander za tacke 1,2,3 (koje imaju tabelu) *****************/
+
+type TipdRendererTable struct {
+	Layout TableLayout
+}
+
+func (r TipdRendererTable) Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
+
+	tableHeaderPrintedOnPage := false
+	currentPage := pdf.PageNo()
+	rowIdx := 1
+
+	for _, day := range tipd.Days {
+		for _, event := range day.Events {
+			for _, row := range event.Rows {
+
+				row.Traj = formatTrajanje(row.Traj, tipd.Tipd)
+
+				if pdf.PageNo() != currentPage {
+					tableHeaderPrintedOnPage = false
+					currentPage = pdf.PageNo()
+				}
+
+				ensureSpaceForTableRow(pdf, r.Layout.RowHeight(), &tableHeaderPrintedOnPage, &tipd)
+
+				if !tableHeaderPrintedOnPage {
+					r.Layout.DrawHeader(pdf)
+					tableHeaderPrintedOnPage = true
+				}
+
+				r.Layout.DrawRow(pdf, row, rowIdx)
+				rowIdx++
+			}
+
+			pdf.Ln(2)
+			if event.Tekst != "" {
+				pdf.MultiCell(0, 5, event.Tekst, "", "", false)
+				drawTableBottom(pdf)
+				pdf.Ln(3)
+			}
+		}
+	}
+}
+
+/*********** Factory: bira render po tackama ***********/
+func getTipdRenderer(tipd string) TipdRenderer {
+	switch tipd {
+	case "4":
+		return TipdRendererT4{}
+	case "1", "2", "3":
+		return TipdRendererTable{
+			Layout: getTableLayout(tipd),
+		}
+	default:
+		return TipdRendererTable{
+			Layout: getTableLayout(tipd),
+		}
+	}
+}
+
+/*func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 	var currentTipd *models.TipdGroup
 	tableHeaderPrintedOnPage := false
@@ -194,7 +286,6 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 					}
 
 					// 2. PROVERI DA LI RED STANE (može da doda stranu)
-					// ensureSpaceForTableRow(pdf, 10, &tableHeaderPrintedOnPage, currentTipd)
 					ensureSpaceForTableRow(pdf, layout.RowHeight(), &tableHeaderPrintedOnPage, currentTipd)
 
 					// 3. Ako je ensureSpaceForTableRow napravio novu stranu
@@ -217,7 +308,7 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 				}
 
 				pdf.Ln(2)
-				/*** текс на крају сваког догађаја ***/
+
 				pdf.SetFont("DejaVu", "", 8)
 				pdf.MultiCell(0, 5, event.Tekst, "", "", false)
 				drawTableBottom(pdf)
@@ -225,6 +316,44 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 			}
 		}
+	}
+
+	var buf bytes.Buffer
+	err := pdf.Output(&buf)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}*/
+
+func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
+
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(10, 40, 10) // ⬅ veća gornja margina zbog headera
+	pdf.SetAutoPageBreak(true, 15)
+
+	// === REGISTRACIJA UTF-8 FONTOVA ===
+	pdf.AddUTF8Font("DejaVu", "", "assets/fonts/DejaVuSans.ttf")
+	pdf.AddUTF8Font("DejaVu", "B", "assets/fonts/DejaVuSans-Bold.ttf")
+
+	registerPiMMHeader(
+		pdf,
+		report.StartDate, // npr "01.01.2026"
+		report.EndDate,   // npr "31.01.2026"
+	)
+
+	pdf.AddPage()
+	pdf.SetFont("DejaVu", "", 8)
+
+	for _, tipd := range report.TipdGroups {
+
+		pdf.SetFont("DejaVu", "B", 11)
+		pdf.Cell(0, 8, fmt.Sprintf("Тачка: %s : %s", tipd.Tipd, tipd.Naziv))
+		pdf.Ln(10)
+
+		renderer := getTipdRenderer(tipd.Tipd)
+		renderer.Render(pdf, tipd)
 	}
 
 	var buf bytes.Buffer
