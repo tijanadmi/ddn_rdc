@@ -300,21 +300,21 @@ func (server *Server) GetUserByToken(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("access token je ", token)
+	// fmt.Println("access token je ", token)
 	payload, err := server.tokenMaker.VerifyToken(token)
 	if err != nil {
 		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	fmt.Println(payload)
+	// fmt.Println(payload)
 
 	user, err := server.store.GetUserByUsername(ctx, payload.Username)
 	if err != nil {
 		return
 	}
 
-	fmt.Println(user)
+	// fmt.Println(user)
 
 	rsp := userResponse{
 		Username: user.Username,

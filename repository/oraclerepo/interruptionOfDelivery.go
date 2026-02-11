@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/tijanadmi/ddn_rdc/models"
 )
@@ -631,7 +632,23 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// defer cancel()
 
-	query := `INSERT INTO DDN_PREKID_ISP (
+	tx, err := m.DB.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted, // ok za Oracle
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	insertQuery := `INSERT INTO DDN_PREKID_ISP (
 		ID_S_MRC,
 		ID_S_TIPD,
 		ID_TIPOB,
@@ -662,9 +679,9 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 	PIdSTipd := 12
 	PInd := "P"
 
-	var id int
+	var newID int
 
-	_, err := m.DB.ExecContext(ctx, query,
+	_, err = tx.ExecContext(ctx, insertQuery,
 		ddnintd.IdSMrc,
 		PIdSTipd,
 		ddnintd.IdTipob,
@@ -681,7 +698,7 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 		ddnintd.IdSPoduzrokPrek,
 		ddnintd.IdTipObjektaNdc,
 		ddnintd.IdTipDogadjajaNdc,
-		sql.Out{Dest: &id},
+		sql.Out{Dest: &newID},
 	)
 
 	//fmt.Println(query)
@@ -690,7 +707,70 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 		return 0, err
 	}
 
-	return id, err
+	/*********** deo za update prethodnog nezavrsenog dogadjaja  ***********/
+
+	selectPrev := `
+		SELECT id, vrepoc
+		FROM DDN_PREKID_ISP
+		WHERE id_tipob = :1
+  			AND ob_id = :2
+  			AND id_p2_traf = :3
+  			AND id_s_mrc = :4
+  			AND vrezav IS NULL
+  			AND vrepoc < to_date(:5, 'dd.mm.yyyy HH24:MI:SS')
+  			AND vrepoc = (
+        		SELECT MAX(vrepoc)
+        		FROM DDN_PREKID_ISP
+        		WHERE id_tipob = :1
+          		AND ob_id = :2
+          		AND id_p2_traf = :3
+          		AND id_s_mrc = :4
+          		AND vrezav IS NULL
+          		AND vrepoc < to_date(:5, 'dd.mm.yyyy HH24:MI:SS')
+  				)
+		FOR UPDATE`
+
+	var prevID int
+	var prevVrepoc time.Time
+
+	err = tx.QueryRowContext(ctx, selectPrev,
+		ddnintd.IdTipob,
+		ddnintd.ObId,
+		ddnintd.P2TrafId,
+		ddnintd.IdSMrc,
+		ddnintd.Vrepoc,
+	).Scan(&prevID, &prevVrepoc)
+	// fmt.Println("selectPrev:", selectPrev)
+	// fmt.Println("prevID:", prevID, "prevVrepoc:", prevVrepoc)
+
+	if err != nil && err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	if err != sql.ErrNoRows {
+		updatePrev := `
+    UPDATE DDN_PREKID_ISP
+    SET
+        VREZAV = to_date(:1, 'dd.mm.yyyy HH24:MI:SS'),
+        VERSION = VERSION + 1
+    WHERE id = :2`
+
+		_, err = tx.ExecContext(ctx, updatePrev,
+			ddnintd.Vrepoc,
+			prevID,
+		)
+		if err != nil {
+			return 0, err
+		}
+	}
+	/*********** kraj dela za update prethodnog nezavrsenog dogadjaja  ***********/
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return newID, err
 }
 
 func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryP(ctx context.Context, id int, version int, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) error {
@@ -761,8 +841,6 @@ func (m *OracleDBRepo) UpdateDDNInterruptionOfDeliveryBI(ctx context.Context, id
 		BI = :1,
 		VERSION = VERSION + 1
 	WHERE id = :2 AND VERSION = :3`
-
-	
 
 	// mapiranje ulaznog podatka na DB vrednost
 	var biValue interface{}

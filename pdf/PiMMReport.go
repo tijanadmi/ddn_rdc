@@ -138,14 +138,18 @@ func (r TipdRendererT4) Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
 
 		// ===== DATUM =====
 		pdf.SetFont("DejaVu", "B", 9)
+		pdf.SetTextColor(0, 128, 0)      // zelena EMS
 		pdf.Cell(0, 6, "Дан: "+day.Date) // npr 04.01.2026
+		pdf.SetTextColor(0, 0, 0)
 		pdf.Ln(6)
 
 		pdf.SetFont("DejaVu", "", 9)
 
 		for _, event := range day.Events {
 			if event.Tekst != "" {
+				pdf.SetTextColor(0, 0, 180)
 				pdf.MultiCell(0, 5, event.Tekst, "", "", false)
+				pdf.SetTextColor(0, 0, 0)
 				pdf.Ln(3)
 			}
 		}
@@ -349,7 +353,9 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 	for _, tipd := range report.TipdGroups {
 
 		pdf.SetFont("DejaVu", "B", 11)
+		pdf.SetTextColor(0, 128, 0) // zelena EMS
 		pdf.Cell(0, 8, fmt.Sprintf("Тачка: %s : %s", tipd.Tipd, tipd.Naziv))
+		pdf.SetTextColor(0, 0, 0)
 		pdf.Ln(10)
 
 		renderer := getTipdRenderer(tipd.Tipd)
@@ -381,11 +387,13 @@ func ensureSpaceForTableRow(
 		// TIPD header na vrhu nove strane
 		if currentTipd != nil {
 			pdf.SetFont("DejaVu", "B", 11)
+			pdf.SetTextColor(0, 128, 0) // zelena EMS
 			pdf.Cell(0, 8, fmt.Sprintf(
 				"Тачка: %s : %s",
 				currentTipd.Tipd,
 				currentTipd.Naziv,
 			))
+			pdf.SetTextColor(0, 0, 0)
 			pdf.Ln(10)
 			pdf.SetFont("DejaVu", "", 8)
 		}
@@ -425,12 +433,15 @@ func registerPiMMHeader(
 		// ===== NASLOV =====
 		// pdf.Ln(1)
 
+		pdf.SetTextColor(192, 0, 0) // crvena EMS stil
+
 		pdf.SetX(left) // ✅ KRITIČNO
 		pdf.SetFont("DejaVu", "B", 12)
 		pdf.CellFormat(0, 6, "МЕСЕЧНИ ИЗВЕШТАЈ", "", 1, "C", false, 0, "")
 		pdf.SetX(left) // ✅ KRITIČNO
 		pdf.SetFont("DejaVu", "", 10)
 		pdf.CellFormat(0, 5, fmt.Sprintf("за период од %s до %s", periodFrom, periodTo), "", 1, "C", false, 0, "")
+		pdf.SetTextColor(0, 0, 0)
 		pdf.Ln(5)
 	})
 
@@ -473,6 +484,7 @@ func tableHeader(pdf *gofpdf.Fpdf) {
 
 func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	pdf.SetFont("DejaVu", "", 7)
+	// pdf.SetTextColor(0, 0, 180)
 
 	objekat := fitText(pdf, r.Objekat, 62)
 	vrsta := fitText(pdf, r.VrstaDogadjaja, 30)
@@ -497,6 +509,8 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	pdf.CellFormat(12, 5, "", "", 0, "", false, 0, "")
 	pdf.CellFormat(30, 5, "", "", 0, "", false, 0, "")
 	pdf.CellFormat(45, 5, vremUsl, "", 1, "", false, 0, "")
+
+	// pdf.SetTextColor(0, 0, 0)
 
 	resetX(pdf)
 

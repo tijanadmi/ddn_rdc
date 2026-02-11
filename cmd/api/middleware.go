@@ -41,7 +41,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		}*/
 		token, err := util.GetAccessToken(ctx)
 		if err != nil {
-			fmt.Println("Error getting access token:", err)
+			// fmt.Println("Error getting access token:", err)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			ctx.Abort()
 			return
@@ -52,7 +52,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			return
 		}
 		accessToken := token
-		fmt.Println("Pre verify token:", err)
+		// fmt.Println("Pre verify token:", err)
 		//accessToken := fields[1]
 		payload, err := tokenMaker.VerifyToken(accessToken)
 		if err != nil {
@@ -60,7 +60,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
-		fmt.Println("Posle verify token:", err)
+		// fmt.Println("Posle verify token:", err)
 		ctx.Set(authorizationPayloadKey, payload)
 		// c.Set("userId", claims.UserId)
 		// c.Set("role", claims.Role)

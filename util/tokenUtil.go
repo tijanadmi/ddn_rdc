@@ -1,8 +1,6 @@
 package util
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,7 +15,7 @@ func GetAccessToken(c *gin.Context) (string, error) {
 	// 	return "", errors.New("Bearer token is required")
 	// }
 	tokenString, err := c.Cookie("access_token")
-	fmt.Println("Cookie access_token:", tokenString)
+	// fmt.Println("Cookie access_token:", tokenString)
 	if err != nil {
 
 		return "", err
