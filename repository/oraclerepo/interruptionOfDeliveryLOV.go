@@ -332,12 +332,13 @@ func (m *OracleDBRepo) GetSPoduzrokPrekById(ctx context.Context, id int) (*model
 }
 
 // Get returns all s_poduzrok_prek and error, if any
-func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context) ([]*models.SPoduzrokPrek, error) {
+func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context, id_uzrok_prek int) ([]*models.SPoduzrokPrek, error) {
 	query := `select id, sifra, naziv, status
 			  from s_poduzrok_prek
+			  where id_uzrok_prek = :1
 			  ORDER BY id`
 
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, id_uzrok_prek)
 	if err != nil {
 		return nil, err
 	}

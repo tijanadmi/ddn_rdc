@@ -44,7 +44,7 @@ type DatabaseRepo interface {
 	GetSUzrokPrek(ctx context.Context) ([]*models.SUzrokPrek, error)
 	GetSPoduzrokPrekById(ctx context.Context, id int) (*models.SPoduzrokPrek, error)
 	// GetSPoduzrokPrek(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SPoduzrokPrek, error)
-	GetSPoduzrokPrek(ctx context.Context) ([]*models.SPoduzrokPrek, error)
+	GetSPoduzrokPrek(ctx context.Context, id_uzrok_prek int) ([]*models.SPoduzrokPrek, error)
 	GetSMernaMestaById(ctx context.Context, id int) (*models.SMernaMesta, error)
 	// GetSMernaMesta(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMernaMesta, error)
 	GetSMernaMesta(ctx context.Context) ([]*models.SMernaMesta, error)

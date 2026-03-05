@@ -271,19 +271,18 @@ func (server *Server) listUzrokPrek(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, mrcs)
 }
 
+type listPoduzrokPrekRequest struct {
+	IdUzrokPrek int `form:"id_uzrok_prek" binding:"required,min=1"`
+}
+
 func (server *Server) listPoduzrokPrek(ctx *gin.Context) {
-	/*var req listMrcRequest
+	var req listPoduzrokPrekRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	arg := models.ListLimitOffsetParams{
-		Limit:  req.PageSize,
-		Offset: (req.PageID - 1) * req.PageSize,
-	}*/
-
-	mrcs, err := server.store.GetSPoduzrokPrek(ctx)
+	mrcs, err := server.store.GetSPoduzrokPrek(ctx, req.IdUzrokPrek)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
