@@ -181,6 +181,8 @@ func (server *Server) setupRouter() {
 
 	// authRoutes.GET("/reports/pi-mm/pdf", server.getPiMMReportPDF)
 
+	authRoutes.GET("/listopenshifts", server.listOOpenShifts)
+
 	server.router = router
 }
 

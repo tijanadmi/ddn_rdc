@@ -19,17 +19,74 @@ type createUserRequest struct {
 }
 
 type userResponse struct {
-	Username string   `json:"username"`
-	FullName string   `json:"full_name"`
-	Role     []string `json:"user_role"`
+	Username string `json:"username"`
+	FullName string `json:"full_name"`
+	// Role     []string `json:"user_role"`
+	Role []string `json:"user_role"`
+
+	DDN *models.DDNData `json:"ddn,omitempty"`
+	TDN *models.TDNData `json:"tdn,omitempty"`
+	PGI *models.PGIData `json:"pgi,omitempty"`
 }
 
+// func newUserResponse(user *models.User) userResponse {
+// 	return userResponse{
+// 		Username: user.Username,
+// 		FullName: user.FullName,
+// 		Role:     user.Roles,
+// 	}
+// }
+
+// func newUserResponse(user *models.User) userResponse {
+// 	// Napravi slice stringova iz Role.Code
+// 	var roleCodes []string
+// 	for _, r := range user.Roles {
+// 		roleCodes = append(roleCodes, r.Code)
+// 	}
+
+// 	return userResponse{
+// 		Username: user.Username,
+// 		FullName: user.FullName,
+// 		Role:     roleCodes, // samo Code svake role
+// 	}
+// }
+
 func newUserResponse(user *models.User) userResponse {
-	return userResponse{
+	var roleCodes []string
+	resp := userResponse{
 		Username: user.Username,
 		FullName: user.FullName,
-		Role:     user.Role,
 	}
+
+	// mapa: code -> funkcija koja popunjava response
+	roleHandlers := map[string]func(r models.Role){
+		"DDN": func(r models.Role) {
+			if r.DDN.TipPrivPrip != "" {
+				resp.DDN = &r.DDN
+			}
+		},
+		"TDN": func(r models.Role) {
+			if r.TDN.TipPrivPrip != "" {
+				resp.TDN = &r.TDN
+			}
+		},
+		"PGI": func(r models.Role) {
+			if r.PGI.TipPrivPrip != "" {
+				resp.PGI = &r.PGI
+			}
+		},
+	}
+
+	for _, r := range user.Roles {
+		roleCodes = append(roleCodes, r.Code)
+
+		if handler, ok := roleHandlers[r.Code]; ok {
+			handler(r)
+		}
+	}
+
+	resp.Role = roleCodes
+	return resp
 }
 
 type loginUserRequest struct {
@@ -46,6 +103,14 @@ type loginUserResponse struct {
 	User                  userResponse `json:"user"`
 }
 
+func getRoleCodes(roles []models.Role) []string {
+	var codes []string
+	for _, r := range roles {
+		codes = append(codes, r.Code)
+	}
+	return codes
+}
+
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -54,6 +119,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	user, err := server.store.GetUserByUsername(ctx, req.Username)
+	// fmt.Println(user)
 	if err != nil {
 
 		ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -66,9 +132,11 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
+	roleCodes := getRoleCodes(user.Roles)
+
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
-		user.Role,
+		roleCodes,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -78,82 +146,13 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	refreshToken, _, err := server.tokenMaker.CreateToken(
 		user.Username,
-		user.Role,
+		roleCodes,
 		server.config.RefreshTokenDuration,
 	)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-
-	/*session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
-		ID:           refreshPayload.ID,
-		Username:     user.Username,
-		RefreshToken: refreshToken,
-		UserAgent:    ctx.Request.UserAgent(),
-		ClientIp:     ctx.ClientIP(),
-		IsBlocked:    false,
-		ExpiresAt:    refreshPayload.ExpiredAt,
-	})
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}*/
-
-	// **Set HttpOnly cookie za refresh token**
-	/*ctx.SetCookie(
-		"refresh_token",
-		refreshToken,
-		int(server.config.RefreshTokenDuration.Seconds()),
-		"/auth/refresh", // putanja za refresh
-		"",              // domen (prazno = trenutni)
-		true,            // Secure (HTTPS)
-		true,            // HttpOnly
-	)*/
-
-	// http.SetCookie(ctx.Writer, &http.Cookie{
-	// 	Name:  "access_token",
-	// 	Value: accessToken,
-	// 	Path:  "/",
-	// 	// Domain:   "localhost",
-	// 	MaxAge: int(server.config.AccessTokenDuration.Seconds()),
-	// 	Secure: false, //samo u dev modu
-	// 	// Secure:   true,
-	// 	HttpOnly: true,
-	// 	SameSite: http.SameSiteNoneMode,
-	// })
-	// http.SetCookie(ctx.Writer, &http.Cookie{
-	// 	Name:  "refresh_token",
-	// 	Value: refreshToken,
-	// 	Path:  "/",
-	// 	// Domain:   "localhost",
-	// 	MaxAge: int(server.config.RefreshTokenDuration.Seconds()),
-	// 	Secure: false, //samo u dev modu
-	// 	// Secure:   true,
-	// 	HttpOnly: true,
-	// 	SameSite: http.SameSiteNoneMode,
-	// })
-
-	// kod koji radi za localhost
-
-	/*http.SetCookie(ctx.Writer, &http.Cookie{
-		Name:     "access_token",
-		Value:    accessToken,
-		Path:     "/",
-		MaxAge:   int(server.config.AccessTokenDuration.Seconds()),
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true, // obavezno!
-	})
-	http.SetCookie(ctx.Writer, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    refreshToken,
-		Path:     "/",
-		MaxAge:   int(server.config.RefreshTokenDuration.Seconds()),
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true,
-	})*/
 
 	// kod koji radi za produkciju
 
@@ -258,41 +257,11 @@ func (server *Server) logoutUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
-// // Custom JWT regex: 3 dela razdvojena tačkama
-// var jwtRegex = regexp.MustCompile(`^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$`)
-
-// // Custom validator funkcija
-// func validateJWT(fl validator.FieldLevel) bool {
-// 	token := fl.Field().String()
-// 	return jwtRegex.MatchString(token)
-// }
-
-// type GetUserByTokenRequest struct {
-// 	AccessToken string `json:"access_token" binding:"required,jwt"`
-// }
-
 type GetUserByTokenRequest struct {
 	AccessToken string `json:"access_token" binding:"required"`
 }
 
 func (server *Server) GetUserByToken(ctx *gin.Context) {
-	// _, err := server.authorizeUser(ctx)
-	// if err != nil {
-	// 	return nil, unauthenticatedError(err)
-	// }
-
-	// validate := validator.New()
-
-	// // Registruj custom validator
-	// validate.RegisterValidation("jwt", validateJWT)
-
-	// var req GetUserByTokenRequest
-	// if err := ctx.ShouldBindJSON(&req); err != nil {
-	// 	ctx.JSON(http.StatusBadRequest, errorResponse(err))
-	// 	return
-	// }
-	// fmt.Println("request je ", req)
-	// accessToken := req.AccessToken
 
 	token, err := util.GetAccessToken(ctx)
 	if err != nil {
@@ -316,10 +285,19 @@ func (server *Server) GetUserByToken(ctx *gin.Context) {
 
 	// fmt.Println(user)
 
-	rsp := userResponse{
-		Username: user.Username,
-		FullName: user.FullName,
-		Role:     user.Role,
+	// Mapiramo Role -> []string (samo Code)
+	var roleCodes []string
+	for _, r := range user.Roles {
+		roleCodes = append(roleCodes, r.Code)
 	}
+
+	// rsp := userResponse{
+	// 	Username: user.Username,
+	// 	FullName: user.FullName,
+	// 	Role:     roleCodes,
+	// }
+
+	rsp := newUserResponse(user)
+
 	ctx.JSON(http.StatusOK, rsp)
 }

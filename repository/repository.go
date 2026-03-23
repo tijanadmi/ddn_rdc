@@ -73,4 +73,6 @@ type DatabaseRepo interface {
 	GetPGDDapuA(ctx context.Context, arg models.ListPGD) ([]*models.PGDDapuA, error)
 
 	GetPiMMReportByParams(ctx context.Context, arg models.ListPiMMByParam) (*models.Report, error)
+
+	GetOtvoreneSmene(ctx context.Context) ([]models.Smena, error)
 }

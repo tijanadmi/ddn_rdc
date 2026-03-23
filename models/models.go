@@ -291,20 +291,58 @@ type User struct {
 	Username string
 	Password string
 	FullName string
-	Role     []string
+	// Role     []string
+	Roles []Role
 }
 
 type Role struct {
 	ID   int
 	Code string
 	Name string
+
+	// dodatni podaci
+	DDN DDNData
+	TDN TDNData
+	PGI PGIData
 }
+
 type UserRole struct {
 	ID       int
 	IdUser   int
 	IdRole   int
 	RoleCode string
 	RoleName string
+}
+
+type DDNData struct {
+	TipPrivPrip string
+	IdSMrc      int
+}
+
+type TDNData struct {
+	TipPrivPrip string
+	IdP0Traf    int
+}
+
+type PGIData struct {
+	TipPrivPrip string
+	TipIzvP     string
+	TipIzvD     string
+	TipIzvM     string
+	IdSKom      int
+	TipAkc      string
+	IdSMrc      int
+
+	T1  string
+	T2  string
+	T3  string
+	T4  string
+	T5  string
+	T6  string
+	T7  string
+	T8  string
+	T9  string
+	T10 string
 }
 
 type Session struct {
