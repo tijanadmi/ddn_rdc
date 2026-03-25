@@ -183,6 +183,8 @@ func (server *Server) setupRouter() {
 
 	authRoutes.GET("/listopenshifts", server.listOOpenShifts)
 
+	authRoutes.GET("/getiskljucenje/:id", server.getIskljucenje)
+
 	server.router = router
 }
 
