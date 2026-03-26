@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tijanadmi/ddn_rdc/models"
 )
 
 func (server *Server) listOOpenShifts(ctx *gin.Context) {
@@ -61,7 +62,7 @@ func (server *Server) getIskljucenje(ctx *gin.Context) {
 
 	// 4. Grupisanje manipulacija po objektu i sortiranje po Rb
 	objektiMap := make(map[string][]ManipView)
-	for _, m := range dogadjaj.Manipulacije {
+	for _, m := range *dogadjaj.Manipulacije {
 		rec := m.Manipulacija
 		if m.TekstMan != nil && *m.TekstMan != "" {
 			rec += " " + *m.TekstMan
@@ -136,4 +137,38 @@ func derefString(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+func (server *Server) getObavBeleska(ctx *gin.Context) {
+	//  Dohvati ID iz URL parametra
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nevažeći ID"})
+		return
+	}
+
+	//  Pozovi funkciju iz store-a
+	dogadjaj, err := server.store.GetObavBeleskaById(ctx, id)
+	if err != nil {
+		fmt.Printf("Greška prilikom dobijanja događaja: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var obav models.ObavBeleska
+
+	if dogadjaj.ObavBeleske != nil {
+		obav = *dogadjaj.ObavBeleske
+	} else {
+		obav = models.ObavBeleska{}
+	}
+
+	//  Kreiraj finalni JSON za frontend
+	ctx.JSON(http.StatusOK, gin.H{
+		"rb_dog":       dogadjaj.RbDog,
+		"naslov":       dogadjaj.Naslov,
+		"podnaslov":    dogadjaj.Podnaslov,
+		"obav_beleska": obav,
+	})
 }

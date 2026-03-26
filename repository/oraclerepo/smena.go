@@ -2,6 +2,7 @@ package oraclerepo
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/tijanadmi/ddn_rdc/models"
@@ -116,20 +117,28 @@ where smena.stat_smene = 0
 
 	dogQuery := `
 SELECT 
-  dog_smene.id,
-  dog_smene.id_smena,
-  dog_smene.rb_dog,
-  dog_smene.naslov,
-  dog_smene.id_tip_dog,
-  tip_dog.naziv,
-  tip_dog.naziv_cir,
-  tip_dog.tip,
-  dog_smene.dopuna,
-  dog_smene.status
-FROM ddn.dog_smene, ddn.tip_dog
-WHERE dog_smene.id_smena = :1
-and ddn.dog_smene.id_tip_dog = tip_dog.id
-ORDER BY dog_smene.rb_dog
+  d.id,
+  d.id_smena,
+  d.rb_dog,
+  d.naslov,
+  d.id_tip_dog,
+  td.naziv,
+  td.naziv_cir,
+  td.tip,
+   ted.TD_NAZIVI.TD_DAJ_SIF('TIP_OBV','SIFRA','ID',o.id_tip_obv,'Q') AS tip_obv,
+  d.dopuna,
+  d.status
+
+FROM ddn.dog_smene d
+
+JOIN ddn.tip_dog td 
+  ON d.id_tip_dog = td.id
+
+LEFT JOIN ddn.dog_obav o 
+  ON d.id = o.id_dog_smene
+
+WHERE d.id_smena = :1
+ORDER BY d.rb_dog
 `
 
 	for i := range smene {
@@ -154,6 +163,7 @@ ORDER BY dog_smene.rb_dog
 				&d.TipDog,
 				&d.TipDogCir,
 				&d.Tip,
+				&d.TipObav,
 				&d.Dopuna,
 				&d.Status,
 			)
@@ -183,56 +193,114 @@ ORDER BY dog_smene.rb_dog
 
 /****** Funkcija vraca tip dogadjaja Iskljucenje/ukljucenje sa manipulacijama *************/
 
-func buildRecenica(d *models.DogadjajIskljucenje) string {
+func buildRecenica(d *models.DogadjajDetaljno) string {
 	format := "02.01.2006"
 
+	var dop string
+
+	// =========================
+	// 1. DOPUNA LOGIKA
+	// =========================
 	if d.Dopuna != nil {
 		switch *d.Dopuna {
+
 		case "1":
-			if d.TipSmeneDopune != nil && *d.TipSmeneDopune == "D" {
-				return "Dopuna dnevne smene od: " + d.DatumDopune.Format(format) + "\n"
-			} else if d.DatumDopune != nil {
-				return "Dopuna noćne smene od: " +
-					d.DatumDopune.Format(format) + "/" +
-					d.DatumDopune.AddDate(0, 0, 1).Format(format) + "\n"
+			if d.DatumDopune != nil {
+				if d.TipSmeneDopune != nil && *d.TipSmeneDopune == "D" {
+					dop = "Dopuna dnevne smene od: " +
+						d.DatumDopune.Format(format) + "\n"
+				} else {
+					dop = "Dopuna noćne smene od: " +
+						d.DatumDopune.Format(format) + "/" +
+						d.DatumDopune.AddDate(0, 0, 1).Format(format) + "\n"
+				}
 			}
 
 		case "2":
-			if d.VezaSa != nil && d.DatumDopune != nil {
+			if d.DatumDopune != nil && d.RbDogVezaSa != nil {
 				if d.TipSmeneDopune != nil && *d.TipSmeneDopune == "D" {
-					return fmt.Sprintf("Dopuna događaja br. %s dnevne smene od %s\n",
-						*d.RbDogVezaSa, d.DatumDopune.Format(format))
-				} else {
-					return fmt.Sprintf("Dopuna događaja br. %s noćne smene od %s/%s\n",
+					dop = fmt.Sprintf(
+						"Dopuna događaja br. %s dnevne smene od %s\n",
 						*d.RbDogVezaSa,
 						d.DatumDopune.Format(format),
-						d.DatumDopune.AddDate(0, 0, 1).Format(format))
+					)
+				} else {
+					dop = fmt.Sprintf(
+						"Dopuna događaja br. %s noćne smene od %s/%s\n",
+						*d.RbDogVezaSa,
+						d.DatumDopune.Format(format),
+						d.DatumDopune.AddDate(0, 0, 1).Format(format),
+					)
 				}
 			}
 		}
 	}
 
-	// default redovan unos
-	datum := d.DatumSmene
-	if d.TipSmene == "N" {
-		return fmt.Sprintf("Redovan unos za smenu od: %s / %s",
-			datum.Format(format),
-			datum.AddDate(0, 0, 1).Format(format))
+	// =========================
+	// 2. DEFAULT (REDOVAN UNOS)
+	// =========================
+	if dop == "" {
+		datum := d.DatumSmene
+
+		if d.TipSmene == "N" {
+			dop = fmt.Sprintf(
+				"Redovan unos za smenu od: %s / %s",
+				datum.Format(format),
+				datum.AddDate(0, 0, 1).Format(format),
+			)
+		} else {
+			dop = fmt.Sprintf(
+				"Redovan unos za smenu od: %s",
+				datum.Format(format),
+			)
+		}
 	}
 
-	return fmt.Sprintf("Redovan unos za smenu od: %s", datum.Format(format))
+	// =========================
+	// 3. VEZA LOGIKA (NAJBITNIJE)
+	// =========================
+	if (d.Dopuna == nil || *d.Dopuna != "2") && d.VezaSa != nil && d.RbDogVezaSa != nil && d.DatumVezaSa != nil {
+
+		datum := *d.DatumVezaSa
+
+		if d.TipSmenaVezaSa != nil && *d.TipSmenaVezaSa == "D" {
+			return fmt.Sprintf(
+				"Veza sa događajem br. %s od dana: %s - %s",
+				*d.RbDogVezaSa,
+				datum.Format(format),
+				dop,
+			)
+		} else {
+			return fmt.Sprintf(
+				"Veza sa događajem br. %s od dana: %s/%s - %s",
+				*d.RbDogVezaSa,
+				datum.Format(format),
+				datum.AddDate(0, 0, 1).Format(format),
+				dop,
+			)
+		}
+	}
+
+	// =========================
+	// 4. BEZ VEZE
+	// =========================
+	return fmt.Sprintf("%s", dop)
 }
 
-func (m *OracleDBRepo) GetIskljucenjeById(ctx context.Context, id int) (*models.DogadjajIskljucenje, error) {
+func (m *OracleDBRepo) GetIskljucenjeById(ctx context.Context, id int) (*models.DogadjajDetaljno, error) {
 
 	//  MASTER QUERY
 	masterQuery := `
 SELECT 
+  d.id,
   d.rb_dog,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_DOG','TIP','ID', d.id_tip_dog,'Q') AS tip_dog,
   d.naslov,
   d.ID_SMENA,
   d.ID_DOG_SMENE AS VEZA_SA,
-  ted.TD_NAZIVI.TD_DAJ_SIF('DDN.DOG_SMENE','RB_DOG','ID',d.ID_DOG_SMENE,'Q') AS RB_DOG_VEZA_SA,
+  d2.rb_dog AS RB_DOG_VEZA_SA,
+  s3.DATDNEV datum_veze,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s3.id_tip_smena,'Q') AS tip_smene_veze,
   d.DOPUNA,
   d.ID_SMENA_D,
 
@@ -256,19 +324,27 @@ JOIN smena s1
   ON d.ID_SMENA = s1.id
 LEFT JOIN smena s2 
   ON d.ID_SMENA_D = s2.id
+LEFT JOIN dog_smene d2 
+  ON d.id_dog_smene = d2.id
+LEFT JOIN smena s3 
+  ON d2.ID_SMENA = s3.id
 WHERE d.id = :1
 `
 
-	var d models.DogadjajIskljucenje
+	var d models.DogadjajDetaljno
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
 	err := row.Scan(
+		&d.ID,
 		&d.RbDog,
+		&d.TipDog,
 		&d.Naslov,
 		&d.IDSmena,
 		&d.VezaSa,
 		&d.RbDogVezaSa,
+		&d.DatumVezaSa,
+		&d.TipSmenaVezaSa,
 		&d.Dopuna,
 		&d.IDSmenaD,
 		&d.Grazlog,
@@ -374,7 +450,116 @@ ORDER BY rb
 		return nil, err
 	}
 
-	d.Manipulacije = manipulacije
+	if len(manipulacije) > 0 {
+		d.Manipulacije = &manipulacije
+	}
+
+	return &d, nil
+}
+
+func (m *OracleDBRepo) GetObavBeleskaById(ctx context.Context, id int) (*models.DogadjajDetaljno, error) {
+
+	// =========================
+	// MASTER QUERY
+	// =========================
+	masterQuery := `
+SELECT 
+  d.id,
+  d.rb_dog,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_DOG','TIP','ID', d.id_tip_dog,'Q') AS tip_dog,
+  d.naslov,
+  d.ID_SMENA,
+  d.ID_DOG_SMENE AS VEZA_SA,
+  d2.rb_dog AS RB_DOG_VEZA_SA,
+  s3.DATDNEV datum_veze,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s3.id_tip_smena,'Q') AS tip_smene_veze,
+
+  d.DOPUNA,
+  d.ID_SMENA_D,
+
+  s1.DATDNEV AS datum_smene,
+  s2.DATDNEV AS datum_dopune,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s1.id_tip_smena,'Q') AS tip_smene,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s2.id_tip_smena,'Q') AS tip_smene_dopune
+
+FROM dog_smene d
+JOIN smena s1 ON d.ID_SMENA = s1.id
+LEFT JOIN smena s2 ON d.ID_SMENA_D = s2.id
+LEFT JOIN dog_smene d2 ON d.id_dog_smene = d2.id
+LEFT JOIN smena s3 ON d2.ID_SMENA = s3.id
+WHERE d.id = :1
+`
+
+	var d models.DogadjajDetaljno
+
+	row := m.DB.QueryRowContext(ctx, masterQuery, id)
+
+	err := row.Scan(
+		&d.ID,
+		&d.RbDog,
+		&d.TipDog,
+		&d.Naslov,
+		&d.IDSmena,
+		&d.VezaSa,
+		&d.RbDogVezaSa,
+		&d.DatumVezaSa,
+		&d.TipSmenaVezaSa,
+		&d.Dopuna,
+		&d.IDSmenaD,
+		&d.DatumSmene,
+		&d.DatumDopune,
+		&d.TipSmene,
+		&d.TipSmeneDopune,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// ✅ podnaslov (isti buildRecenica)
+	d.Podnaslov = buildRecenica(&d)
+
+	// =========================
+	// DETAIL QUERY (DOG_OBAV)
+	// =========================
+	detailQuery := `
+SELECT 
+  o.NAPOMENA,
+  o.TEKST_OBV,
+  t.SIFRA,
+  o.DOPUNA
+FROM dog_obav o
+JOIN TIP_OBV t ON o.ID_TIP_OBV = t.ID
+WHERE o.ID_DOG_SMENE = :1
+AND t.SIFRA != 'F'
+ORDER BY o.RB
+FETCH FIRST 1 ROWS ONLY
+`
+
+	var obav models.ObavBeleska
+	var tekstObv sql.NullString
+
+	err = m.DB.QueryRowContext(ctx, detailQuery, id).Scan(
+		&obav.Napomena,
+		&tekstObv,
+		&obav.TipObv,
+		&obav.Dopuna,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Nema obavestenja, ostaje nil
+			d.ObavBeleske = nil
+		} else {
+			return nil, err
+		}
+	} else {
+		if tekstObv.Valid {
+			obav.TekstObv = tekstObv.String
+		}
+		d.ObavBeleske = &obav
+	}
 
 	return &d, nil
 }

@@ -55,19 +55,24 @@ type Dogadjaj struct {
 	TipDog    string `json:"tip_dog"`
 	TipDogCir string `json:"tip_dog_cir"`
 	Tip       string `json:"tip"`
+	TipObav   string `json:"tip_obav"`
 	Dopuna    string `json:"dopuna"`
 	Status    string `json:"status"`
 }
 
-/************** Iskljucenja/Ukljucenja ****************/
-type DogadjajIskljucenje struct {
-	RbDog     string `json:"rb_dog"`
+type DogadjajDetaljno struct {
+	ID     int    `json:"id"`
+	RbDog  string `json:"rb_dog"`
+	TipDog string `json:"tip_dog"`
+
 	Naslov    string `json:"naslov"`
 	Podnaslov string `json:"podnaslov"`
 
-	IDSmena     int     `json:"id_smena"`
-	VezaSa      *int    `json:"veza_sa"`
-	RbDogVezaSa *string `json:"rb_dog_veza_sa"`
+	IDSmena        int        `json:"id_smena"`
+	VezaSa         *int       `json:"veza_sa"`
+	RbDogVezaSa    *string    `json:"rb_dog_veza_sa"`
+	DatumVezaSa    *time.Time `json:"datum_veza_sa"`
+	TipSmenaVezaSa *string    `json:"tip_smene_veza_sa"`
 
 	Dopuna   *string `json:"dopuna"`     // može biti null
 	IDSmenaD *int    `json:"id_smena_d"` // može biti null
@@ -86,8 +91,11 @@ type DogadjajIskljucenje struct {
 	TipSmene       string  `json:"tip_smene"`
 	TipSmeneDopune *string `json:"tip_smene_dopune"`
 
-	Manipulacije []Manipulacija `json:"manipulacije"`
+	Manipulacije *[]Manipulacija `json:"manipulacije"`
+	ObavBeleske  *ObavBeleska    `json:"obav_beleske,omitempty"`
 }
+
+/************** Iskljucenja/Ukljucenja ****************/
 
 type Manipulacija struct {
 	IDDogSmene int `json:"id_dog_smene"`
@@ -125,3 +133,9 @@ type ManipView struct {
 }
 
 /************** Kraj Iskljucenja/Ukljucenja ****************/
+type ObavBeleska struct {
+	Napomena string `json:"napomena"`  // napomena, može biti prazan string
+	TekstObv string `json:"tekst_obv"` // ovde ide CLOB sadržaj iz baze
+	TipObv   string `json:"tip_obv"`   // tip obaveštenja
+	Dopuna   string `json:"dopuna"`    // dopuna, može biti prazan string
+}

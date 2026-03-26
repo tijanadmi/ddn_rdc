@@ -184,6 +184,7 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/listopenshifts", server.listOOpenShifts)
 
 	authRoutes.GET("/getiskljucenje/:id", server.getIskljucenje)
+	authRoutes.GET("/getobavbeleska/:id", server.getObavBeleska)
 
 	server.router = router
 }
