@@ -38,6 +38,11 @@ type listClosedShiftsByPageRequest struct {
 	PageSize  int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
+type listClosedShiftsByPageResponse struct {
+	Total int            `json:"total"`
+	Smene []models.Smena `json:"smene"`
+}
+
 func (server *Server) listClosedShiftsByPage(ctx *gin.Context) {
 
 	// fmt.Println("usao u handler listOpenShifts")
@@ -57,7 +62,7 @@ func (server *Server) listClosedShiftsByPage(ctx *gin.Context) {
 	}
 
 	// 1. Pozovi funkciju iz store-a da dobiješ otvorene smene
-	smene, err := server.store.GetZatvoreneSmene(ctx, arg)
+	smene, count, err := server.store.GetZatvoreneSmene(ctx, arg)
 	if err != nil {
 		fmt.Printf("Greška prilikom dobijanja otvorenih smena: %v\n", err)
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -65,11 +70,12 @@ func (server *Server) listClosedShiftsByPage(ctx *gin.Context) {
 	}
 
 	// fmt.Printf("Dobijene smene: %+v\n", smene)
+	rsp := listClosedShiftsByPageResponse{
+		Total: count,
+		Smene: smene,
+	}
 
-	// 2. Vrati rezultat
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": smene,
-	})
+	ctx.JSON(http.StatusOK, rsp)
 }
 
 type ManipView struct {

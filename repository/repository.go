@@ -75,7 +75,7 @@ type DatabaseRepo interface {
 	GetPiMMReportByParams(ctx context.Context, arg models.ListPiMMByParam) (*models.Report, error)
 
 	GetOtvoreneSmene(ctx context.Context) ([]models.Smena, error)
-	GetZatvoreneSmene(ctx context.Context, arg models.ListShiftsWithPaginationParams) ([]models.Smena, error)
+	GetZatvoreneSmene(ctx context.Context, arg models.ListShiftsWithPaginationParams) ([]models.Smena, int, error)
 	GetIskljucenjeById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 	GetObavBeleskaById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 }

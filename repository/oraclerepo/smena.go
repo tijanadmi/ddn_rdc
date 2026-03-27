@@ -194,7 +194,7 @@ ORDER BY d.rb_dog
 
 /****** F-ja vraca sve zatvorene smene sa pripadajucim dogadjajima za izabrani RDC i interval	 *************/
 
-func (m *OracleDBRepo) GetZatvoreneSmene(ctx context.Context, arg models.ListShiftsWithPaginationParams) ([]models.Smena, error) {
+func (m *OracleDBRepo) GetZatvoreneSmene(ctx context.Context, arg models.ListShiftsWithPaginationParams) ([]models.Smena, int, error) {
 
 	mrcParam := "%"
 	if strings.ToUpper(arg.Mrc) != "ALL" {
@@ -250,14 +250,16 @@ and smena.ID_S_MRC like (:1) AND
 
 	rows, err := m.DB.QueryContext(ctx, query, mrcParam, arg.StartDate, arg.EndDate, arg.Offset, arg.Limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
 	var smene []models.Smena
+	var totalCount int
 
 	for rows.Next() {
 		var s models.Smena
+		var count int
 
 		err := rows.Scan(
 			&s.IdSmene,
@@ -294,20 +296,22 @@ and smena.ID_S_MRC like (:1) AND
 			&s.OtvSpec,
 			&s.ZatSpec,
 			&s.IDKatDok,
+			&count,
 		)
 		if err != nil {
 			fmt.Printf("Greška prilikom skeniranja smene: %v\n", err)
-			return nil, err
+			return nil, 0, err
 		}
 		// fmt.Printf("Pročitana smena: %+v\n", s.IdSmene)
 
 		smene = append(smene, s)
+		totalCount = count
 	}
 	// fmt.Println("Posle iscitanjih smena")
 
 	if err := rows.Err(); err != nil {
 		fmt.Println("Greška prilikom iteracije kroz smene:", err)
-		return nil, err
+		return nil, 0, err
 	}
 
 	//  DRUGI KORAK – učitavanje događaja po smeni
@@ -342,7 +346,7 @@ ORDER BY d.rb_dog
 		rowsDog, err := m.DB.QueryContext(ctx, dogQuery, smene[i].IdSmene)
 		if err != nil {
 			fmt.Printf("Greška prilikom učitavanja događaja za smenu %d: %v\n", smene[i].IdSmene, err)
-			return nil, err
+			return nil, 0, err
 
 		}
 
@@ -367,7 +371,7 @@ ORDER BY d.rb_dog
 			if err != nil {
 				rowsDog.Close()
 				fmt.Printf("Greška prilikom skeniranja događaja za smenu %d: %v\n", smene[i].IdSmene, err)
-				return nil, err
+				return nil, 0, err
 			}
 			// fmt.Printf("Pročitani događaj za smenu %d: %+v\n", smene[i].IdSmene, d)
 
@@ -377,7 +381,7 @@ ORDER BY d.rb_dog
 		if err := rowsDog.Err(); err != nil {
 			rowsDog.Close()
 			fmt.Printf("Greška prilikom iteracije kroz događaje za smenu %d: %v\n", smene[i].IdSmene, err)
-			return nil, err
+			return nil, 0, err
 		}
 
 		rowsDog.Close()
@@ -385,7 +389,7 @@ ORDER BY d.rb_dog
 		smene[i].Dogadjaji = dogadjaji
 	}
 
-	return smene, nil
+	return smene, totalCount, nil
 }
 
 /****** Funkcija vraca tip dogadjaja Iskljucenje/ukljucenje sa manipulacijama *************/
