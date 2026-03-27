@@ -30,6 +30,48 @@ func (server *Server) listOOpenShifts(ctx *gin.Context) {
 	})
 }
 
+type listClosedShiftsByPageRequest struct {
+	Mrc       string `form:"mrc" binding:"required"`
+	StartDate string `form:"start_date" binding:"required"`
+	EndDate   string `form:"end_date" binding:"required"`
+	PageID    int32  `form:"page_id" binding:"required,min=1"`
+	PageSize  int32  `form:"page_size" binding:"required,min=5,max=100"`
+}
+
+func (server *Server) listClosedShiftsByPage(ctx *gin.Context) {
+
+	// fmt.Println("usao u handler listOpenShifts")
+
+	var req listClosedShiftsByPageRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := models.ListShiftsWithPaginationParams{
+		Mrc:       req.Mrc,
+		StartDate: req.StartDate,
+		EndDate:   req.EndDate,
+		Limit:     req.PageSize,
+		Offset:    (req.PageID - 1) * req.PageSize,
+	}
+
+	// 1. Pozovi funkciju iz store-a da dobiješ otvorene smene
+	smene, err := server.store.GetZatvoreneSmene(ctx, arg)
+	if err != nil {
+		fmt.Printf("Greška prilikom dobijanja otvorenih smena: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// fmt.Printf("Dobijene smene: %+v\n", smene)
+
+	// 2. Vrati rezultat
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": smene,
+	})
+}
+
 type ManipView struct {
 	DopunaDaNe  string `json:"dopuna_da_ne"`
 	Vrepoc      string `json:"vrepoc"`

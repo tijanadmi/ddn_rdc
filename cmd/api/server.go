@@ -182,6 +182,7 @@ func (server *Server) setupRouter() {
 	// authRoutes.GET("/reports/pi-mm/pdf", server.getPiMMReportPDF)
 
 	authRoutes.GET("/listopenshifts", server.listOOpenShifts)
+	authRoutes.GET("/listclosedshiftsbypage", server.listClosedShiftsByPage)
 
 	authRoutes.GET("/getiskljucenje/:id", server.getIskljucenje)
 	authRoutes.GET("/getobavbeleska/:id", server.getObavBeleska)

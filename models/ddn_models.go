@@ -4,6 +4,14 @@ import (
 	"time"
 )
 
+type ListShiftsWithPaginationParams struct {
+	Mrc       string `json:"mrc"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+	Limit     int32  `json:"limit"`
+	Offset    int32  `json:"offset"`
+}
+
 type Smena struct {
 	IdSmene int       `json:"id_smene"`
 	DatDnev time.Time `json:"dat_dnev"`
