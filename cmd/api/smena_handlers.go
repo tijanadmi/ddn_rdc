@@ -220,3 +220,248 @@ func (server *Server) getObavBeleska(ctx *gin.Context) {
 		"obav_beleska": obav,
 	})
 }
+
+// func buildDopuna(tk models.TK, d *models.DogadjajDetaljno) string {
+// 	switch {
+// 	case tk.Status != nil && *tk.Status == "1":
+// 		return "Stor."
+
+// 	case d.Dopuna != nil && *d.Dopuna == "2":
+// 		if tk.Dopuna == nil || *tk.Dopuna != "1" {
+// 			if d.DatumDopune != nil && !d.DatumDopune.Equal(d.DatumSmene) {
+// 				return "Dop."
+// 			}
+// 		}
+// 	}
+// 	return ""
+// }
+
+func buildDopuna(status *string, dopunaStavke *string, d *models.DogadjajDetaljno) string {
+	switch {
+	// Stor.
+	case status != nil && *status == "1":
+		return "Stor."
+
+	// Dop.
+	case d.Dopuna != nil && *d.Dopuna == "2":
+		if dopunaStavke == nil || *dopunaStavke != "1" {
+			if d.DatumDopune != nil && !d.DatumDopune.Equal(d.DatumSmene) {
+				return "Dop."
+			}
+		}
+	}
+
+	return ""
+}
+
+func buildDetaljT567(tk models.TK, d *models.DogadjajDetaljno) models.DetaljT567 {
+	var rec1 string
+
+	// vreme
+	if tk.Vrezav == nil || *tk.Vrezav == "" {
+		rec1 = "U " + tk.Vrepoc
+	} else {
+		rec1 = "Od " + tk.Vrepoc + " do " + *tk.Vrezav
+	}
+
+	// objekti (ispravljen edge case!)
+	if tk.ObID2 == nil || tk.ObjekatNaziv2 == nil || *tk.ObjekatNaziv2 == "" {
+		rec1 += " u " + tk.ObjekatNaziv
+	} else {
+		rec1 += " od " + tk.ObjekatNaziv + " do " + *tk.ObjekatNaziv2
+	}
+
+	rec1 += "       Vrsta događaja:   " + tk.VrstaDog
+
+	rec2 := "Vrsta TK opreme:  " + tk.Vropr
+
+	opis := ""
+	if tk.Opis != nil {
+		opis = *tk.Opis
+	}
+
+	dopuna := buildDopuna(tk.Status, tk.Dopuna, d)
+
+	return models.DetaljT567{
+		DopunaDaNe: dopuna,
+		Recenica1:  rec1,
+		Recenica2:  rec2,
+		Opis:       opis,
+	}
+}
+
+func (server *Server) getRadTK(ctx *gin.Context) {
+	// 1. Dohvati ID iz URL parametra
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nevažeći ID"})
+		return
+	}
+
+	// 2. Pozovi funkciju iz store-a
+	dogadjaj, err := server.store.GetRadTKById(ctx, id)
+	if err != nil {
+		fmt.Printf("Greška prilikom dobijanja događaja: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var detaljT567 []models.DetaljT567
+
+	if dogadjaj.TK != nil && len(*dogadjaj.TK) > 0 {
+		for _, tk := range *dogadjaj.TK {
+			detalj := buildDetaljT567(tk, dogadjaj)
+			detaljT567 = append(detaljT567, detalj)
+		}
+	}
+
+	// 6. Kreiraj finalni JSON za frontend
+	ctx.JSON(http.StatusOK, gin.H{
+		"rb_dog":      dogadjaj.RbDog,
+		"naslov":      dogadjaj.Naslov,
+		"podnaslov":   dogadjaj.Podnaslov,
+		"uzrok_tekst": dogadjaj.UzrokTekst,
+		"man_tekst":   dogadjaj.ManTekst,
+		"detaljT567":  detaljT567,
+	})
+}
+
+func buildDetaljT5(tsu models.TSU, d *models.DogadjajDetaljno) models.DetaljT567 {
+	var rec1 string
+
+	// vreme
+	if tsu.Vrezav == nil || *tsu.Vrezav == "" {
+		rec1 = "U " + tsu.Vrepoc
+	} else {
+		rec1 = "Od " + tsu.Vrepoc + " do " + *tsu.Vrezav
+	}
+
+	rec1 += " u " + tsu.ObjekatNaziv
+
+	rec1 += "       Vrsta događaja:   " + tsu.VrstaDog
+
+	rec2 := "Vrsta TSU opreme:  " + tsu.Vropr
+
+	opis := ""
+	if tsu.Opis != nil {
+		opis = *tsu.Opis
+	}
+
+	dopuna := buildDopuna(tsu.Status, tsu.Dopuna, d)
+
+	return models.DetaljT567{
+		DopunaDaNe: dopuna,
+		Recenica1:  rec1,
+		Recenica2:  rec2,
+		Opis:       opis,
+	}
+}
+
+func (server *Server) getRadTSU(ctx *gin.Context) {
+	// 1. Dohvati ID iz URL parametra
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nevažeći ID"})
+		return
+	}
+
+	// 2. Pozovi funkciju iz store-a
+	dogadjaj, err := server.store.GetRadTSUById(ctx, id)
+	if err != nil {
+		fmt.Printf("Greška prilikom dobijanja događaja: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var detaljT567 []models.DetaljT567
+
+	if dogadjaj.TSU != nil && len(*dogadjaj.TSU) > 0 {
+		for _, tsu := range *dogadjaj.TSU {
+			detalj := buildDetaljT5(tsu, dogadjaj)
+			detaljT567 = append(detaljT567, detalj)
+		}
+	}
+
+	// 6. Kreiraj finalni JSON za frontend
+	ctx.JSON(http.StatusOK, gin.H{
+		"rb_dog":      dogadjaj.RbDog,
+		"naslov":      dogadjaj.Naslov,
+		"podnaslov":   dogadjaj.Podnaslov,
+		"uzrok_tekst": dogadjaj.UzrokTekst,
+		"man_tekst":   dogadjaj.ManTekst,
+		"detaljT567":  detaljT567,
+	})
+}
+
+func buildDetaljT7(sop models.SOP, d *models.DogadjajDetaljno) models.DetaljT567 {
+	var rec1 string
+
+	// vreme
+	if sop.Vrezav == nil || *sop.Vrezav == "" {
+		rec1 = "U " + sop.Vrepoc
+	} else {
+		rec1 = "Od " + sop.Vrepoc + " do " + *sop.Vrezav
+	}
+
+	rec1 += " u " + sop.ObjekatNaziv
+
+	rec1 += "       Vrsta događaja:   " + sop.VrstaDog
+
+	rec2 := "Vrsta uređaja za sopstvenu potrošnju:  " + sop.NazSop
+	if sop.RBrSop != "" {
+		rec2 += "    Broj:  " + sop.RBrSop
+	}
+
+	opis := ""
+	if sop.Opis != nil {
+		opis = *sop.Opis
+	}
+
+	dopuna := buildDopuna(sop.Status, sop.Dopuna, d)
+
+	return models.DetaljT567{
+		DopunaDaNe: dopuna,
+		Recenica1:  rec1,
+		Recenica2:  rec2,
+		Opis:       opis,
+	}
+}
+
+func (server *Server) getRadSOP(ctx *gin.Context) {
+	// 1. Dohvati ID iz URL parametra
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nevažeći ID"})
+		return
+	}
+
+	// 2. Pozovi funkciju iz store-a
+	dogadjaj, err := server.store.GetRadSOPById(ctx, id)
+	if err != nil {
+		fmt.Printf("Greška prilikom dobijanja događaja: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var detaljT567 []models.DetaljT567
+
+	if dogadjaj.SOP != nil && len(*dogadjaj.SOP) > 0 {
+		for _, sop := range *dogadjaj.SOP {
+			detalj := buildDetaljT7(sop, dogadjaj)
+			detaljT567 = append(detaljT567, detalj)
+		}
+	}
+
+	// 6. Kreiraj finalni JSON za frontend
+	ctx.JSON(http.StatusOK, gin.H{
+		"rb_dog":      dogadjaj.RbDog,
+		"naslov":      dogadjaj.Naslov,
+		"podnaslov":   dogadjaj.Podnaslov,
+		"uzrok_tekst": dogadjaj.UzrokTekst,
+		"man_tekst":   dogadjaj.ManTekst,
+		"detaljT567":  detaljT567,
+	})
+}

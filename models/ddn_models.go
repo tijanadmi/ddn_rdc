@@ -101,6 +101,9 @@ type DogadjajDetaljno struct {
 
 	Manipulacije *[]Manipulacija `json:"manipulacije"`
 	ObavBeleske  *ObavBeleska    `json:"obav_beleske,omitempty"`
+	TSU          *[]TSU          `json:"tsu"`
+	TK           *[]TK           `json:"tk"`
+	SOP          *[]SOP          `json:"sop"`
 }
 
 /************** Iskljucenja/Ukljucenja ****************/
@@ -146,4 +149,61 @@ type ObavBeleska struct {
 	TekstObv string `json:"tekst_obv"` // ovde ide CLOB sadržaj iz baze
 	TipObv   string `json:"tip_obv"`   // tip obaveštenja
 	Dopuna   string `json:"dopuna"`    // dopuna, može biti prazan string
+}
+
+type TK struct {
+	ID            int       `json:"id"`
+	Vrepoc        string    `json:"vrepoc"`
+	Vrezav        *string   `json:"vrezav"`
+	VrstaDog      string    `json:"vrstaDog"`
+	Opis          *string   `json:"opis"`
+	ObID          int       `json:"obId"`
+	ObjekatNaziv  string    `json:"objekatNaziv"`
+	ObID2         *int      `json:"obId2"`
+	ObjekatNaziv2 *string   `json:"objekatNaziv2"`
+	Vropr         string    `json:"vropr"`
+	Vrpd          int       `json:"vrpd"`
+	Status        *string   `json:"status"`
+	Dopuna        *string   `json:"dopuna"`
+	VrepocSort    time.Time `json:"vrepocSort"`
+}
+
+type DetaljT567 struct {
+	DopunaDaNe string `json:"dopuna_da_ne"`
+	Recenica1  string `json:"recenica1"`
+	Recenica2  string `json:"recenica2"`
+	Opis       string `json:"opis"`
+}
+
+type TSU struct {
+	ID           int       `json:"id"`
+	Vrepoc       string    `json:"vrepoc"`
+	Vrezav       *string   `json:"vrezav"`
+	VrstaDog     string    `json:"vrstaDog"`
+	Opis         *string   `json:"opis"`
+	ObID         int       `json:"obId"`
+	ObjekatNaziv string    `json:"objekatNaziv"`
+	Vropr        string    `json:"vropr"`
+	Vrpd         int       `json:"vrpd"`
+	Status       *string   `json:"status"`
+	Dopuna       *string   `json:"dopuna"`
+	VrepocSort   time.Time `json:"vrepocSort"`
+}
+
+type SOP struct {
+	ID           int       `json:"id"`
+	Vrepoc       string    `json:"vrepoc"`
+	Vrezav       *string   `json:"vrezav"`
+	VrstaDog     string    `json:"vrstaDog"`
+	Opis         *string   `json:"opis"`
+	ObID         int       `json:"obId"`
+	ObjekatNaziv string    `json:"objekatNaziv"`
+	NazSop       string    `json:"nazSop"`
+	RBrSop       string    `json:"rbrSop"`
+	IdSSop       string    `json:"idSSop"`
+	IdSop        string    `json:"idSop"`
+	Vrpd         int       `json:"vrpd"`
+	Status       *string   `json:"status"`
+	Dopuna       *string   `json:"dopuna"`
+	VrepocSort   time.Time `json:"vrepocSort"`
 }

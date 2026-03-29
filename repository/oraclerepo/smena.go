@@ -764,3 +764,493 @@ FETCH FIRST 1 ROWS ONLY
 
 	return &d, nil
 }
+
+func (m *OracleDBRepo) GetRadTKById(ctx context.Context, id int) (*models.DogadjajDetaljno, error) {
+
+	//  MASTER QUERY
+	masterQuery := `
+SELECT 
+  d.id,
+  d.rb_dog,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_DOG','TIP','ID', d.id_tip_dog,'Q') AS tip_dog,
+  d.naslov,
+  d.ID_SMENA,
+  d.ID_DOG_SMENE AS VEZA_SA,
+  d2.rb_dog AS RB_DOG_VEZA_SA,
+  s3.DATDNEV datum_veze,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s3.id_tip_smena,'Q') AS tip_smene_veze,
+  d.DOPUNA,
+  d.ID_SMENA_D,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('S_GRRAZ','NAZIV','ID', 
+    ted.TD_NAZIVI.TD_DAJ_SIF('S_RAZLOG','ID_S_GRRAZ','ID', d.ID_S_RAZLOG,'Q'),'Q') AS grazlog,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('S_RAZLOG','NAZIV','ID', d.ID_S_RAZLOG,'Q') AS razlog,
+
+  d.id_s_razlog,
+  d.uzrok_tekst,
+  d.man_tekst,
+
+  s1.DATDNEV AS datum_smene,
+  s2.DATDNEV AS datum_dopune,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s1.id_tip_smena,'Q') AS tip_smene,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s2.id_tip_smena,'Q') AS tip_smene_dopune
+
+FROM dog_smene d
+JOIN smena s1 
+  ON d.ID_SMENA = s1.id
+LEFT JOIN smena s2 
+  ON d.ID_SMENA_D = s2.id
+LEFT JOIN dog_smene d2 
+  ON d.id_dog_smene = d2.id
+LEFT JOIN smena s3 
+  ON d2.ID_SMENA = s3.id
+WHERE d.id = :1
+`
+
+	var d models.DogadjajDetaljno
+
+	row := m.DB.QueryRowContext(ctx, masterQuery, id)
+
+	err := row.Scan(
+		&d.ID,
+		&d.RbDog,
+		&d.TipDog,
+		&d.Naslov,
+		&d.IDSmena,
+		&d.VezaSa,
+		&d.RbDogVezaSa,
+		&d.DatumVezaSa,
+		&d.TipSmenaVezaSa,
+		&d.Dopuna,
+		&d.IDSmenaD,
+		&d.Grazlog,
+		&d.Razlog,
+		&d.IDSrazlog,
+		&d.UzrokTekst,
+		&d.ManTekst,
+		&d.DatumSmene,
+		&d.DatumDopune,
+		&d.TipSmene,
+		&d.TipSmeneDopune,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	/**** Izmena naslova podnaslova ****/
+	d.Podnaslov = buildRecenica(&d)
+
+	//  DETAIL QUERY
+	detailQuery := `
+SELECT 
+    d.ID,
+    TO_CHAR(d.vrepoc,'hh24:mi') vrepoc,
+    TO_CHAR(d.vrezav,'hh24:mi') vrezav,
+
+    ted.TD_NAZIVI.TD_DAJ_SIF('S_VRPD','NAZIV','ID', d.ID_S_VRPD,'Q') VRSTADOG,
+
+    d.OPIS,
+    d.ob_id,
+
+    v1.nazob AS OBJEKAT_NAZIV,
+
+    d.OB_ID2,
+
+    v2.nazob AS OBJEKAT_NAZIV2,
+
+    TD_NAZIVI.TD_DAJ_SIF('S_VROPR','NAZIV','ID', d.ID_S_VROPR,'Q') VROPR,
+
+    d.id_s_vrpd AS VRPD,
+
+    d.STATUS AS STATUS_ISPKV5678,
+    d.DOPUNA AS DOPUNA_ISPKV5678,
+
+    d.vrepoc AS VREPOC_SORT_ISPKV5678
+
+FROM DOG_ISPKV d
+
+-- objekat 1
+LEFT JOIN V_s_ob v1 
+    ON v1.ob_id = d.ob_id
+   AND v1.tipob = d.id_tipob
+
+-- objekat 2
+LEFT JOIN V_s_ob v2 
+    ON v2.ob_id = d.ob_id2
+   AND v2.tipob = d.id2_tipob
+
+WHERE d.id_dog_smene = :1
+
+ORDER BY d.vrepoc
+`
+
+	rows, err := m.DB.QueryContext(ctx, detailQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tks []models.TK
+
+	for rows.Next() {
+		var tk models.TK
+
+		err := rows.Scan(
+			&tk.ID,
+			&tk.Vrepoc,
+			&tk.Vrezav,
+			&tk.VrstaDog,
+			&tk.Opis,
+			&tk.ObID,
+			&tk.ObjekatNaziv,
+			&tk.ObID2,
+			&tk.ObjekatNaziv2,
+			&tk.Vropr,
+			&tk.Vrpd,
+			&tk.Status,
+			&tk.Dopuna,
+			&tk.VrepocSort,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		tks = append(tks, tk)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if len(tks) > 0 {
+		d.TK = &tks
+	}
+
+	return &d, nil
+}
+
+func (m *OracleDBRepo) GetRadTSUById(ctx context.Context, id int) (*models.DogadjajDetaljno, error) {
+
+	//  MASTER QUERY
+	masterQuery := `
+SELECT 
+  d.id,
+  d.rb_dog,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_DOG','TIP','ID', d.id_tip_dog,'Q') AS tip_dog,
+  d.naslov,
+  d.ID_SMENA,
+  d.ID_DOG_SMENE AS VEZA_SA,
+  d2.rb_dog AS RB_DOG_VEZA_SA,
+  s3.DATDNEV datum_veze,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s3.id_tip_smena,'Q') AS tip_smene_veze,
+  d.DOPUNA,
+  d.ID_SMENA_D,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('S_GRRAZ','NAZIV','ID', 
+    ted.TD_NAZIVI.TD_DAJ_SIF('S_RAZLOG','ID_S_GRRAZ','ID', d.ID_S_RAZLOG,'Q'),'Q') AS grazlog,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('S_RAZLOG','NAZIV','ID', d.ID_S_RAZLOG,'Q') AS razlog,
+
+  d.id_s_razlog,
+  d.uzrok_tekst,
+  d.man_tekst,
+
+  s1.DATDNEV AS datum_smene,
+  s2.DATDNEV AS datum_dopune,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s1.id_tip_smena,'Q') AS tip_smene,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s2.id_tip_smena,'Q') AS tip_smene_dopune
+
+FROM dog_smene d
+JOIN smena s1 
+  ON d.ID_SMENA = s1.id
+LEFT JOIN smena s2 
+  ON d.ID_SMENA_D = s2.id
+LEFT JOIN dog_smene d2 
+  ON d.id_dog_smene = d2.id
+LEFT JOIN smena s3 
+  ON d2.ID_SMENA = s3.id
+WHERE d.id = :1
+`
+
+	var d models.DogadjajDetaljno
+
+	row := m.DB.QueryRowContext(ctx, masterQuery, id)
+
+	err := row.Scan(
+		&d.ID,
+		&d.RbDog,
+		&d.TipDog,
+		&d.Naslov,
+		&d.IDSmena,
+		&d.VezaSa,
+		&d.RbDogVezaSa,
+		&d.DatumVezaSa,
+		&d.TipSmenaVezaSa,
+		&d.Dopuna,
+		&d.IDSmenaD,
+		&d.Grazlog,
+		&d.Razlog,
+		&d.IDSrazlog,
+		&d.UzrokTekst,
+		&d.ManTekst,
+		&d.DatumSmene,
+		&d.DatumDopune,
+		&d.TipSmene,
+		&d.TipSmeneDopune,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	/**** Izmena naslova podnaslova ****/
+	d.Podnaslov = buildRecenica(&d)
+
+	//  DETAIL QUERY
+	detailQuery := `
+SELECT 
+    d.ID,
+    TO_CHAR(d.vrepoc,'hh24:mi') vrepoc,
+    TO_CHAR(d.vrezav,'hh24:mi') vrezav,
+
+    ted.TD_NAZIVI.TD_DAJ_SIF('S_VRPD','NAZIV','ID', d.ID_S_VRPD,'Q') VRSTADOG,
+
+    d.OPIS,
+    d.ob_id,
+
+    v1.nazob AS OBJEKAT_NAZIV,
+
+    TD_NAZIVI.TD_DAJ_SIF('S_VROPR','NAZIV','ID', d.ID_S_VROPR,'Q') VROPR,
+
+    d.id_s_vrpd AS VRPD,
+
+    d.STATUS AS STATUS_ISPKV5678,
+    d.DOPUNA AS DOPUNA_ISPKV5678,
+
+    d.vrepoc AS VREPOC_SORT_ISPKV5678
+
+FROM DOG_ISPKV d
+
+-- objekat 1
+LEFT JOIN V_s_ob v1 
+    ON v1.ob_id = d.ob_id
+   AND v1.tipob = d.id_tipob
+
+WHERE d.id_dog_smene = :1
+
+ORDER BY d.vrepoc
+`
+
+	rows, err := m.DB.QueryContext(ctx, detailQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tsus []models.TSU
+
+	for rows.Next() {
+		var tsu models.TSU
+
+		err := rows.Scan(
+			&tsu.ID,
+			&tsu.Vrepoc,
+			&tsu.Vrezav,
+			&tsu.VrstaDog,
+			&tsu.Opis,
+			&tsu.ObID,
+			&tsu.ObjekatNaziv,
+			&tsu.Vropr,
+			&tsu.Vrpd,
+			&tsu.Status,
+			&tsu.Dopuna,
+			&tsu.VrepocSort,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		tsus = append(tsus, tsu)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if len(tsus) > 0 {
+		d.TSU = &tsus
+	}
+
+	return &d, nil
+}
+
+func (m *OracleDBRepo) GetRadSOPById(ctx context.Context, id int) (*models.DogadjajDetaljno, error) {
+
+	//  MASTER QUERY
+	masterQuery := `
+SELECT 
+  d.id,
+  d.rb_dog,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_DOG','TIP','ID', d.id_tip_dog,'Q') AS tip_dog,
+  d.naslov,
+  d.ID_SMENA,
+  d.ID_DOG_SMENE AS VEZA_SA,
+  d2.rb_dog AS RB_DOG_VEZA_SA,
+  s3.DATDNEV datum_veze,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s3.id_tip_smena,'Q') AS tip_smene_veze,
+  d.DOPUNA,
+  d.ID_SMENA_D,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('S_GRRAZ','NAZIV','ID', 
+    ted.TD_NAZIVI.TD_DAJ_SIF('S_RAZLOG','ID_S_GRRAZ','ID', d.ID_S_RAZLOG,'Q'),'Q') AS grazlog,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('S_RAZLOG','NAZIV','ID', d.ID_S_RAZLOG,'Q') AS razlog,
+
+  d.id_s_razlog,
+  d.uzrok_tekst,
+  d.man_tekst,
+
+  s1.DATDNEV AS datum_smene,
+  s2.DATDNEV AS datum_dopune,
+
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s1.id_tip_smena,'Q') AS tip_smene,
+  ted.TD_NAZIVI.TD_DAJ_SIF('TIP_SMENA','SKR_NAZ','ID', s2.id_tip_smena,'Q') AS tip_smene_dopune
+
+FROM dog_smene d
+JOIN smena s1 
+  ON d.ID_SMENA = s1.id
+LEFT JOIN smena s2 
+  ON d.ID_SMENA_D = s2.id
+LEFT JOIN dog_smene d2 
+  ON d.id_dog_smene = d2.id
+LEFT JOIN smena s3 
+  ON d2.ID_SMENA = s3.id
+WHERE d.id = :1
+`
+
+	var d models.DogadjajDetaljno
+
+	row := m.DB.QueryRowContext(ctx, masterQuery, id)
+
+	err := row.Scan(
+		&d.ID,
+		&d.RbDog,
+		&d.TipDog,
+		&d.Naslov,
+		&d.IDSmena,
+		&d.VezaSa,
+		&d.RbDogVezaSa,
+		&d.DatumVezaSa,
+		&d.TipSmenaVezaSa,
+		&d.Dopuna,
+		&d.IDSmenaD,
+		&d.Grazlog,
+		&d.Razlog,
+		&d.IDSrazlog,
+		&d.UzrokTekst,
+		&d.ManTekst,
+		&d.DatumSmene,
+		&d.DatumDopune,
+		&d.TipSmene,
+		&d.TipSmeneDopune,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	/**** Izmena naslova podnaslova ****/
+	d.Podnaslov = buildRecenica(&d)
+
+	//  DETAIL QUERY
+	detailQuery := `
+SELECT 
+    d.ID,
+    TO_CHAR(d.vrepoc,'hh24:mi') vrepoc,
+    TO_CHAR(d.vrezav,'hh24:mi') vrezav,
+
+    ted.TD_NAZIVI.TD_DAJ_SIF('S_VRPD','NAZIV','ID', d.ID_S_VRPD,'Q') VRSTADOG,
+
+    d.OPIS,
+    d.ob_id,
+
+    v1.nazob AS OBJEKAT_NAZIV,
+
+    TD_NAZIVI.TD_DAJ_SIF('S_SOP','NAZIV','ID',d.ID_S_SOP,'Q') NAZSOP,
+    s1.r_br,
+    d.ID_S_SOP,
+    d.ID_SOP,
+
+    d.id_s_vrpd AS VRPD,
+
+    d.STATUS AS STATUS_ISPKV5678,
+    d.DOPUNA AS DOPUNA_ISPKV5678,
+
+    d.vrepoc AS VREPOC_SORT_ISPKV5678
+
+FROM DOG_ISPKV d
+
+-- objekat 1
+LEFT JOIN V_s_ob v1 
+    ON v1.ob_id = d.ob_id
+   AND v1.tipob = d.id_tipob
+
+-- sop
+LEFT JOIN v_s_spo s1 
+    ON s1.tipsp = d.ID_S_SOP
+   AND s1.sop_id = d.ID_SOP
+
+WHERE d.id_dog_smene = :1
+
+ORDER BY d.vrepoc
+`
+
+	rows, err := m.DB.QueryContext(ctx, detailQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var sops []models.SOP
+
+	for rows.Next() {
+		var sop models.SOP
+
+		err := rows.Scan(
+			&sop.ID,
+			&sop.Vrepoc,
+			&sop.Vrezav,
+			&sop.VrstaDog,
+			&sop.Opis,
+			&sop.ObID,
+			&sop.ObjekatNaziv,
+			&sop.NazSop,
+			&sop.RBrSop,
+			&sop.IdSSop,
+			&sop.IdSop,
+			&sop.Vrpd,
+			&sop.Status,
+			&sop.Dopuna,
+			&sop.VrepocSort,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		sops = append(sops, sop)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if len(sops) > 0 {
+		d.SOP = &sops
+	}
+
+	return &d, nil
+}

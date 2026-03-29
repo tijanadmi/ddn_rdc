@@ -78,4 +78,7 @@ type DatabaseRepo interface {
 	GetZatvoreneSmene(ctx context.Context, arg models.ListShiftsWithPaginationParams) ([]models.Smena, int, error)
 	GetIskljucenjeById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 	GetObavBeleskaById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
+	GetRadTSUById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
+	GetRadTKById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
+	GetRadSOPById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 }

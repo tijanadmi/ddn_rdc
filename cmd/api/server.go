@@ -186,6 +186,9 @@ func (server *Server) setupRouter() {
 
 	authRoutes.GET("/getiskljucenje/:id", server.getIskljucenje)
 	authRoutes.GET("/getobavbeleska/:id", server.getObavBeleska)
+	authRoutes.GET("/getradtsu/:id", server.getRadTSU)
+	authRoutes.GET("/getradtk/:id", server.getRadTK)
+	authRoutes.GET("/getradsop/:id", server.getRadSOP)
 
 	server.router = router
 }
