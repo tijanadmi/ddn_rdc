@@ -117,7 +117,7 @@ where smena.stat_smene = 0
 	//  DRUGI KORAK – učitavanje događaja po smeni
 
 	dogQuery := `
-SELECT 
+SELECT distinct
   d.id,
   d.id_smena,
   d.rb_dog,
@@ -317,7 +317,7 @@ and smena.ID_S_MRC like (:1) AND
 	//  DRUGI KORAK – učitavanje događaja po smeni
 
 	dogQuery := `
-SELECT 
+SELECT distinct
   d.id,
   d.id_smena,
   d.rb_dog,
