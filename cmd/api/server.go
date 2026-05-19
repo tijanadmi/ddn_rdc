@@ -190,6 +190,9 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/getradtk/:id", server.getRadTK)
 	authRoutes.GET("/getradsop/:id", server.getRadSOP)
 
+	authRoutes.GET("/getispad/:id", server.getIspad)
+	authRoutes.GET("/getprekidp/:id", server.getPrekidP)
+
 	server.router = router
 }
 

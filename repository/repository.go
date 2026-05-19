@@ -81,4 +81,6 @@ type DatabaseRepo interface {
 	GetRadTSUById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 	GetRadTKById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 	GetRadSOPById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
+	GetIspadById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
+	GetPrekidPById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 }
