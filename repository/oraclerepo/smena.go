@@ -244,7 +244,7 @@ where smena.stat_smene = 1
 and smena.ID_S_MRC like (:1) AND  
     (TRUNC(smena.datdnev) BETWEEN TO_DATE(:2, 'dd.mm.yyyy')
                            AND TO_DATE(:3, 'dd.mm.yyyy'))
-   ORDER BY id
+   ORDER BY id desc
               OFFSET :4 ROWS FETCH NEXT :5 ROWS ONLY
 `
 
