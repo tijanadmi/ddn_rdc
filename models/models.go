@@ -254,6 +254,16 @@ type SMrc struct {
 	NameCir string `json:"name_cir"`
 }
 
+type SOrg struct {
+	ID          int    `json:"id"`
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Status      string `json:"status"`
+	NameCir     string `json:"name_cir"`
+	NazivSkr    string `json:"naziv_skr"`
+	NazivSkrCir string `json:"naziv_skr_cir"`
+}
+
 type ListObjectLimitOffsetParams struct {
 	Mrc    int32 `json:"mrc"`
 	Limit  int32 `json:"limit"`

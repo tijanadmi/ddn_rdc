@@ -26,6 +26,24 @@ func (server *Server) getMrcById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, mrc)
 }
 
+func (server *Server) getOrgById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	orgID, err := strconv.Atoi(id)
+	if err != nil {
+
+		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
+		return
+	}
+
+	org, err := server.store.GetOrgById(ctx, orgID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, org)
+}
+
 func (server *Server) getSTipPrekById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	mrcID, err := strconv.Atoi(id)
@@ -175,6 +193,16 @@ func (server *Server) listMrcs(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, mrcs)
+}
+
+func (server *Server) listOrgs(ctx *gin.Context) {
+	orgs, err := server.store.GetSOrg(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, orgs)
 }
 
 func (server *Server) listMrcsForInsert(ctx *gin.Context) {

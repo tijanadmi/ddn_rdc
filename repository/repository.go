@@ -32,6 +32,10 @@ type DatabaseRepo interface {
 	// GetSMrc(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.SMrc, error)
 	GetSMrc(ctx context.Context) ([]*models.SMrc, error)
 	GetSMrcForInsert(ctx context.Context) ([]*models.SMrc, error)
+
+	GetOrgById(ctx context.Context, id int) (*models.SOrg, error)
+	GetSOrg(ctx context.Context) ([]*models.SOrg, error)
+
 	GetSTipPrekById(ctx context.Context, id int) (*models.STipPrek, error)
 	// GetSTipPrek(ctx context.Context, arg models.ListLimitOffsetParams) ([]*models.STipPrek, error)
 	GetSTipPrek(ctx context.Context) ([]*models.STipPrek, error)
@@ -83,4 +87,7 @@ type DatabaseRepo interface {
 	GetRadSOPById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 	GetIspadById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 	GetPrekidPById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
+
+	GetShemeByOrg(ctx context.Context, idOrg int, tipDok string) ([]models.Shema, error)
+	GetShemaPutanjaByID(ctx context.Context, id int) (string, string, error) 
 }

@@ -34,6 +34,33 @@ func (m *OracleDBRepo) GetMrcById(ctx context.Context, id int) (*models.SMrc, er
 	return &mrc, err
 }
 
+func (m *OracleDBRepo) GetOrgById(ctx context.Context, id int) (*models.SOrg, error) {
+
+	query := `select id, sifra, naziv, status, naziv_cir,naziv_skr, naziv_skr_cir
+			  from s_org
+			  where id=:1`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	var org models.SOrg
+
+	err := row.Scan(
+		&org.ID,
+		&org.Code,
+		&org.Name,
+		&org.Status,
+		&org.NameCir,
+		&org.NazivSkr,
+		&org.NazivSkrCir,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &org, err
+}
+
 // type ListLimitOffsetParams struct {
 // 	Limit  int32  `json:"limit"`
 // 	Offset int32  `json:"offset"`
@@ -69,6 +96,40 @@ func (m *OracleDBRepo) GetSMrc(ctx context.Context) ([]*models.SMrc, error) {
 	}
 
 	return mrcs, nil
+}
+
+// Get returns all s_org and error, if any
+func (m *OracleDBRepo) GetSOrg(ctx context.Context) ([]*models.SOrg, error) {
+	query := `select id, sifra, naziv, status, naziv_cir,naziv_skr, naziv_skr_cir
+			  from s_org
+			  where sifra in ('0311', '0312', '0313', '0314', '0315', '0316','0317')
+			  ORDER BY sifra`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orgs []*models.SOrg
+
+	for rows.Next() {
+		var org models.SOrg
+		if err := rows.Scan(
+			&org.ID,
+			&org.Code,
+			&org.Name,
+			&org.Status,
+			&org.NameCir,
+			&org.NazivSkr,
+			&org.NazivSkrCir,
+		); err != nil {
+			return nil, err
+		}
+		orgs = append(orgs, &org)
+	}
+
+	return orgs, nil
 }
 
 // Get returns  s_mrc for Lov for create/update forms and error, if any

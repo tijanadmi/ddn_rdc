@@ -73,6 +73,7 @@ func (server *Server) setupRouter() {
 	router.POST("/users/logout", server.logoutUser)
 	router.POST("/tokens/renew_access", server.renewAccessToken)
 	router.GET("/reports/pi-mm/pdf", server.getPiMMReportPDF)
+	router.GET("/getshemepdf/:id", server.getShemaPDF)
 
 	// router.POST("/users/get_user_by_token", server.GetUserByToken)
 	// router.POST("/tokens/renew_access", server.renewAccessToken)
@@ -124,6 +125,9 @@ func (server *Server) setupRouter() {
 	// authRoutes.POST("/tokens/renew_access", server.renewAccessToken)
 	authRoutes.GET("/mrc/:id", server.getMrcById)
 	authRoutes.GET("/mrc", server.listMrcs)
+
+	authRoutes.GET("/org/:id", server.getOrgById)
+	authRoutes.GET("/org", server.listOrgs)
 	authRoutes.GET("/mrciu", server.listMrcsForInsert)
 	authRoutes.GET("/tipprek/:id", server.getSTipPrekById)
 	authRoutes.GET("/tipprek", server.listTipPrek)
@@ -192,6 +196,9 @@ func (server *Server) setupRouter() {
 
 	authRoutes.GET("/getispad/:id", server.getIspad)
 	authRoutes.GET("/getprekidp/:id", server.getPrekidP)
+
+	authRoutes.GET("/getshemebyorg/:id", server.getShemeByOrg)
+	// authRoutes.GET("/getshemepdfbyid/:id", server.getShemaPDF)
 
 	server.router = router
 }
