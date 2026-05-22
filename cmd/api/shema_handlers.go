@@ -28,7 +28,7 @@ func (server *Server) getShemeByOrg(ctx *gin.Context) {
 	// ---------------- JEDNOPOLNE ----------------
 	jednopolne, err := server.store.GetShemeByOrg(ctx, orgID, "JS")
 	if err != nil {
-		fmt.Printf("Greška pri čitanju jednopolnih šema: %v\n", err)
+		// fmt.Printf("Greška pri čitanju jednopolnih šema: %v\n", err)
 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -37,7 +37,7 @@ func (server *Server) getShemeByOrg(ctx *gin.Context) {
 	// ---------------- DISPOZICIONE ----------------
 	dispozicione, err := server.store.GetShemeByOrg(ctx, orgID, "DS")
 	if err != nil {
-		fmt.Printf("Greška pri čitanju dispozicionih šema: %v\n", err)
+		// fmt.Printf("Greška pri čitanju dispozicionih šema: %v\n", err)
 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -52,11 +52,11 @@ func (server *Server) getShemeByOrg(ctx *gin.Context) {
 
 func (server *Server) getShemaPDF(ctx *gin.Context) {
 
-	fmt.Println("Dohvatanje šeme PDF...")
+	// fmt.Println("Dohvatanje šeme PDF...")
 	idStr := ctx.Param("id")
 
 	id, err := strconv.Atoi(idStr)
-	fmt.Printf("ID šeme: %d\n", id)
+	// fmt.Printf("ID šeme: %d\n", id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("neispravan ID")))
 		return
@@ -64,9 +64,9 @@ func (server *Server) getShemaPDF(ctx *gin.Context) {
 
 	// ---------------- PUTANJA + IME ----------------
 	putanja, imeDok, err := server.store.GetShemaPutanjaByID(ctx, id)
-	fmt.Println(putanja)
+	// fmt.Println(putanja)
 	if err != nil {
-		fmt.Printf("Greška pri dohvatanju fajla: %v\n", err)
+		// fmt.Printf("Greška pri dohvatanju fajla: %v\n", err)
 
 		ctx.JSON(http.StatusNotFound, errorResponse(errors.New("fajl nije pronađen")))
 		return
@@ -76,7 +76,7 @@ func (server *Server) getShemaPDF(ctx *gin.Context) {
 
 	var basePath string
 
-	fmt.Printf("Originalna putanja: %s\n", server.config.Environment)
+	// fmt.Printf("Originalna putanja: %s\n", server.config.Environment)
 	if server.config.Environment == "production" {
 		basePath = "/mnt/sheme"
 	} else {
@@ -107,7 +107,7 @@ func (server *Server) getShemaPDF(ctx *gin.Context) {
 
 	fullPath := filepath.Join(basePath, relative)
 
-	fmt.Println("Nova putanja:", fullPath)
+	// t.Println("Nova putanja:", fullPath)
 
 	// ---------------- HEADERS ----------------
 	ctx.Header("Content-Type", "application/pdf")
