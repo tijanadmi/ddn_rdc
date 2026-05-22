@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,6 +73,42 @@ func (server *Server) getShemaPDF(ctx *gin.Context) {
 		return
 	}
 
+	baseUNC := `\sheme`
+
+	var basePath string
+
+	if os.Getenv("ENVIRONMENT") == "production" {
+		basePath = "/mnt/sheme"
+	} else {
+		// DEV: uzmi root do \sheme iz pune UNC putanje
+		idx := strings.Index(putanja, baseUNC)
+
+		if idx != -1 {
+			basePath = putanja[:idx+len(baseUNC)]
+		} else {
+			// fallback (ako format nije očekivan)
+			basePath = baseUNC
+		}
+	}
+
+	// izvuci deo posle \sheme
+	idx := strings.Index(putanja, baseUNC)
+	if idx == -1 {
+		return
+	}
+
+	relative := putanja[idx+len(baseUNC):]
+
+	// očisti početni backslash
+	relative = strings.TrimLeft(relative, `\`)
+
+	// Windows -> Linux
+	relative = strings.ReplaceAll(relative, `\`, "/")
+
+	fullPath := filepath.Join(basePath, relative)
+
+	fmt.Println("Nova putanja:", fullPath)
+
 	// ---------------- HEADERS ----------------
 	ctx.Header("Content-Type", "application/pdf")
 
@@ -80,5 +119,5 @@ func (server *Server) getShemaPDF(ctx *gin.Context) {
 	)
 
 	// ---------------- SERVIRANJE ----------------
-	ctx.File(putanja)
+	ctx.File(fullPath)
 }
