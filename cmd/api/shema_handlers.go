@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -77,7 +76,8 @@ func (server *Server) getShemaPDF(ctx *gin.Context) {
 
 	var basePath string
 
-	if os.Getenv("ENVIRONMENT") == "production" {
+	fmt.Printf("Originalna putanja: %s\n", server.config.Environment)
+	if server.config.Environment == "production" {
 		basePath = "/mnt/sheme"
 	} else {
 		// DEV: uzmi root do \sheme iz pune UNC putanje
