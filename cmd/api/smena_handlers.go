@@ -1098,3 +1098,24 @@ func (server *Server) getPrekidP(ctx *gin.Context) {
 		"detaljT567":  detaljT567,
 	})
 }
+
+func (server *Server) getObavSlike(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nevažeći ID"})
+		return
+	}
+
+	images, err := server.store.GetObavSlikeById(ctx, id)
+	if err != nil {
+		fmt.Printf("Greška prilikom dobijanja slika: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"id":     id,
+		"images": images,
+	})
+}

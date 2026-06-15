@@ -330,3 +330,9 @@ type PrekidP struct {
 	Status *string `json:"status"`
 	Dopuna *string `db:"DOPUNA_ISPKV5678" json:"dopuna"`
 }
+
+type ObavSlika struct {
+	Base64 string `json:"base64"`
+	Format string `json:"format"`
+	RB     int    `json:"rb"`
+}

@@ -89,5 +89,7 @@ type DatabaseRepo interface {
 	GetPrekidPById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 
 	GetShemeByOrg(ctx context.Context, idOrg int, tipDok string) ([]models.Shema, error)
-	GetShemaPutanjaByID(ctx context.Context, id int) (string, string, error) 
+	GetShemaPutanjaByID(ctx context.Context, id int) (string, string, error)
+
+	GetObavSlikeById(ctx context.Context, id int) ([]models.ObavSlika, error)
 }

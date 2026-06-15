@@ -200,6 +200,8 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/getshemebyorg/:id", server.getShemeByOrg)
 	// authRoutes.GET("/getshemepdfbyid/:id", server.getShemaPDF)
 
+	authRoutes.GET("/dogadjaji/:id/slike", server.getObavSlike)
+
 	server.router = router
 }
 

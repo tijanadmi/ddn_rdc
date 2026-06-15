@@ -3,6 +3,7 @@ package oraclerepo
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -1878,3 +1879,50 @@ order by A.VREPOC_SORT_ISPKV5678
 	return &d, nil
 }
 
+func (m *OracleDBRepo) GetObavSlikeById(ctx context.Context, id int) ([]models.ObavSlika, error) {
+
+	query := `
+		SELECT SLIKE, FORMAT, RB
+		FROM DOG_OBAV
+		WHERE ID_DOG_SMENE = :1
+		AND SLIKE IS NOT NULL
+		ORDER BY RB
+	`
+
+	rows, err := m.DB.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var images []models.ObavSlika
+
+	for rows.Next() {
+		var blob []byte
+		var format sql.NullString
+		var rb int
+
+		err := rows.Scan(&blob, &format, &rb)
+		if err != nil {
+			return nil, err
+		}
+
+		img := models.ObavSlika{
+			Base64: base64.StdEncoding.EncodeToString(blob),
+			RB:     rb,
+			Format: "jpeg",
+		}
+
+		if format.Valid {
+			img.Format = format.String
+		}
+
+		images = append(images, img)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return images, nil
+}
