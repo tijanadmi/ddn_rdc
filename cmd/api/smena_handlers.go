@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tijanadmi/ddn_rdc/models"
@@ -468,12 +469,100 @@ func (server *Server) getRadSOP(ctx *gin.Context) {
 
 /************** HELPER FUNKCIJE ZA GRADNJU TEKSTA U DETAJLU DOGADJAJA tipa ISPAD *****************/
 
+// func buildRecenica1(isp models.Ispad) string {
+
+// 	var kon string
+// 	var vSnaga string
+// 	fmt.Println("ispad", isp)
+
+// 	fmt.Println("vrDogSif i SmPk:", isp.VrDogSif, isp.SmPk)
+// 	// KON logika
+// 	switch {
+// 	case isp.VrDogSif == "7" || isp.VrDogSif == "71":
+// 		if isp.SmPk != "ostaje u pogonu" {
+// 			kon = " je "
+// 		}
+// 		if isp.SmPk != "" {
+// 			kon += isp.SmPk + " "
+// 		} else {
+// 			kon += "isključen "
+// 		}
+
+// 	case isp.TipOb == "1" && isp.VrDogSif != "72":
+// 		kon = " ispada "
+
+// 	case isp.TipOb == "7":
+// 		kon = " kvar na DVxKV "
+
+// 	case isp.VrDogSif == "72":
+// 		kon = " konzum u mraku "
+// 	}
+// 	fmt.Println("kon:", kon)
+
+// 	if isp.Snaga != nil && *isp.Snaga != "" {
+// 		vSnaga = " ispala snaga " + *isp.Snaga
+// 	}
+
+// 	// helper values
+// 	vrepoc := isp.Vrepoc
+// 	vrezav := isp.Vrezav
+// 	obj := isp.Objekat
+// 	polje := isp.DvTrafoPolje
+
+// 	// CASE 1: VREZAV IS NULL
+// 	if vrezav == "" {
+
+// 		if obj == "" {
+
+// 			if isp.VrDogSif == "72" && isp.Snaga != nil {
+// 				return "U " + vrepoc + kon + polje + vSnaga
+// 			}
+// 			return "U " + vrepoc + kon + polje
+// 		}
+
+// 		if polje == "" || polje == " " {
+// 			if isp.VrDogSif == "72" && isp.Snaga != nil {
+// 				return "U " + vrepoc + kon + "u " + obj + vSnaga
+// 			}
+// 			return "U " + vrepoc + kon + "u " + obj
+// 		}
+
+// 		if isp.VrDogSif == "72" && isp.Snaga != nil {
+// 			return "U " + vrepoc + kon + polje + " u " + obj + vSnaga
+// 		}
+
+// 		return "U " + vrepoc + kon + polje + " u " + obj
+// 	}
+
+// 	// CASE 2: VREZAV NOT NULL
+// 	if obj == "" {
+
+// 		if isp.VrDogSif == "72" && isp.Snaga != nil {
+// 			return "Od " + vrepoc + " do " + vrezav + kon + polje + vSnaga
+// 		}
+// 		return "Od " + vrepoc + " do " + vrezav + kon + polje
+// 	}
+
+// 	if polje == "" || polje == " " {
+// 		if isp.VrDogSif == "72" && isp.Snaga != nil {
+// 			return "Od " + vrepoc + " do " + vrezav + kon + "u " + obj + vSnaga
+// 		}
+// 		return "Od " + vrepoc + " do " + vrezav + kon + "u " + obj
+// 	}
+
+// 	if isp.VrDogSif == "72" && isp.Snaga != nil {
+// 		return "Od " + vrepoc + " do " + vrezav + kon + polje + " u " + obj + vSnaga
+// 	}
+
+// 	return "Od " + vrepoc + " do " + vrezav + kon + polje + " u " + obj
+// }
+
 func buildRecenica1(isp models.Ispad) string {
 
 	var kon string
 	var vSnaga string
 
-	// KON logika
+	// KON logika (identično PL/SQL)
 	switch {
 	case isp.VrDogSif == "7" || isp.VrDogSif == "71":
 		if isp.SmPk != "ostaje u pogonu" {
@@ -485,21 +574,21 @@ func buildRecenica1(isp models.Ispad) string {
 			kon += "isključen "
 		}
 
-	case isp.TipOb == "1" && isp.VrDogSif != "72":
+	case isp.TipDog == "1" && isp.VrDogSif != "72":
 		kon = " ispada "
 
-	case isp.TipOb == "7":
+	case isp.TipDog == "7":
 		kon = " kvar na DVxKV "
 
 	case isp.VrDogSif == "72":
 		kon = " konzum u mraku "
 	}
 
+	// SNAGA (PL/SQL: v_snaga := ' ispala snaga '||:SNAGA;)
 	if isp.Snaga != nil && *isp.Snaga != "" {
 		vSnaga = " ispala snaga " + *isp.Snaga
 	}
 
-	// helper values
 	vrepoc := isp.Vrepoc
 	vrezav := isp.Vrezav
 	obj := isp.Objekat
@@ -592,6 +681,17 @@ func hasAny(values ...*string) bool {
 	return false
 }
 
+func clean(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return strings.TrimSpace(*s)
+}
+
+func isNotEmpty(s *string) bool {
+	return s != nil && strings.TrimSpace(*s) != ""
+}
+
 func buildZastitaOpis(isp models.Ispad) string {
 	var glavna1, glavna2, glavna3 string
 	var rezervna, rezervna2 string
@@ -600,202 +700,255 @@ func buildZastitaOpis(isp models.Ispad) string {
 	var jps, jps2 string
 	var recenica string
 
+	// fmt.Println("ispad buildZastitaOpis", val(isp.ZZMSPGl1))
+
 	// ---------------- GLAVNA 1 ----------------
 	if hasAny(isp.ZDsdfGl1, isp.ZKvarGl1, isp.ZPrstGl1, isp.ZZMSPGl1,
-		isp.ZUzmsGl1, isp.ZRapuGl1, isp.ZLokkGl1,
-		isp.IdZTelePocGl1, isp.IdZTeleKrajGl1) {
+		isp.ZUzmsGl1, isp.ZRapuGl1, isp.IdZTelePocGl1, isp.IdZTeleKrajGl1, isp.ZLokkGl1) {
 
 		glavna1 = "Glavna zaštita 1\n"
-		if isp.ZDsdfGl1 != nil {
-			glavna1 += val(isp.ZDsdfGl1) + "   "
+
+		if v := clean(isp.ZDsdfGl1); v != "" {
+			glavna1 += v + "   "
 		}
-		if isp.ZKvarGl1 != nil {
-			glavna1 += "Kvar u:" + val(isp.ZKvarGl1) + "   "
+
+		if v := clean(isp.ZKvarGl1); v != "" {
+			glavna1 += "Kvar u:" + v + "   "
 		}
-		if isp.ZPrstGl1 != nil {
-			glavna1 += val(isp.ZPrstGl1) + "   "
+
+		if v := clean(isp.ZPrstGl1); v != "" {
+			glavna1 += v + "   "
 		}
-		if isp.ZZMSPGl1 != nil {
-			glavna1 += val(isp.ZZMSPGl1) + "   "
+
+		if v := clean(isp.ZZMSPGl1); v != "" {
+			glavna1 += v + "   "
 		}
-		if isp.ZUzmsGl1 != nil {
-			glavna1 += val(isp.ZUzmsGl1) + "   "
+
+		if v := clean(isp.ZUzmsGl1); v != "" {
+			glavna1 += v + "   "
 		}
-		if isp.ZRapuGl1 != nil {
-			glavna1 += "APU:" + val(isp.ZRapuGl1) + "   "
+
+		if v := clean(isp.ZRapuGl1); v != "" {
+			glavna1 += "APU:" + v + "   "
 		}
-		if isp.IdZTelePocGl1 != nil {
-			glavna1 += val(isp.IdZTelePocGl1) + "   "
+
+		if v := clean(isp.IdZTelePocGl1); v != "" {
+			glavna1 += v + "   "
 		}
-		if isp.IdZTeleKrajGl1 != nil {
-			glavna1 += val(isp.IdZTeleKrajGl1) + "   "
+
+		if v := clean(isp.IdZTeleKrajGl1); v != "" {
+			glavna1 += v + "   "
 		}
-		if isp.ZLokkGl1 != nil {
-			glavna1 += "Lokator kvara:" + val(isp.ZLokkGl1) + "km "
+
+		if v := clean(isp.ZLokkGl1); v != "" {
+			glavna1 += "Lokator kvara:" + v + "km "
 		}
 	}
 
 	// ---------------- GLAVNA 2 ----------------
-	if hasAny(isp.ZDsdfGl2, isp.ZKvarGl2, isp.ZPrstGl2, isp.ZZMSPGl2,
-		isp.ZUzmsGl2, isp.ZRapuGl2, isp.ZLokkGl2,
-		isp.IdZTelePocGl2, isp.IdZTeleKrajGl2) {
 
-		if (isp.TipOb == "DV" || isp.TipOb == "TD" || isp.TipOb == "KB" || isp.TipOb == "TK") && isp.Napon != "400" {
+	// ---------------- PROVERA DA LI ULAZI ----------------
+	if hasAny(
+		isp.ZDsdfGl2, isp.ZKvarGl2, isp.ZPrstGl2, isp.ZZMSPGl2,
+		isp.ZUzmsGl2, isp.ZRapuGl2, isp.ZLokkGl2,
+		isp.IdZTelePocGl2, isp.IdZTeleKrajGl2,
+	) {
+
+		// ---------------- HEADER (PL/SQL TIP_OB / NAPON LOGIKA) ----------------
+		if (isp.TipOb == "DV" || isp.TipOb == "TD" || isp.TipOb == "KB" || isp.TipOb == "TK") &&
+			isp.Napon != "400" {
 			glavna2 = "Glavna zaštita sa funkcijom jedinice polja\n"
 		} else {
 			glavna2 = "Glavna zaštita 2\n"
 		}
 
-		if isp.ZDsdfGl2 != nil {
+		// ---------------- DSDF ----------------
+		if isNotEmpty(isp.ZDsdfGl2) {
 			glavna2 += val(isp.ZDsdfGl2) + "   "
 		}
-		if isp.ZKvarGl2 != nil {
+
+		// ---------------- KVAR ----------------
+		if isNotEmpty(isp.ZKvarGl2) {
 			glavna2 += "Kvar u:" + val(isp.ZKvarGl2) + "   "
 		}
-		if isp.ZPrstGl2 != nil {
+
+		// ---------------- PRST ----------------
+		if isNotEmpty(isp.ZPrstGl2) {
 			glavna2 += val(isp.ZPrstGl2) + "   "
 		}
-		if isp.ZZMSPGl2 != nil {
+
+		// ---------------- ZMSP ----------------
+		if isNotEmpty(isp.ZZMSPGl2) {
 			glavna2 += val(isp.ZZMSPGl2) + "   "
 		}
-		if isp.ZUzmsGl2 != nil {
+
+		// ---------------- UZMS ----------------
+		if isNotEmpty(isp.ZUzmsGl2) {
 			glavna2 += val(isp.ZUzmsGl2) + "   "
 		}
-		if isp.ZRapuGl2 != nil {
+
+		// ---------------- RAPU ----------------
+		if isNotEmpty(isp.ZRapuGl2) {
 			glavna2 += val(isp.ZRapuGl2) + "   "
 		}
-		if isp.IdZTelePocGl2 != nil {
+
+		// ---------------- TELE POC ----------------
+		if isNotEmpty(isp.IdZTelePocGl2) {
 			glavna2 += val(isp.IdZTelePocGl2) + "   "
 		}
-		if isp.IdZTeleKrajGl2 != nil {
+
+		// ---------------- TELE KRAJ ----------------
+		if isNotEmpty(isp.IdZTeleKrajGl2) {
 			glavna2 += val(isp.IdZTeleKrajGl2) + "   "
 		}
-		if isp.ZLokkGl2 != nil {
+
+		// ---------------- LOKATOR ----------------
+		if isNotEmpty(isp.ZLokkGl2) {
 			glavna2 += "Lokator kvara:" + val(isp.ZLokkGl2) + "km "
 		}
 	}
-
 	// ---------------- GLAVNA 3 ----------------
-	if hasAny(isp.ZDsdfGl3, isp.ZKvarGl3, isp.ZPrstGl3, isp.ZZMSPGl3,
+	if hasAny(
+		isp.ZDsdfGl3, isp.ZKvarGl3, isp.ZPrstGl3, isp.ZZMSPGl3,
 		isp.ZUzmsGl3, isp.ZRapuGl3, isp.ZLokkGl3,
-		isp.IdZTelePocGl3, isp.IdZTeleKrajGl3) {
+		isp.IdZTelePocGl3, isp.IdZTeleKrajGl3,
+	) {
 
 		glavna3 = "Glavna zaštita sa funkcijom jedinice polja\n"
 
-		if isp.ZDsdfGl3 != nil {
+		if isNotEmpty(isp.ZDsdfGl3) {
 			glavna3 += val(isp.ZDsdfGl3) + "   "
 		}
-		if isp.ZKvarGl3 != nil {
+		if isNotEmpty(isp.ZKvarGl3) {
 			glavna3 += "Kvar u:" + val(isp.ZKvarGl3) + "   "
 		}
-		if isp.ZPrstGl3 != nil {
+		if isNotEmpty(isp.ZPrstGl3) {
 			glavna3 += val(isp.ZPrstGl3) + "   "
 		}
-		if isp.ZZMSPGl3 != nil {
+		if isNotEmpty(isp.ZZMSPGl3) {
 			glavna3 += val(isp.ZZMSPGl3) + "   "
 		}
-		if isp.ZUzmsGl3 != nil {
+		if isNotEmpty(isp.ZUzmsGl3) {
 			glavna3 += val(isp.ZUzmsGl3) + "   "
 		}
-		if isp.ZRapuGl3 != nil {
+		if isNotEmpty(isp.ZRapuGl3) {
 			glavna3 += val(isp.ZRapuGl3) + "   "
 		}
-		if isp.IdZTelePocGl3 != nil {
+		if isNotEmpty(isp.IdZTelePocGl3) {
 			glavna3 += val(isp.IdZTelePocGl3) + "   "
 		}
-		if isp.IdZTeleKrajGl3 != nil {
+		if isNotEmpty(isp.IdZTeleKrajGl3) {
 			glavna3 += val(isp.IdZTeleKrajGl3) + "   "
 		}
-		if isp.ZLokkGl3 != nil {
+		if isNotEmpty(isp.ZLokkGl3) {
 			glavna3 += "Lokator kvara:" + val(isp.ZLokkGl3) + "km "
 		}
 	}
 
 	// ---------------- REZERVNA ----------------
 	if hasAny(isp.ZDisRez, isp.ZKvarRez, isp.ZPrstRez, isp.ZZMSPRez) {
+
 		rezervna = "Dopunska (rezervna) zaštita 1\n"
-		if isp.ZDisRez != nil {
+
+		if isNotEmpty(isp.ZDisRez) {
 			rezervna += val(isp.ZDisRez) + "   "
 		}
-		if isp.ZKvarRez != nil {
+
+		if isNotEmpty(isp.ZKvarRez) {
 			rezervna += "Kvar u:" + val(isp.ZKvarRez) + "   "
 		}
-		if isp.ZPrstRez != nil {
+
+		if isNotEmpty(isp.ZPrstRez) {
 			rezervna += val(isp.ZPrstRez) + "   "
 		}
-		if isp.ZZMSPRez != nil {
+
+		if isNotEmpty(isp.ZZMSPRez) {
 			rezervna += val(isp.ZZMSPRez) + "   "
 		}
 	}
-
 	// ---------------- REZERVNA 2 ----------------
 	if hasAny(isp.ZDisRez2, isp.ZKvarRez2, isp.ZPrstRez2, isp.ZZMSPRez2) {
+
 		rezervna2 = "Dopunska (rezervna) zaštita 2\n"
-		if isp.ZDisRez2 != nil {
+
+		if isNotEmpty(isp.ZDisRez2) {
 			rezervna2 += val(isp.ZDisRez2) + "   "
 		}
-		if isp.ZKvarRez2 != nil {
+
+		if isNotEmpty(isp.ZKvarRez2) {
 			rezervna2 += "Kvar u:" + val(isp.ZKvarRez2) + "   "
 		}
-		if isp.ZPrstRez2 != nil {
+
+		if isNotEmpty(isp.ZPrstRez2) {
 			rezervna2 += val(isp.ZPrstRez2) + "   "
 		}
-		if isp.ZZMSPRez2 != nil {
+
+		if isNotEmpty(isp.ZZMSPRez2) {
 			rezervna2 += val(isp.ZZMSPRez2) + "   "
 		}
 	}
 
 	// ---------------- PREKIDAC ----------------
+
 	if hasAny(isp.ZPrekVn, isp.ZPrekNn) {
-		if isp.ZPrekVn != nil {
+
+		if isNotEmpty(isp.ZPrekVn) {
 			if isp.Fup == "01" || isp.Fup == "18" || isp.Fup == "22" {
-				prekidac += "Prekidač VN strana:" + val(isp.ZPrekVn) + "   "
+				prekidac += "Prekidač VN strana:" + strings.TrimSpace(*isp.ZPrekVn) + "   "
 			} else {
-				prekidac += val(isp.ZPrekVn) + "   "
+				prekidac += strings.TrimSpace(*isp.ZPrekVn) + "   "
 			}
 		}
-		if isp.ZPrekNn != nil {
-			prekidac += "Prekidač SN strana:" + val(isp.ZPrekNn) + "   "
+
+		if isNotEmpty(isp.ZPrekNn) {
+			prekidac += "Prekidač SN strana:" + strings.TrimSpace(*isp.ZPrekNn) + "   "
 		}
 	}
 
 	// ---------------- NEELEKTRICNA ----------------
 	if hasAny(isp.ZNel1, isp.ZNel2, isp.ZNel3) {
-		if isp.ZNel1 != nil {
-			neelektricna += val(isp.ZNel1) + "   "
+
+		if isNotEmpty(isp.ZNel1) {
+			neelektricna += strings.TrimSpace(*isp.ZNel1) + "   "
 		}
-		if isp.ZNel2 != nil {
-			neelektricna += val(isp.ZNel2) + "   "
+		if isNotEmpty(isp.ZNel2) {
+			neelektricna += strings.TrimSpace(*isp.ZNel2) + "   "
 		}
-		if isp.ZNel3 != nil {
-			neelektricna += val(isp.ZNel3) + "   "
+		if isNotEmpty(isp.ZNel3) {
+			neelektricna += strings.TrimSpace(*isp.ZNel3) + "   "
 		}
 	}
 
 	// ---------------- SABIRNICE ----------------
 	if hasAny(isp.ZSabzSab, isp.ZOtprSab, isp.ZKvarGl1) {
 		sab1 = "Sabirnička zaštita 1\n"
-		if isp.ZSabzSab != nil {
-			sab1 += val(isp.ZSabzSab) + "   "
+
+		if isNotEmpty(isp.ZSabzSab) {
+			sab1 += strings.TrimSpace(*isp.ZSabzSab) + "   "
 		}
-		if isp.ZOtprSab != nil {
-			sab1 += "Zas. od otkaza prek.:" + val(isp.ZOtprSab) + "   "
+
+		if isNotEmpty(isp.ZOtprSab) {
+			sab1 += "Zas. od otkaza prek.:" + strings.TrimSpace(*isp.ZOtprSab) + "   "
 		}
-		if isp.ZKvarGl1 != nil {
-			sab1 += "Kvar u:" + val(isp.ZKvarGl1) + "   "
+
+		if isNotEmpty(isp.ZKvarGl1) {
+			sab1 += "Kvar u:" + strings.TrimSpace(*isp.ZKvarGl1) + "   "
 		}
 	}
 
 	if hasAny(isp.ZSabzSab2, isp.ZOtprSab2, isp.ZKvarGl2) {
 		sab2 = "Sabirnička zaštita 2\n"
-		if isp.ZSabzSab2 != nil {
-			sab2 += val(isp.ZSabzSab2) + "   "
+
+		if isNotEmpty(isp.ZSabzSab2) {
+			sab2 += strings.TrimSpace(*isp.ZSabzSab2) + "   "
 		}
-		if isp.ZOtprSab2 != nil {
-			sab2 += "Zas. od otkaza prek.:" + val(isp.ZOtprSab2) + "   "
+
+		if isNotEmpty(isp.ZOtprSab2) {
+			sab2 += "Zas. od otkaza prek.:" + strings.TrimSpace(*isp.ZOtprSab2) + "   "
 		}
-		if isp.ZKvarGl2 != nil {
-			sab2 += "Kvar u:" + val(isp.ZKvarGl2) + "   "
+
+		if isNotEmpty(isp.ZKvarGl2) {
+			sab2 += "Kvar u:" + strings.TrimSpace(*isp.ZKvarGl2) + "   "
 		}
 	}
 
@@ -868,12 +1021,16 @@ func buildDetaljT1(isp models.Ispad, dog *models.DogadjajDetaljno) models.Detalj
 	rec2 := buildRecenica2(isp)
 	zastita := buildZastitaOpis(isp)
 
-	opis := zastita
-	if isp.Opis != "" {
-		if opis != "" {
-			opis += "\n"
+	var opis string
+
+	if zastita == "" {
+		opis = isp.Opis
+	} else {
+		opis = "RAD ZAŠTITE:\n" + zastita
+
+		if isp.Opis != "" {
+			opis += "\n" + isp.Opis
 		}
-		opis += isp.Opis
 	}
 
 	dopuna := ""
@@ -1117,5 +1274,38 @@ func (server *Server) getObavSlike(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"id":     id,
 		"images": images,
+	})
+}
+
+func (server *Server) getAngazovaniRukovaoci(ctx *gin.Context) {
+	// 1. Dohvati ID iz URL parametra
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nevažeći ID"})
+		return
+	}
+
+	// 2. Pozovi funkciju iz store-a
+	dogadjaj, err := server.store.GetAngazovaniRukovaociById(ctx, id)
+	if err != nil {
+		fmt.Printf("Greška prilikom dobijanja događaja: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if dogadjaj == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error": "Događaj nije pronađen",
+		})
+		return
+	}
+
+	// 6. Kreiraj finalni JSON za frontend
+	ctx.JSON(http.StatusOK, gin.H{
+		"rb_dog":               dogadjaj.RbDog,
+		"naslov":               dogadjaj.Naslov,
+		"podnaslov":            dogadjaj.Podnaslov,
+		"angazovani_rukovaoci": dogadjaj.AngazovaniRukovalac,
 	})
 }

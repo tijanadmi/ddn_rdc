@@ -100,13 +100,14 @@ type DogadjajDetaljno struct {
 	TipSmene       string  `json:"tip_smene"`
 	TipSmeneDopune *string `json:"tip_smene_dopune"`
 
-	Manipulacije []Manipulacija `json:"manipulacije"`
-	ObavBeleske  *ObavBeleska   `json:"obav_beleske,omitempty"`
-	TSU          *[]TSU         `json:"tsu"`
-	TK           *[]TK          `json:"tk"`
-	SOP          *[]SOP         `json:"sop"`
-	Ispad        *[]Ispad       `json:"ispad"`
-	PrekidP      *[]PrekidP     `json:"prekid_proizvodnje"`
+	Manipulacije        []Manipulacija       `json:"manipulacije"`
+	ObavBeleske         *ObavBeleska         `json:"obav_beleske,omitempty"`
+	TSU                 *[]TSU               `json:"tsu"`
+	TK                  *[]TK                `json:"tk"`
+	SOP                 *[]SOP               `json:"sop"`
+	Ispad               *[]Ispad             `json:"ispad"`
+	PrekidP             *[]PrekidP           `json:"prekid_proizvodnje"`
+	AngazovaniRukovalac *AngazovaniRukovalac `json:"angazovani_rukovalac"`
 }
 
 /************** Iskljucenja/Ukljucenja ****************/
@@ -212,98 +213,99 @@ type SOP struct {
 }
 
 type Ispad struct {
-	VrepocSortIspkv time.Time `db:"VREPOC_SORT_ISPKV" json:"vrepocSortIspkv"`
-	ID              int       `db:"ID" json:"id"`
-	RB              *int      `db:"RB" json:"rb"`
+	VrepocSortIspkv time.Time `json:"vrepocSortIspkv"`
+	ID              int       `json:"id"`
+	RB              *int      `json:"rb"`
 
-	Vrepoc string `db:"VREPOC" json:"vrepoc"`
-	Vrezav string `db:"VREZAV" json:"vrezav"`
+	Vrepoc string `json:"vrepoc"`
+	Vrezav string `json:"vrezav"`
 
-	VrstaDog string `db:"VRSTADOG" json:"vrstaDog"`
-	VrDogSif string `db:"VR_DOG_SIF" json:"vrDogSif"`
-	Gruzr1   string `db:"GRUZR1" json:"gruzr1"`
-	Uzrok1   string `db:"UZROK1" json:"uzrok1"`
+	VrstaDog string `json:"vrstaDog"`
+	VrDogSif string `son:"vrDogSif"`
+	TipDog   string `json:"tipDog"`
+	Gruzr1   string `json:"gruzr1"`
+	Uzrok1   string `json:"uzrok1"`
 
-	Objekat      string `db:"OBJEKAT" json:"objekat"`
-	TipOb        string `db:"TIP_OB" json:"tipOb"`
-	Napon        string `db:"NAPON" json:"napon"`
-	DvTrafoPolje string `db:"DV_TRAFO_POLJE" json:"dvTrafoPolje"`
-	Fup          string `db:"FUP" json:"fup"`
+	Objekat      string `json:"objekat"`
+	TipOb        string `json:"tipOb"`
+	Napon        string `json:"napon"`
+	DvTrafoPolje string `json:"dvTrafoPolje"`
+	Fup          string `json:"fup"`
 
-	Opis    string `db:"OPIS" json:"opis"`
-	SmPk    string `db:"SM_PK" json:"smPk"`
-	RadApu  string `db:"RAD_APU" json:"radApu"`
-	VremUsl string `db:"VREM_USL" json:"vremUsl"`
+	Opis    string `json:"opis"`
+	SmPk    string `json:"smPk"`
+	RadApu  string `json:"radApu"`
+	VremUsl string `json:"vremUsl"`
 
-	StatusIspkv1 string  `db:"STATUS_ISPKV1" json:"statusIspkv1"`
-	DopunaIspkv1 *string `db:"DOPUNA_ISPKV1" json:"dopunaIspkv1"`
+	StatusIspkv1 string  `json:"statusIspkv1"`
+	DopunaIspkv1 *string `json:"dopunaIspkv1"`
 
-	IDStavkeI int `db:"ID_STAVKE_I" json:"idStavkeI"`
+	IDStavkeI int `json:"idStavkeI"`
 
 	// GL1
-	ZDsdfGl1 *string `db:"Z_DSDF_GL1" json:"zDsdfGl1"`
-	ZKvarGl1 *string `db:"Z_KVAR_GL1" json:"zKvarGl1"`
-	ZPrstGl1 *string `db:"Z_PRST_GL1" json:"zPrstGl1"`
-	ZZMSPGl1 *string `db:"Z_ZMSP_GL1" json:"zZmspGl1"`
-	ZUzmsGl1 *string `db:"Z_UZMS_GL1" json:"zUzmsGl1"`
-	ZRapuGl1 *string `db:"Z_RAPU_GL1" json:"zRapuGl1"`
-	ZLokkGl1 *string `db:"Z_LOKK_GL1" json:"zLokkGl1"`
+	ZDsdfGl1 *string `json:"zDsdfGl1"`
+	ZKvarGl1 *string `json:"zKvarGl1"`
+	ZPrstGl1 *string `json:"zPrstGl1"`
+	ZZMSPGl1 *string `json:"zZmspGl1"`
+	ZUzmsGl1 *string `json:"zUzmsGl1"`
+	ZRapuGl1 *string `json:"zRapuGl1"`
+	ZLokkGl1 *string `json:"zLokkGl1"`
 
 	// GL2
-	ZDsdfGl2 *string `db:"Z_DSDF_GL2" json:"zDsdfGl2"`
-	ZKvarGl2 *string `db:"Z_KVAR_GL2" json:"zKvarGl2"`
-	ZPrstGl2 *string `db:"Z_PRST_GL2" json:"zPrstGl2"`
-	ZZMSPGl2 *string `db:"Z_ZMSP_GL2" json:"zZmspGl2"`
-	ZUzmsGl2 *string `db:"Z_UZMS_GL2" json:"zUzmsGl2"`
-	ZRapuGl2 *string `db:"Z_RAPU_GL2" json:"zRapuGl2"`
-	ZLokkGl2 *string `db:"Z_LOKK_GL2" json:"zLokkGl2"`
+	ZDsdfGl2 *string `json:"zDsdfGl2"`
+	ZKvarGl2 *string `json:"zKvarGl2"`
+	ZPrstGl2 *string `json:"zPrstGl2"`
+	ZZMSPGl2 *string `json:"zZmspGl2"`
+	ZUzmsGl2 *string `json:"zUzmsGl2"`
+	ZRapuGl2 *string `json:"zRapuGl2"`
+	ZLokkGl2 *string `json:"zLokkGl2"`
 
 	// GL3
-	ZDsdfGl3 *string `db:"Z_DSDF_GL3" json:"zDsdfGl3"`
-	ZKvarGl3 *string `db:"Z_KVAR_GL3" json:"zKvarGl3"`
-	ZPrstGl3 *string `db:"Z_PRST_GL3" json:"zPrstGl3"`
-	ZZMSPGl3 *string `db:"Z_ZMSP_GL3" json:"zZmspGl3"`
-	ZUzmsGl3 *string `db:"Z_UZMS_GL3" json:"zUzmsGl3"`
-	ZRapuGl3 *string `db:"Z_RAPU_GL3" json:"zRapuGl3"`
-	ZLokkGl3 *string `db:"Z_LOKK_GL3" json:"zLokkGl3"`
+	ZDsdfGl3 *string `json:"zDsdfGl3"`
+	ZKvarGl3 *string `json:"zKvarGl3"`
+	ZPrstGl3 *string `json:"zPrstGl3"`
+	ZZMSPGl3 *string `json:"zZmspGl3"`
+	ZUzmsGl3 *string `json:"zUzmsGl3"`
+	ZRapuGl3 *string `json:"zRapuGl3"`
+	ZLokkGl3 *string `json:"zLokkGl3"`
 
 	// REZ
-	ZDisRez  *string `db:"Z_DIS_REZ" json:"zDisRez"`
-	ZKvarRez *string `db:"Z_KVAR_REZ" json:"zKvarRez"`
-	ZPrstRez *string `db:"Z_PRST_REZ" json:"zPrstRez"`
-	ZZMSPRez *string `db:"Z_ZMSP_REZ" json:"zZmspRez"`
+	ZDisRez  *string `json:"zDisRez"`
+	ZKvarRez *string `json:"zKvarRez"`
+	ZPrstRez *string `json:"zPrstRez"`
+	ZZMSPRez *string `json:"zZmspRez"`
 
-	ZDisRez2  *string `db:"Z_DIS_REZ2" json:"zDisRez2"`
-	ZKvarRez2 *string `db:"Z_KVAR_REZ2" json:"zKvarRez2"`
-	ZPrstRez2 *string `db:"Z_PRST_REZ2" json:"zPrstRez2"`
-	ZZMSPRez2 *string `db:"Z_ZMSP_REZ2" json:"zZmspRez2"`
+	ZDisRez2  *string `json:"zDisRez2"`
+	ZKvarRez2 *string `json:"zKvarRez2"`
+	ZPrstRez2 *string `json:"zPrstRez2"`
+	ZZMSPRez2 *string `json:"zZmspRez2"`
 
 	// ostalo
-	ZPrekVn *string `db:"Z_PREK_VN" json:"zPrekVn"`
-	ZPrekNn *string `db:"Z_PREK_NN" json:"zPrekNn"`
-	ZNel1   *string `db:"Z_NEL1" json:"zNel1"`
-	ZNel2   *string `db:"Z_NEL2" json:"zNel2"`
-	ZNel3   *string `db:"Z_NEL3" json:"zNel3"`
+	ZPrekVn *string `json:"zPrekVn"`
+	ZPrekNn *string `json:"zPrekNn"`
+	ZNel1   *string `json:"zNel1"`
+	ZNel2   *string `json:"zNel2"`
+	ZNel3   *string `json:"zNel3"`
 
-	ZSabzSab  *string `db:"Z_SABZ_SAB" json:"zSabzSab"`
-	ZSabzSab2 *string `db:"Z_SABZ_SAB2" json:"zSabzSab2"`
-	ZOtprSab  *string `db:"Z_OTPR_SAB" json:"zOtprSab"`
-	ZOtprSab2 *string `db:"Z_OTPR_SAB2" json:"zOtprSab2"`
+	ZSabzSab  *string `json:"zSabzSab"`
+	ZSabzSab2 *string `json:"zSabzSab2"`
+	ZOtprSab  *string `json:"zOtprSab"`
+	ZOtprSab2 *string `json:"zOtprSab2"`
 
-	ZJpsVn  *string `db:"Z_JPS_VN" json:"zJpsVn"`
-	ZJpsNn  *string `db:"Z_JPS_NN" json:"zJpsNn"`
-	ZJpsVn2 *string `db:"Z_JPS_VN2" json:"zJpsVn2"`
-	ZJpsNn2 *string `db:"Z_JPS_NN2" json:"zJpsNn2"`
+	ZJpsVn  *string `json:"zJpsVn"`
+	ZJpsNn  *string `json:"zJpsNn"`
+	ZJpsVn2 *string `json:"zJpsVn2"`
+	ZJpsNn2 *string `json:"zJpsNn2"`
 
 	// tele
-	IdZTelePocGl1  *string `db:"ID_Z_TELE_POC_GL1" json:"idZTelePocGl1"`
-	IdZTeleKrajGl1 *string `db:"ID_Z_TELE_KRAJ_GL1" json:"idZTeleKrajGl1"`
-	IdZTelePocGl2  *string `db:"ID_Z_TELE_POC_GL2" json:"idZTelePocGl2"`
-	IdZTeleKrajGl2 *string `db:"ID_Z_TELE_KRAJ_GL2" json:"idZTeleKrajGl2"`
-	IdZTelePocGl3  *string `db:"ID_Z_TELE_POC_GL3" json:"idZTelePocGl3"`
-	IdZTeleKrajGl3 *string `db:"ID_Z_TELE_KRAJ_GL3" json:"idZTeleKrajGl3"`
+	IdZTelePocGl1  *string `json:"idZTelePocGl1"`
+	IdZTeleKrajGl1 *string `json:"idZTeleKrajGl1"`
+	IdZTelePocGl2  *string `json:"idZTelePocGl2"`
+	IdZTeleKrajGl2 *string `json:"idZTeleKrajGl2"`
+	IdZTelePocGl3  *string `json:"idZTelePocGl3"`
+	IdZTeleKrajGl3 *string `json:"idZTeleKrajGl3"`
 
-	Snaga *string `db:"SNAGA" json:"snaga"`
+	Snaga *string `json:"snaga"`
 }
 
 type PrekidP struct {
@@ -335,4 +337,16 @@ type ObavSlika struct {
 	Base64 string `json:"base64"`
 	Format string `json:"format"`
 	RB     int    `json:"rb"`
+}
+
+type AngazovaniRukovalac struct {
+	VremeNaloga  *time.Time `json:"vreme_naloga"`
+	ImeNaloga    *string    `json:"ime_naloga"`
+	VremeDolaska *time.Time `json:"vreme_dolaska"`
+	VremeOdlaska *time.Time `json:"vreme_odlaska"`
+
+	Rukovalac *string `json:"rukovalac"`
+	Objekat   *string `json:"objekat"`
+
+	Opis *string `json:"opis"`
 }

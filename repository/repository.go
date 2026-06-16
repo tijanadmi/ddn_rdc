@@ -92,4 +92,6 @@ type DatabaseRepo interface {
 	GetShemaPutanjaByID(ctx context.Context, id int) (string, string, error)
 
 	GetObavSlikeById(ctx context.Context, id int) ([]models.ObavSlika, error)
+
+	GetAngazovaniRukovaociById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
 }

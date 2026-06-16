@@ -201,6 +201,7 @@ func (server *Server) setupRouter() {
 	// authRoutes.GET("/getshemepdfbyid/:id", server.getShemaPDF)
 
 	authRoutes.GET("/dogadjaji/:id/slike", server.getObavSlike)
+	authRoutes.GET("/getangazovaniukovaoci/:id", server.getAngazovaniRukovaoci)
 
 	server.router = router
 }
