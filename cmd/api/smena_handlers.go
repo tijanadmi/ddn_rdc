@@ -89,6 +89,7 @@ type ManipView struct {
 
 type ObjekatView struct {
 	Naziv  string      `json:"naziv"`
+	MinRb  int         `json:"-"`
 	Stavke []ManipView `json:"stavke"`
 }
 
@@ -157,15 +158,28 @@ func (server *Server) getIskljucenje(ctx *gin.Context) {
 
 	// 5. Transform map u slice i sortiraj po Rb
 	var objekti []ObjekatView
+
 	for naziv, stavke := range objektiMap {
+
 		sort.Slice(stavke, func(i, j int) bool {
 			return stavke[i].Rb < stavke[j].Rb
 		})
+
+		minRb := 0
+		if len(stavke) > 0 {
+			minRb = stavke[0].Rb
+		}
+
 		objekti = append(objekti, ObjekatView{
 			Naziv:  naziv,
+			MinRb:  minRb,
 			Stavke: stavke,
 		})
 	}
+
+	sort.Slice(objekti, func(i, j int) bool {
+		return objekti[i].MinRb < objekti[j].MinRb
+	})
 
 	// 6. Kreiraj finalni JSON za frontend
 	ctx.JSON(http.StatusOK, gin.H{
@@ -468,94 +482,6 @@ func (server *Server) getRadSOP(ctx *gin.Context) {
 }
 
 /************** HELPER FUNKCIJE ZA GRADNJU TEKSTA U DETAJLU DOGADJAJA tipa ISPAD *****************/
-
-// func buildRecenica1(isp models.Ispad) string {
-
-// 	var kon string
-// 	var vSnaga string
-// 	fmt.Println("ispad", isp)
-
-// 	fmt.Println("vrDogSif i SmPk:", isp.VrDogSif, isp.SmPk)
-// 	// KON logika
-// 	switch {
-// 	case isp.VrDogSif == "7" || isp.VrDogSif == "71":
-// 		if isp.SmPk != "ostaje u pogonu" {
-// 			kon = " je "
-// 		}
-// 		if isp.SmPk != "" {
-// 			kon += isp.SmPk + " "
-// 		} else {
-// 			kon += "isključen "
-// 		}
-
-// 	case isp.TipOb == "1" && isp.VrDogSif != "72":
-// 		kon = " ispada "
-
-// 	case isp.TipOb == "7":
-// 		kon = " kvar na DVxKV "
-
-// 	case isp.VrDogSif == "72":
-// 		kon = " konzum u mraku "
-// 	}
-// 	fmt.Println("kon:", kon)
-
-// 	if isp.Snaga != nil && *isp.Snaga != "" {
-// 		vSnaga = " ispala snaga " + *isp.Snaga
-// 	}
-
-// 	// helper values
-// 	vrepoc := isp.Vrepoc
-// 	vrezav := isp.Vrezav
-// 	obj := isp.Objekat
-// 	polje := isp.DvTrafoPolje
-
-// 	// CASE 1: VREZAV IS NULL
-// 	if vrezav == "" {
-
-// 		if obj == "" {
-
-// 			if isp.VrDogSif == "72" && isp.Snaga != nil {
-// 				return "U " + vrepoc + kon + polje + vSnaga
-// 			}
-// 			return "U " + vrepoc + kon + polje
-// 		}
-
-// 		if polje == "" || polje == " " {
-// 			if isp.VrDogSif == "72" && isp.Snaga != nil {
-// 				return "U " + vrepoc + kon + "u " + obj + vSnaga
-// 			}
-// 			return "U " + vrepoc + kon + "u " + obj
-// 		}
-
-// 		if isp.VrDogSif == "72" && isp.Snaga != nil {
-// 			return "U " + vrepoc + kon + polje + " u " + obj + vSnaga
-// 		}
-
-// 		return "U " + vrepoc + kon + polje + " u " + obj
-// 	}
-
-// 	// CASE 2: VREZAV NOT NULL
-// 	if obj == "" {
-
-// 		if isp.VrDogSif == "72" && isp.Snaga != nil {
-// 			return "Od " + vrepoc + " do " + vrezav + kon + polje + vSnaga
-// 		}
-// 		return "Od " + vrepoc + " do " + vrezav + kon + polje
-// 	}
-
-// 	if polje == "" || polje == " " {
-// 		if isp.VrDogSif == "72" && isp.Snaga != nil {
-// 			return "Od " + vrepoc + " do " + vrezav + kon + "u " + obj + vSnaga
-// 		}
-// 		return "Od " + vrepoc + " do " + vrezav + kon + "u " + obj
-// 	}
-
-// 	if isp.VrDogSif == "72" && isp.Snaga != nil {
-// 		return "Od " + vrepoc + " do " + vrezav + kon + polje + " u " + obj + vSnaga
-// 	}
-
-// 	return "Od " + vrepoc + " do " + vrezav + kon + polje + " u " + obj
-// }
 
 func buildRecenica1(isp models.Ispad) string {
 

@@ -13,8 +13,9 @@ type ListShiftsWithPaginationParams struct {
 }
 
 type Smena struct {
-	IdSmene int       `json:"id_smene"`
-	DatDnev time.Time `json:"dat_dnev"`
+	IdSmene    int       `json:"id_smene"`
+	DatDnev    time.Time `json:"dat_dnev"`
+	DatDnevStr string    `json:"datdnev_str"`
 
 	IdSMRC int    `json:"id_s_mrc"`
 	Rdc    string `json:"rdc"`
@@ -48,7 +49,9 @@ type Smena struct {
 	OtvSpec   string `json:"otv_spec"`
 	ZatSpec   string `json:"zat_spec"`
 
-	IDKatDok int `json:"id_kat_dok"`
+	IDKatDok int    `json:"id_kat_dok"`
+	IdBroj   string `json:"id_broj"`
+	Dan      string `json:"dan"`
 
 	// kasnije dodaješ ovo:
 	Dogadjaji []Dogadjaj `json:"dogadjaji,omitempty"`
@@ -137,14 +140,18 @@ type Manipulacija struct {
 
 type ObjekatView struct {
 	Naziv  string      `json:"naziv"`
+	MinRb  int 	   `json:"-"`
 	Stavke []ManipView `json:"stavke"`
 }
+
+
 
 type ManipView struct {
 	DopunaDaNe  string `json:"dopuna_da_ne"`
 	Vrepoc      string `json:"vrepoc"`
 	Vrezav      string `json:"vrezav"`
 	RecenicaMan string `json:"recenica_man"`
+	Rb          int    `json:"-"`
 }
 
 /************** Kraj Iskljucenja/Ukljucenja ****************/

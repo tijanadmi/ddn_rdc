@@ -193,6 +193,202 @@ ORDER BY d.rb_dog
 	return smene, nil
 }
 
+func (m *OracleDBRepo) GetSmenaByID(ctx context.Context, idSmene int) (*models.Smena, error) {
+
+	query := `
+select 
+  smena.id,
+  smena.datdnev,
+  CASE
+     WHEN SKR_NAZ = 'N'
+    THEN to_char(smena.datdnev,'dd.mm.yyyy') || ' / ' ||
+         to_char(smena.datdnev + 1,'dd.mm.yyyy')
+    ELSE to_char(smena.datdnev,'dd.mm.yyyy')
+  END AS datdnev_str,
+  smena.id_s_mrc,
+  ted.TD_NAZIVI.TD_DAJ_SIF('S_MRC','NAZIV_CIR','ID',SMENA.ID_S_MRC,'Q') RDC,
+  smena.dez_disp1,
+  ek1.ime || ' ' || ek1.prezime,
+  smena.dez_disp2,
+  ek2.ime || ' ' || ek2.prezime,
+  smena.dez_disp3,
+  ek3.ime || ' ' || ek3.prezime,
+  smena.dez_disp4,
+  ek4.ime || ' ' || ek4.prezime,
+  smena.ID_TIP_SMENA,
+  ted.TD_NAZIVI.TD_DAJ_SIF('DDN.TIP_SMENA','SKR_NAZ','ID',SMENA.ID_TIP_SMENA,'Q'),
+  ted.TD_NAZIVI.TD_DAJ_SIF('DDN.TIP_SMENA','NAZIV','ID',SMENA.ID_TIP_SMENA,'Q'),
+  ted.TD_NAZIVI.TD_DAJ_SIF('DDN.TIP_SMENA','INTERVAL','ID',SMENA.ID_TIP_SMENA,'Q'),
+  ted.TD_NAZIVI.TD_DAJ_SIF('ted.S_MRC','SIFRA','ID',smena.ID_S_MRC,'Q'),
+  ek5.ime || ' ' || ek5.prezime predao1,
+  ek6.ime || ' ' || ek6.prezime predao2,
+  ek8.ime || ' ' || ek8.prezime primio1,
+  ek9.ime || ' ' || ek9.prezime primio2,
+  ek7.ime || ' ' || ek7.prezime predao3,
+  SMENA.PRIM_DISP3,
+  smena.koment_zat,
+  smena.otv_spec,
+  smena.zat_spec,
+  SMENA.ID_KAT_DOK,
+  ted.TD_NAZIVI.TD_DAJ_SIF('KAT_DOK','GL_GRUPA || '' - '' || GRUPA || POD_GRUPA','ID',SMENA.ID_KAT_DOK,'Q') id_broj,
+  CASE
+     WHEN SKR_NAZ = 'N'
+    THEN DDN.DAN_NAZIV(SMENA.datdnev) || ' / ' ||
+         DDN.DAN_NAZIV(SMENA.datdnev + 1)
+    ELSE DDN.DAN_NAZIV(SMENA.datdnev)
+  END AS  dan
+from ddn.smena smena
+left join TIP_SMENA ts on  ts.id= smena.id_tip_smena
+left join tis_kor_v tk1 on tk1.sifra = smena.dez_disp1
+left join ems_kadar ek1 on ek1.id = tk1.id_hr_kadar
+left join tis_kor_v tk2 on tk2.sifra = smena.dez_disp2
+left join ems_kadar ek2 on ek2.id = tk2.id_hr_kadar
+left join tis_kor_v tk3 on tk3.sifra = smena.dez_disp3
+left join ems_kadar ek3 on ek3.id = tk3.id_hr_kadar
+left join tis_kor_v tk4 on tk4.sifra = smena.dez_disp4
+left join ems_kadar ek4 on ek4.id = tk4.id_hr_kadar
+left join tis_kor_v tk5 on tk5.sifra = SMENA.PREDAO_DISP1
+left join ems_kadar ek5 on ek5.id = tk5.id_hr_kadar
+left join tis_kor_v tk6 on tk6.sifra = SMENA.PREDAO_DISP2
+left join ems_kadar ek6 on ek6.id = tk6.id_hr_kadar
+left join tis_kor_v tk7 on tk7.sifra = SMENA.PREDAO_DISP3
+left join ems_kadar ek7 on ek7.id = tk7.id_hr_kadar
+left join tis_kor_v tk8 on tk8.sifra = SMENA.PRIM_DISP1
+left join ems_kadar ek8 on ek8.id = tk8.id_hr_kadar
+left join tis_kor_v tk9 on tk9.sifra = SMENA.PRIM_DISP2
+left join ems_kadar ek9 on ek9.id = tk9.id_hr_kadar
+left join tis_kor_v tk10 on tk10.sifra = SMENA.PRIM_DISP3
+left join ems_kadar ek10 on ek10.id = tk10.id_hr_kadar
+where smena.id = :1
+`
+
+	row := m.DB.QueryRowContext(ctx, query, idSmene)
+
+	var s models.Smena
+
+	err := row.Scan(
+		&s.IdSmene,
+		&s.DatDnev,
+		&s.DatDnevStr,
+		&s.IdSMRC,
+		&s.Rdc,
+
+		&s.DezDisp1,
+		&s.DezDisp1Ime,
+
+		&s.DezDisp2,
+		&s.DezDisp2Ime,
+
+		&s.DezDisp3,
+		&s.DezDisp3Ime,
+
+		&s.DezDisp4,
+		&s.DezDisp4Ime,
+
+		&s.IDTipSmena,
+		&s.TipSkr,
+		&s.TipSmena,
+		&s.IntSmena,
+		&s.MrcSif,
+
+		&s.PredaoDisp1,
+		&s.PredaoDisp2,
+		&s.PrimDisp1,
+		&s.PrimDisp2,
+		&s.PredaoDisp3,
+		&s.PrimDisp3,
+		&s.KomentZat,
+		&s.OtvSpec,
+		&s.ZatSpec,
+		&s.IDKatDok,
+		&s.IdBroj,
+		&s.Dan,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("smena %d ne postoji", idSmene)
+	}
+
+	if err != nil {
+		fmt.Printf("Greška prilikom skeniranja smene: %v\n", err)
+		return nil, err
+	}
+
+	//  DRUGI KORAK – učitavanje događaja po smeni
+
+	dogQuery := `
+SELECT distinct
+  d.id,
+  d.id_smena,
+  d.rb_dog,
+  d.naslov,
+  d.id_tip_dog,
+  td.naziv,
+  td.naziv_cir,
+  td.tip,
+   ted.TD_NAZIVI.TD_DAJ_SIF('TIP_OBV','SIFRA','ID',o.id_tip_obv,'Q') AS tip_obv,
+  d.dopuna,
+  d.status
+
+FROM ddn.dog_smene d
+
+JOIN ddn.tip_dog td 
+  ON d.id_tip_dog = td.id
+
+LEFT JOIN ddn.dog_obav o 
+  ON d.id = o.id_dog_smene
+
+WHERE d.id_smena = :1
+ORDER BY d.rb_dog
+`
+
+	rowsDog, err := m.DB.QueryContext(ctx, dogQuery, s.IdSmene)
+	if err != nil {
+		fmt.Printf("Greška prilikom učitavanja događaja za smenu %d: %v\n", s.IdSmene, err)
+		return nil, err
+	}
+	defer rowsDog.Close()
+
+	var dogadjaji []models.Dogadjaj
+
+	for rowsDog.Next() {
+		var d models.Dogadjaj
+
+		err := rowsDog.Scan(
+			&d.ID,
+			&d.IDSmena,
+			&d.RbDog,
+			&d.Naslov,
+			&d.IDTipDog,
+			&d.TipDog,
+			&d.TipDogCir,
+			&d.Tip,
+			&d.TipObav,
+			&d.Dopuna,
+			&d.Status,
+		)
+		if err != nil {
+			rowsDog.Close()
+			fmt.Printf("Greška prilikom skeniranja događaja za smenu %d: %v\n", s.IdSmene, err)
+			return nil, err
+		}
+
+		dogadjaji = append(dogadjaji, d)
+	}
+
+	if err := rowsDog.Err(); err != nil {
+		rowsDog.Close()
+		fmt.Printf("Greška prilikom iteracije kroz događaje za smenu %d: %v\n", s.IdSmene, err)
+		return nil, err
+	}
+
+	rowsDog.Close()
+
+	s.Dogadjaji = dogadjaji
+
+	return &s, nil
+}
+
 /****** F-ja vraca sve zatvorene smene sa pripadajucim dogadjajima za izabrani RDC i interval	 *************/
 
 func (m *OracleDBRepo) GetZatvoreneSmene(ctx context.Context, arg models.ListShiftsWithPaginationParams) ([]models.Smena, int, error) {
@@ -441,22 +637,22 @@ func buildRecenica(d *models.DogadjajDetaljno) string {
 	// =========================
 	// 2. DEFAULT (REDOVAN UNOS)
 	// =========================
-	if dop == "" {
-		datum := d.DatumSmene
+	// if dop == "" {
+	// 	datum := d.DatumSmene
 
-		if d.TipSmene == "N" {
-			dop = fmt.Sprintf(
-				"Redovan unos za smenu od: %s / %s",
-				datum.Format(format),
-				datum.AddDate(0, 0, 1).Format(format),
-			)
-		} else {
-			dop = fmt.Sprintf(
-				"Redovan unos za smenu od: %s",
-				datum.Format(format),
-			)
-		}
-	}
+	// 	if d.TipSmene == "N" {
+	// 		dop = fmt.Sprintf(
+	// 			"Redovan unos za smenu od: %s / %s",
+	// 			datum.Format(format),
+	// 			datum.AddDate(0, 0, 1).Format(format),
+	// 		)
+	// 	} else {
+	// 		dop = fmt.Sprintf(
+	// 			"Redovan unos za smenu od: %s",
+	// 			datum.Format(format),
+	// 		)
+	// 	}
+	// }
 
 	// =========================
 	// 3. VEZA LOGIKA (NAJBITNIJE)
@@ -464,23 +660,27 @@ func buildRecenica(d *models.DogadjajDetaljno) string {
 	if (d.Dopuna == nil || *d.Dopuna != "2") && d.VezaSa != nil && d.RbDogVezaSa != nil && d.DatumVezaSa != nil {
 
 		datum := *d.DatumVezaSa
+		base := ""
 
 		if d.TipSmenaVezaSa != nil && *d.TipSmenaVezaSa == "D" {
-			return fmt.Sprintf(
-				"Veza sa događajem br. %s od dana: %s - %s",
+			base = fmt.Sprintf(
+				"Veza sa događajem br. %s od dana: %s",
 				*d.RbDogVezaSa,
 				datum.Format(format),
-				dop,
 			)
 		} else {
-			return fmt.Sprintf(
-				"Veza sa događajem br. %s od dana: %s/%s - %s",
+			base = fmt.Sprintf(
+				"Veza sa događajem br. %s od dana: %s/%s",
 				*d.RbDogVezaSa,
 				datum.Format(format),
 				datum.AddDate(0, 0, 1).Format(format),
-				dop,
 			)
 		}
+
+		if dop != "" {
+			return base + " - " + dop
+		}
+		return base
 	}
 
 	// =========================
@@ -763,6 +963,8 @@ FETCH FIRST 1 ROWS ONLY
 		d.ObavBeleske = &obav
 	}
 
+	// fmt.Printf("Obavestenje za dogadjaj %d: %+v\n", id, d.ObavBeleske)
+
 	return &d, nil
 }
 
@@ -858,11 +1060,11 @@ SELECT
     d.OPIS,
     d.ob_id,
 
-    v1.nazob AS OBJEKAT_NAZIV,
+    v1.opis AS OBJEKAT_NAZIV,
 
     d.OB_ID2,
 
-    v2.nazob AS OBJEKAT_NAZIV2,
+    v2.opis AS OBJEKAT_NAZIV2,
 
     TD_NAZIVI.TD_DAJ_SIF('S_VROPR','NAZIV','ID', d.ID_S_VROPR,'Q') VROPR,
 
@@ -1027,7 +1229,7 @@ SELECT
     d.OPIS,
     d.ob_id,
 
-    v1.nazob AS OBJEKAT_NAZIV,
+    v1.opis AS OBJEKAT_NAZIV,
 
     TD_NAZIVI.TD_DAJ_SIF('S_VROPR','NAZIV','ID', d.ID_S_VROPR,'Q') VROPR,
 
@@ -1185,7 +1387,7 @@ SELECT
     d.OPIS,
     d.ob_id,
 
-    v1.nazob AS OBJEKAT_NAZIV,
+    v1.opis AS OBJEKAT_NAZIV,
 
     TD_NAZIVI.TD_DAJ_SIF('S_SOP','NAZIV','ID',d.ID_S_SOP,'Q') NAZSOP,
     s1.r_br,
@@ -1360,7 +1562,7 @@ SELECT
 
     CASE 
         WHEN A.tip_ob IN ('DV','TD','KB','TK') 
-        THEN DECODE(A.p2_traf_id, NULL, '', TD_NAZIVI.COL_V_S_OB_P2_TRAF(P2_TRAF_ID,'NAZOB','Q'))
+        THEN DECODE(A.p2_traf_id, NULL, '', TD_NAZIVI.COL_V_S_OB_P2_TRAF(P2_TRAF_ID,'OPIS','Q'))
         ELSE OBJEKAT_NAZIV
     END objekat,
 
@@ -1432,7 +1634,7 @@ FROM (
         ted.TD_NAZIVI.TD_DAJ_SIF('S_TIPOB','SIFRA','ID',DOG_ISPKV.ID_TIPOB,'Q') tip_ob,
 
         pgi.PI_NAZIVI.NAZ_OBJ(DOG_ISPKV.ID_TIPOB,DOG_ISPKV.OB_ID,'OB_SIF','Q') OBJEKAT_SIFRA,
-        pgi.PI_NAZIVI.NAZ_OBJ(DOG_ISPKV.ID_TIPOB,DOG_ISPKV.OB_ID,'NAZOB','Q') OBJEKAT_NAZIV,
+        pgi.PI_NAZIVI.NAZ_OBJ(DOG_ISPKV.ID_TIPOB,DOG_ISPKV.OB_ID,'OPIS','Q') OBJEKAT_NAZIV,
 
         ted.TD_NAZIVI.TD_DAJ_SIF('S_NAP','NAZIV','ID',DOG_ISPKV.ID_S_NAP,'Q') NAPON,
 

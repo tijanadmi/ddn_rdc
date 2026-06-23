@@ -74,6 +74,7 @@ func (server *Server) setupRouter() {
 	router.POST("/tokens/renew_access", server.renewAccessToken)
 	router.GET("/reports/pi-mm/pdf", server.getPiMMReportPDF)
 	router.GET("/getshemepdf/:id", server.getShemaPDF)
+	router.GET("/reports/smena/:id/pdf", server.getIzvSmenaPDF)
 
 	// router.POST("/users/get_user_by_token", server.GetUserByToken)
 	// router.POST("/tokens/renew_access", server.renewAccessToken)
