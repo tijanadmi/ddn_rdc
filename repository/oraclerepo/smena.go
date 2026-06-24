@@ -2268,7 +2268,7 @@ func (m *OracleDBRepo) GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, i
 		recenica.WriteString("Stanje u 07:00h\n")
 	}
 
-	fmt.Println("Recenica posle ispitivanja tipa smene:", recenica.String(), idTipSmene)
+	// fmt.Println("Recenica posle ispitivanja tipa smene:", recenica.String(), idTipSmene)
 	// =========================
 	// 2. HE LISTA
 	// =========================
@@ -2293,7 +2293,7 @@ func (m *OracleDBRepo) GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, i
 			return "", err
 		}
 
-		fmt.Println("HE ID:", heID, "HE Naziv:", heNaziv)
+		// fmt.Println("HE ID:", heID, "HE Naziv:", heNaziv)
 		// =========================
 		// 3. PROIZVODNJA PODACI
 		// =========================
@@ -2367,7 +2367,7 @@ func (m *OracleDBRepo) GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, i
 		}
 
 		recenica.WriteString(line + "\n")
-		fmt.Println("Recenica posle dodavanja linije HE:", recenica.String())
+		// fmt.Println("Recenica posle dodavanja linije HE:", recenica.String())
 	}
 
 	recenica.WriteString("\n")
