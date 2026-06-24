@@ -1,8 +1,9 @@
 package models
 
 type ShiftReport struct {
-	Smena     Smena
-	Dogadjaji []DogadjajPDF
+	Smena       Smena
+	Dogadjaji   []DogadjajPDF
+	Proizvodnja string `json:"proizvodnja"`
 }
 
 type DogadjajPDF struct {

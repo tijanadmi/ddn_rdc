@@ -47,6 +47,8 @@ func GenerateShiftReportPDF(
 		pdf.Ln(3)
 	}
 
+	renderProizvodnja(pdf, report.Proizvodnja)
+
 	ensureSpace(pdf, 50)
 	renderShiftFooter(pdf, &report.Smena)
 
@@ -115,14 +117,14 @@ func registerShiftHeader(
 
 		left, top, right, _ := pdf.GetMargins()
 
-		fmt.Println(
-			"Page:",
-			pdf.PageNo(),
-			"headerBottom:",
-			headerBottom,
-			"topMargin:",
-			top,
-		)
+		// fmt.Println(
+		// 	"Page:",
+		// 	pdf.PageNo(),
+		// 	"headerBottom:",
+		// 	headerBottom,
+		// 	"topMargin:",
+		// 	top,
+		// )
 
 		pdf.Line(
 			left,
@@ -130,19 +132,19 @@ func registerShiftHeader(
 			pageW-right,
 			headerBottom,
 		)
-		fmt.Println(
-			"HEADER Page:",
-			pdf.PageNo(),
-			"Y after header:",
-			pdf.GetY(),
-		)
+		// fmt.Println(
+		// 	"HEADER Page:",
+		// 	pdf.PageNo(),
+		// 	"Y after header:",
+		// 	pdf.GetY(),
+		// )
 		pdf.SetY(top)
-		fmt.Println(
-			"after setY top - HEADER Page:",
-			pdf.PageNo(),
-			"Y after header:",
-			pdf.GetY(),
-		)
+		// fmt.Println(
+		// 	"after setY top - HEADER Page:",
+		// 	pdf.PageNo(),
+		// 	"Y after header:",
+		// 	pdf.GetY(),
+		// )
 	})
 
 	pdf.AliasNbPages("")
@@ -395,7 +397,7 @@ func renderShiftSignatures(pdf *gofpdf.Fpdf, smena *models.Smena) {
 
 	pdf.SetFont("DejaVu", "BI", 10)
 	pdf.Cell(80, 6, "SMENU PREDAO:")
-	pdf.Ln(8)
+	pdf.Ln(10)
 
 	for _, s := range []string{
 		smena.PredaoDisp1,
@@ -423,7 +425,7 @@ func renderShiftSignatures(pdf *gofpdf.Fpdf, smena *models.Smena) {
 
 	pdf.SetFont("DejaVu", "BI", 10)
 	pdf.Cell(80, 6, "SMENU PRIMIO:")
-	pdf.Ln(8)
+	pdf.Ln(10)
 
 	for _, s := range []string{
 		smena.PrimDisp1,
@@ -496,6 +498,37 @@ func calcHeaderBottomY(startY float64, numDisp int) float64 {
 // 		float64(numDisp)*lineH +
 // 		8.0 // dodatni spacing ispod headera
 // }
+
+func renderProizvodnja(pdf *gofpdf.Fpdf, proizvodnja string) {
+
+	if strings.TrimSpace(proizvodnja) == "" {
+		return
+	}
+
+	const lineH = 5.0 // procena visine (grubo, ali stabilno)
+	lines := float64(len(strings.Split(proizvodnja, "\n")))
+	need := 10 + lines*lineH
+
+	ensureSpace(pdf, need)
+
+	// naslov sekcije
+	pdf.SetFont("DejaVu", "B", 9)
+	pdf.Cell(0, lineH, "PROIZVODNJA")
+	pdf.Ln(lineH + 2)
+
+	pdf.SetFont("DejaVu", "", 9)
+
+	pdf.MultiCell(
+		0,
+		lineH,
+		proizvodnja,
+		"",
+		"L",
+		false,
+	)
+
+	pdf.Ln(3)
+}
 
 func renderObavBeleska(
 	pdf *gofpdf.Fpdf,
@@ -608,6 +641,7 @@ func renderIskljucenje(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 
 	// ===== OBJEKTI =====
 	for _, obj := range dog.Objekti {
+		ensureSpace(pdf, 15)
 
 		// naziv objekta
 		pdf.SetFont("DejaVu", "B", 9)
@@ -618,17 +652,21 @@ func renderIskljucenje(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 		// ===== STAVKE (GRID 4 KOLONE) =====
 		for _, s := range obj.Stavke {
 
+			rowH := estimateMultiCellHeight(pdf, s.RecenicaMan, 145, lineH)
+			ensureSpace(pdf, rowH+2)
+
 			startRowY := pdf.GetY()
 
-			col1X := bodyX
+			// col1X := bodyX - 12
 			col2X := bodyX + 10
 			col3X := bodyX + 25
 			col4X := bodyX + 45
 
 			// --- kolona 1 (dopuna) ---
-			pdf.SetFont("DejaVu", "", 9)
-			pdf.SetXY(col1X, startRowY)
+			pdf.SetFont("DejaVu", "", 8)
+			pdf.SetXY(left+5, startRowY)
 			pdf.CellFormat(10, lineH, s.DopunaDaNe, "", 0, "L", false, 0, "")
+			// pdf.CellFormat(10, lineH, "Dop.", "", 0, "L", false, 0, "")
 
 			// --- kolona 2 ---
 			pdf.SetXY(col2X, startRowY)
@@ -683,6 +721,11 @@ func renderIskljucenje(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 	}
 }
 
+func estimateMultiCellHeight(pdf *gofpdf.Fpdf, text string, width, lineH float64) float64 {
+	lines := pdf.SplitLines([]byte(text), width)
+	return float64(len(lines)) * lineH
+}
+
 func renderT567(
 	pdf *gofpdf.Fpdf,
 	dog *models.DogadjajPDF,
@@ -707,7 +750,7 @@ func renderT567(
 
 			pdf.SetFont("DejaVu", "", 8)
 
-			pdf.SetXY(left, rowStartY)
+			pdf.SetXY(left+5, rowStartY)
 
 			pdf.MultiCell(
 				18,
@@ -717,6 +760,7 @@ func renderT567(
 				"L",
 				false,
 			)
+			// pdf.CellFormat(10, lineH, "Dop.", "", 0, "L", false, 0, "")
 		}
 
 		// ----- RECENICA 1 -----
@@ -977,7 +1021,7 @@ func renderIspad(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 
 	pdf.Ln(2)
 
-	ensureSpace(pdf, float64(len(dog.Detalji))*10+20)
+	// ensureSpace(pdf, float64(len(dog.Detalji))*10+20)
 
 	// =========================
 	// 1. UZROK
@@ -991,22 +1035,36 @@ func renderIspad(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 
 	// detalji (grid 2 kolone)
 	for _, d := range dog.Detalji {
-		ensureSpace(pdf, 15)
-		startY := pdf.GetY()
+
+		// procena visine reda (najbitnije Recenica1 + Recenica2 + Opis)
+		text := d.Recenica1
+		if strings.TrimSpace(d.Recenica2) != "" {
+			text += "\n" + d.Recenica2
+		}
+		if strings.TrimSpace(d.Opis) != "" {
+			text += "\n" + d.Opis
+		}
+
+		rowH := estimateMultiCellHeight(pdf, text, 145, lineH)
+
+		ensureSpace(pdf, rowH+2)
+		startRowY := pdf.GetY()
 
 		// layout pozicije
-		dopX := bodyX
-		textX := bodyX + 8 // Recenica1 uvucena
-		subX := bodyX + 10 // Recenica2 i Opis još malo
+		// dopX := bodyX - 12
+		dopX := left + 5
+		textX := bodyX    // Recenica1 uvucena
+		subX := bodyX + 3 // Recenica2 i Opis još malo
 
 		// ===== DOPUNA =====
-		pdf.SetFont("DejaVu", "", 9)
-		pdf.SetXY(dopX, startY)
+		pdf.SetFont("DejaVu", "", 8)
+		pdf.SetXY(dopX, startRowY)
 		pdf.CellFormat(8, lineH, d.DopunaDaNe, "", 0, "L", false, 0, "")
+		// pdf.CellFormat(8, lineH, "Dop.", "", 0, "L", false, 0, "")
 
 		// ===== RECENICA 1 (glavna) =====
 		pdf.SetFont("DejaVu", "B", 9)
-		pdf.SetXY(textX, startY)
+		pdf.SetXY(textX, startRowY)
 		pdf.MultiCell(0, lineH, d.Recenica1, "", "L", false)
 
 		y := pdf.GetY()
@@ -1043,7 +1101,7 @@ func renderIspad(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 	// =========================
 	// 2. SANIRANJE
 	// =========================
-	ensureSpace(pdf, float64(len(dog.Objekti))*20+30)
+	// ensureSpace(pdf, float64(len(dog.Objekti))*20+30)
 	if len(dog.Objekti) > 0 {
 		pdf.SetFont("DejaVu", "B", 9)
 		pdf.SetX(bodyX)
@@ -1053,24 +1111,31 @@ func renderIspad(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 
 	for _, obj := range dog.Objekti {
 
+		ensureSpace(pdf, 15)
+
 		pdf.SetFont("DejaVu", "B", 9)
 		pdf.SetX(bodyX)
 		pdf.Cell(0, lineH, obj.Naziv)
 		pdf.Ln(lineH)
 
 		for _, s := range obj.Stavke {
+			textWidth := 145.0
+			rowH := estimateMultiCellHeight(pdf, s.RecenicaMan, textWidth, lineH)
+			ensureSpace(pdf, rowH+2)
 
 			startRowY := pdf.GetY()
 
-			col1X := bodyX
+			// col1X := bodyX - 12
+			col1X := left + 5
 			col2X := bodyX + 10
 			col3X := bodyX + 25
 			col4X := bodyX + 45
 
-			pdf.SetFont("DejaVu", "", 9)
+			pdf.SetFont("DejaVu", "", 8)
 
 			pdf.SetXY(col1X, startRowY)
 			pdf.CellFormat(10, lineH, s.DopunaDaNe, "", 0, "L", false, 0, "")
+			// pdf.CellFormat(10, lineH, "Dop.", "", 0, "L", false, 0, "")
 
 			pdf.SetXY(col2X, startRowY)
 			pdf.CellFormat(12, lineH, s.Vrepoc, "", 0, "L", false, 0, "")
@@ -1098,7 +1163,10 @@ func renderIspad(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 	// 4. POSLEDICE
 	// =========================
 	if strings.TrimSpace(dog.Posledice) != "" {
-		ensureSpace(pdf, float64(len(strings.Split(dog.Posledice, "\n")))*6+10)
+		textWidth := 145.0
+		rowH := estimateMultiCellHeight(pdf, dog.Posledice, textWidth, lineH)
+		ensureSpace(pdf, rowH+10)
+
 		pdf.Ln(2)
 		pdf.SetX(bodyX)
 

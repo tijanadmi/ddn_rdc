@@ -95,4 +95,6 @@ type DatabaseRepo interface {
 	GetObavSlikeById(ctx context.Context, id int) ([]models.ObavSlika, error)
 
 	GetAngazovaniRukovaociById(ctx context.Context, id int) (*models.DogadjajDetaljno, error)
+
+	GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, idTipSmene int) (string, error)
 }

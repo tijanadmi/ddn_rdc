@@ -81,6 +81,8 @@ func (server *Server) BuildShiftReport(ctx *gin.Context, idSmene int) (*models.S
 		}
 	}
 
+	report.Proizvodnja, err = server.store.GetProizvodnjaPoSmeni(ctx, idSmene, report.Smena.IDTipSmena)
+
 	return report, nil
 }
 

@@ -2253,3 +2253,124 @@ where dalj.id_dog_smene=:1
 
 	return &d, nil
 }
+
+func (m *OracleDBRepo) GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, idTipSmene int) (string, error) {
+
+	var recenica strings.Builder
+
+	// =========================
+	// 1. HEADER (19h / 07h)
+	// =========================
+
+	if idTipSmene == 1 {
+		recenica.WriteString("Stanje u 19:00h\n")
+	} else {
+		recenica.WriteString("Stanje u 07:00h\n")
+	}
+
+	fmt.Println("Recenica posle ispitivanja tipa smene:", recenica.String(), idTipSmene)
+	// =========================
+	// 2. HE LISTA
+	// =========================
+	rows, err := m.DB.QueryContext(ctx, `
+		SELECT h.id, h.naziv
+		FROM ted.tel_he h
+		JOIN ddn.smena s ON s.id_s_mrc = h.id_s_mrc
+		WHERE s.id = :1
+	`, idSmene)
+
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		var heID int
+		var heNaziv string
+
+		if err := rows.Scan(&heID, &heNaziv); err != nil {
+			return "", err
+		}
+
+		fmt.Println("HE ID:", heID, "HE Naziv:", heNaziv)
+		// =========================
+		// 3. PROIZVODNJA PODACI
+		// =========================
+		var maxg sql.NullInt64
+		var g1 sql.NullInt64 // 👈 JEDINI INTEGER
+		var g2, g3, g4, g5, g6, g7, g8, g9, g10 sql.NullString
+
+		err := m.DB.QueryRowContext(ctx, `
+			SELECT NVL(snaga,0),
+			       g1,g2,g3,g4,g5,g6,g7,g8,g9,g10
+			FROM ddn_proiz
+			WHERE id_smena = :1
+			  AND id_tel_he = :2
+		`, idSmene, heID).Scan(
+			&maxg,
+			&g1,
+			&g2, &g3, &g4, &g5, &g6,
+			&g7, &g8, &g9, &g10,
+		)
+
+		// fmt.Println("Proizvodnja za HE:", heNaziv, "MaxG:", maxg, "G:", g1, g2, g3, g4, g5, g6, g7, g8, g9, g10)
+
+		// ako nema reda
+		if err == sql.ErrNoRows {
+			recenica.WriteString(fmt.Sprintf(" - %s - 0 MW\n", heNaziv))
+			continue
+		}
+		if err != nil {
+			return "", err
+		}
+
+		// =========================
+		// 4. LINIJA HE
+		// =========================
+		mw := 0
+		if maxg.Valid {
+			mw = int(maxg.Int64)
+		}
+
+		line := fmt.Sprintf(" - %s - %d MW", heNaziv, mw)
+
+		if g1.Valid && g1.Int64 == 1 {
+			line += ", G1"
+		}
+		if g2.Valid && g2.String == "1" {
+			line += ", G2"
+		}
+		if g3.Valid && g3.String == "1" {
+			line += ", G3"
+		}
+		if g4.Valid && g4.String == "1" {
+			line += ", G4"
+		}
+		if g5.Valid && g5.String == "1" {
+			line += ", G5"
+		}
+		if g6.Valid && g6.String == "1" {
+			line += ", G6"
+		}
+		if g7.Valid && g7.String == "1" {
+			line += ", G7"
+		}
+		if g8.Valid && g8.String == "1" {
+			line += ", G8"
+		}
+		if g9.Valid && g9.String == "1" {
+			line += ", G9"
+		}
+		if g10.Valid && g10.String == "1" {
+			line += ", G10"
+		}
+
+		recenica.WriteString(line + "\n")
+		fmt.Println("Recenica posle dodavanja linije HE:", recenica.String())
+	}
+
+	recenica.WriteString("\n")
+
+	return recenica.String(), nil
+}

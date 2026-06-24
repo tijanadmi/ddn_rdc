@@ -140,11 +140,9 @@ type Manipulacija struct {
 
 type ObjekatView struct {
 	Naziv  string      `json:"naziv"`
-	MinRb  int 	   `json:"-"`
+	MinRb  int         `json:"-"`
 	Stavke []ManipView `json:"stavke"`
 }
-
-
 
 type ManipView struct {
 	DopunaDaNe  string `json:"dopuna_da_ne"`
