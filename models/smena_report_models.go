@@ -30,3 +30,5 @@ type DogadjajPDF struct {
 	ObavBeleske         *ObavBeleska
 	ObavSlike           []ObavSlika
 }
+
+

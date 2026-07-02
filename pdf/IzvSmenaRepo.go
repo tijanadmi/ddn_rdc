@@ -10,6 +10,9 @@ import (
 
 	"github.com/tijanadmi/ddn_rdc/models"
 
+	_ "image/jpeg"
+	_ "image/png"
+
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -44,6 +47,8 @@ func GenerateShiftReportPDF(
 
 		renderDogadjaj(pdf, &dog)
 
+		// blocks := buildDogadjajBlocks(pdf, &dog)
+		// RenderBlocks(pdf, blocks)
 		pdf.Ln(3)
 	}
 
@@ -155,8 +160,7 @@ func renderDogadjaj(
 	dog *models.DogadjajPDF,
 ) {
 
-	renderDogadjajHeader(pdf, dog)
-
+	renderDogadjajHeader(pdf, dog, 10)
 	// fmt.Println("dog.Tip:", dog.Tip)
 
 	switch dog.Tip {
@@ -166,7 +170,7 @@ func renderDogadjaj(
 		if dog.ObavBeleske != nil && dog.ObavBeleske.TipObv == "B" {
 			renderObavBeleska(pdf, dog.ObavBeleske)
 		}
-		if dog.ObavSlike != nil {
+		if len(dog.ObavSlike) > 0 {
 			renderObavSlika(pdf, dog)
 		}
 
@@ -190,36 +194,144 @@ func renderDogadjaj(
 	case "1": // Ispad
 		renderIspad(pdf, dog)
 	case "7": // Ispad
+		// fmt.Println("dog.Tip:", dog.Tip)
 		renderIspad(pdf, dog)
-
-		// kasnije:
-		// case "A": angazovani
-		// case "S": slike
-		// case "I": iskljucenje
-		// case "D": detalji
+		// fmt.Println("Posle renderIspad:", dog)
 	}
 }
 
-// func renderDogadjajHeader(
-// 	pdf *gofpdf.Fpdf,
-// 	dog *models.DogadjajPDF,
-// ) {
+// stara funkcija
+// func renderDogadjajHeader(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 
 // 	const lineH = 6.0
-
-// 	pdf.SetFont("DejaVu", "B", 10)
 
 // 	left := pdf.GetX()
 // 	startY := pdf.GetY()
 
-// 	// ===== 1. Rb (fiksno 6 karaktera) =====
+// 	bodyX := left
+
+// 	// =========================
+// 	// 1. IZRAČUN VISINE BLOKA
+// 	// =========================
+
+// 	linesNaslov := pdf.SplitLines([]byte(dog.Naslov), 160)
+// 	linesPod := pdf.SplitLines([]byte(dog.Podnaslov), 160)
+
+// 	blockH := float64(len(linesNaslov))*lineH + 2
+
+// 	if strings.TrimSpace(dog.Podnaslov) != "" {
+// 		blockH += float64(len(linesPod))*lineH + 2
+// 	}
+
+// 	// + margin za Rb liniju
+// 	blockH += lineH
+
+// 	// =========================
+// 	// 2. PAGE BREAK PROVERA
+// 	// =========================
+
+// 	_, pageH := pdf.GetPageSize()
+// 	_, _, _, bottom := pdf.GetMargins()
+
+// 	if pdf.GetY()+blockH > pageH-bottom {
+// 		pdf.AddPage()
+// 		startY = pdf.GetY()
+// 	}
+
+// 	// =========================
+// 	// 3. CRTANJE BLOKA
+// 	// =========================
+
+// 	pdf.SetFont("DejaVu", "B", 10)
+
+// 	rb := fmt.Sprintf("%-6s", dog.RbDog)
+
+// 	pdf.SetXY(bodyX, startY)
+// 	pdf.CellFormat(18, lineH, rb, "", 0, "L", false, 0, "")
+
+// 	titleX := bodyX + 21
+
+// 	// NASLOV
+// 	pdf.SetXY(titleX, startY)
+// 	pdf.MultiCell(0, lineH, dog.Naslov, "", "L", false)
+
+// 	y := pdf.GetY()
+
+// 	// PODNASLOV
+// 	if strings.TrimSpace(dog.Podnaslov) != "" {
+// 		pdf.SetFont("DejaVu", "B", 10)
+// 		pdf.SetXY(titleX, y)
+// 		pdf.MultiCell(0, lineH, dog.Podnaslov, "", "L", false)
+// 		y = pdf.GetY()
+// 	}
+
+// 	// kraj bloka
+// 	pdf.SetY(y + 2)
+// }
+
+//nova funkcija
+// func renderDogadjajHeader(
+// 	pdf *gofpdf.Fpdf,
+// 	dog *models.DogadjajPDF,
+// ) {
+// 	const lineH = 6.0
+
+// 	left := pdf.GetX()
+// 	startY := pdf.GetY()
+
+// 	// =========================
+// 	// PROCENA SAMO HEADERA
+// 	// =========================
+
+// 	linesNaslov := pdf.SplitLines([]byte(dog.Naslov), 160)
+
+// 	headerH := float64(len(linesNaslov))*lineH + 2
+
+// 	if strings.TrimSpace(dog.Podnaslov) != "" {
+// 		linesPod := pdf.SplitLines([]byte(dog.Podnaslov), 160)
+// 		headerH += float64(len(linesPod))*lineH + 2
+// 	}
+
+// 	// RB linija
+// 	headerH += lineH
+
+// 	// =========================
+// 	// HEADER + MALO SADRŽAJA
+// 	// =========================
+
+// 	const minContentAfterHeader = 10.0
+
+// 	ensureSpace(
+// 		pdf,
+// 		headerH+minContentAfterHeader,
+// 	)
+
+// 	startY = pdf.GetY()
+
+// 	// =========================
+// 	// CRTANJE
+// 	// =========================
+
+// 	pdf.SetFont("DejaVu", "B", 10)
+
 // 	rb := fmt.Sprintf("%-6s", dog.RbDog)
 
 // 	pdf.SetXY(left, startY)
-// 	pdf.CellFormat(18, lineH, rb, "", 0, "L", false, 0, "")
+// 	pdf.CellFormat(
+// 		18,
+// 		lineH,
+// 		rb,
+// 		"",
+// 		0,
+// 		"L",
+// 		false,
+// 		0,
+// 		"",
+// 	)
 
-// 	// ===== 2. Naslov (indented + wrap) =====
-// 	titleX := left + 18 + 3 // 3 blanka
+// 	titleX := left + 21
+
+// 	// NASLOV
 
 // 	pdf.SetXY(titleX, startY)
 
@@ -232,78 +344,128 @@ func renderDogadjaj(
 // 		false,
 // 	)
 
-// 	// Y nakon naslova
-// 	endY := pdf.GetY()
+// 	y := pdf.GetY()
 
-// 	// pomeramo Y za sledeći blok
-// 	pdf.SetY(endY + 2)
+// 	// PODNASLOV
+
+// 	if strings.TrimSpace(dog.Podnaslov) != "" {
+
+// 		pdf.SetFont("DejaVu", "B", 10)
+
+// 		pdf.SetXY(titleX, y)
+
+// 		pdf.MultiCell(
+// 			0,
+// 			lineH,
+// 			dog.Podnaslov,
+// 			"",
+// 			"L",
+// 			false,
+// 		)
+
+// 		y = pdf.GetY()
+// 	}
+
+// 	pdf.SetY(y + 2)
 // }
 
-func renderDogadjajHeader(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
-
+func renderDogadjajHeader(
+	pdf *gofpdf.Fpdf,
+	dog *models.DogadjajPDF,
+	keepWithNext float64,
+) {
 	const lineH = 6.0
 
 	left := pdf.GetX()
 	startY := pdf.GetY()
 
-	bodyX := left
-
 	// =========================
-	// 1. IZRAČUN VISINE BLOKA
+	// PROCENA SAMO HEADERA
 	// =========================
 
 	linesNaslov := pdf.SplitLines([]byte(dog.Naslov), 160)
-	linesPod := pdf.SplitLines([]byte(dog.Podnaslov), 160)
 
-	blockH := float64(len(linesNaslov))*lineH + 2
+	headerH := float64(len(linesNaslov))*lineH + 2
 
 	if strings.TrimSpace(dog.Podnaslov) != "" {
-		blockH += float64(len(linesPod))*lineH + 2
+		linesPod := pdf.SplitLines([]byte(dog.Podnaslov), 160)
+		headerH += float64(len(linesPod))*lineH + 2
 	}
 
-	// + margin za Rb liniju
-	blockH += lineH
+	// RB linija
+	headerH += lineH
 
 	// =========================
-	// 2. PAGE BREAK PROVERA
+	// HEADER + MALO SADRŽAJA
 	// =========================
 
-	_, pageH := pdf.GetPageSize()
-	_, _, _, bottom := pdf.GetMargins()
+	const minContentAfterHeader = 10.0
 
-	if pdf.GetY()+blockH > pageH-bottom {
-		pdf.AddPage()
-		startY = pdf.GetY()
-	}
+	ensureSpace(
+		pdf,
+		headerH+minContentAfterHeader,
+	)
+
+	startY = pdf.GetY()
 
 	// =========================
-	// 3. CRTANJE BLOKA
+	// CRTANJE
 	// =========================
 
 	pdf.SetFont("DejaVu", "B", 10)
 
 	rb := fmt.Sprintf("%-6s", dog.RbDog)
 
-	pdf.SetXY(bodyX, startY)
-	pdf.CellFormat(18, lineH, rb, "", 0, "L", false, 0, "")
+	pdf.SetXY(left, startY)
+	pdf.CellFormat(
+		18,
+		lineH,
+		rb,
+		"",
+		0,
+		"L",
+		false,
+		0,
+		"",
+	)
 
-	titleX := bodyX + 21
+	titleX := left + 21
 
 	// NASLOV
+
 	pdf.SetXY(titleX, startY)
-	pdf.MultiCell(0, lineH, dog.Naslov, "", "L", false)
+
+	pdf.MultiCell(
+		0,
+		lineH,
+		dog.Naslov,
+		"",
+		"L",
+		false,
+	)
 
 	y := pdf.GetY()
 
 	// PODNASLOV
+
 	if strings.TrimSpace(dog.Podnaslov) != "" {
+
 		pdf.SetFont("DejaVu", "B", 10)
+
 		pdf.SetXY(titleX, y)
-		pdf.MultiCell(0, lineH, dog.Podnaslov, "", "L", false)
+
+		pdf.MultiCell(
+			0,
+			lineH,
+			dog.Podnaslov,
+			"",
+			"L",
+			false,
+		)
+
 		y = pdf.GetY()
 	}
 
-	// kraj bloka
 	pdf.SetY(y + 2)
 }
 
@@ -463,6 +625,18 @@ func ensureSpace(pdf *gofpdf.Fpdf, need float64) {
 	}
 }
 
+func ensureObjectStart(
+	pdf *gofpdf.Fpdf,
+	firstRowHeight float64,
+) {
+	const objectHeaderHeight = 7.0 // naziv objekta + mali razmak
+
+	ensureSpace(
+		pdf,
+		objectHeaderHeight+firstRowHeight,
+	)
+}
+
 func extractDispeceri(smena *models.Smena) []string {
 	valid := make([]string, 0, 4)
 
@@ -488,16 +662,6 @@ func calcHeaderBottomY(startY float64, numDisp int) float64 {
 		float64(numDisp)*lineH +
 		3.0 // padding
 }
-
-// func calcTopMargin(numDisp int) float64 {
-// 	const startY = 10.0
-// 	const lineH = 6.0
-
-// 	return startY +
-// 		lineH +
-// 		float64(numDisp)*lineH +
-// 		8.0 // dodatni spacing ispod headera
-// }
 
 func renderProizvodnja(pdf *gofpdf.Fpdf, proizvodnja string) {
 
@@ -612,6 +776,101 @@ func renderObavBeleska(
 	}
 }
 
+// func renderObavBeleska(
+// 	pdf *gofpdf.Fpdf,
+// 	ob *models.ObavBeleska,
+// ) {
+// 	const lineH = 5.0
+
+// 	left := pdf.GetX()
+// 	startY := pdf.GetY()
+
+// 	dopWidth := 18.0
+// 	bodyX := left + dopWidth + 3
+
+// 	// =========================
+// 	// 1. KALKULACIJA VISINE
+// 	// =========================
+
+// 	leftText := ""
+// 	if strings.TrimSpace(ob.Dopuna) != "" {
+// 		leftText = "Dopuna: " + ob.Dopuna
+// 	}
+
+// 	rightText := ""
+// 	if strings.TrimSpace(ob.TekstObv) != "" {
+// 		rightText += ob.TekstObv
+// 	}
+// 	if strings.TrimSpace(ob.Napomena) != "" {
+// 		if rightText != "" {
+// 			rightText += "\n"
+// 		}
+// 		rightText += ob.Napomena
+// 	}
+
+// 	leftLines := pdf.SplitLines([]byte(leftText), dopWidth)
+// 	rightLines := pdf.SplitLines([]byte(rightText), 0)
+
+// 	leftH := float64(len(leftLines)) * lineH
+// 	rightH := float64(len(rightLines)) * lineH
+
+// 	rowH := leftH
+// 	if rightH > rowH {
+// 		rowH = rightH
+// 	}
+// 	rowH += 2
+
+// 	// =========================
+// 	// 2. ENSURE SPACE (KAO ISKLJUČENJE)
+// 	// =========================
+
+// 	ensureSpace(pdf, rowH)
+
+// 	startY = pdf.GetY()
+
+// 	// =========================
+// 	// 3. LEVA KOLONA
+// 	// =========================
+
+// 	if leftText != "" {
+// 		pdf.SetFont("DejaVu", "", 9)
+// 		pdf.SetXY(left, startY)
+
+// 		pdf.MultiCell(
+// 			dopWidth,
+// 			lineH,
+// 			leftText,
+// 			"",
+// 			"L",
+// 			false,
+// 		)
+// 	}
+
+// 	// =========================
+// 	// 4. DESNA KOLONA
+// 	// =========================
+
+// 	if rightText != "" {
+// 		pdf.SetFont("DejaVu", "", 9)
+// 		pdf.SetXY(bodyX, startY)
+
+// 		pdf.MultiCell(
+// 			0,
+// 			lineH,
+// 			rightText,
+// 			"",
+// 			"L",
+// 			false,
+// 		)
+// 	}
+
+// 	// =========================
+// 	// 5. NEXT ROW
+// 	// =========================
+
+// 	pdf.SetY(startY + rowH)
+// }
+
 func renderIskljucenje(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 	const lineH = 5.0
 
@@ -641,7 +900,26 @@ func renderIskljucenje(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 
 	// ===== OBJEKTI =====
 	for _, obj := range dog.Objekti {
-		ensureSpace(pdf, 15)
+		//stari kod
+		// ensureSpace(pdf, 15)
+
+		//novi kod
+		// =========================
+		// Naziv objekta + prva manipulacija moraju zajedno
+		// =========================
+
+		firstRowHeight := lineH
+
+		if len(obj.Stavke) > 0 {
+			firstRowHeight = estimateMultiCellHeight(
+				pdf,
+				obj.Stavke[0].RecenicaMan,
+				145,
+				lineH,
+			) + 2
+		}
+
+		ensureObjectStart(pdf, firstRowHeight)
 
 		// naziv objekta
 		pdf.SetFont("DejaVu", "B", 9)
@@ -1180,6 +1458,86 @@ func renderIspad(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 	}
 }
 
+// func renderObavSlika(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
+// 	const lineH = 5.0
+
+// 	if len(dog.ObavSlike) == 0 {
+// 		return
+// 	}
+
+// 	// =========================
+// 	// SORTIRANJE PO RB
+// 	// =========================
+// 	sort.Slice(dog.ObavSlike, func(i, j int) bool {
+// 		return dog.ObavSlike[i].RB < dog.ObavSlike[j].RB
+// 	})
+
+// 	left := pdf.GetX()
+// 	bodyX := left + 21
+
+// 	pageW, _ := pdf.GetPageSize()
+// 	// _, _, _, bottom := pdf.GetMargins()
+
+// 	maxWidth := pageW - bodyX - 20
+
+// 	pdf.SetFont("DejaVu", "B", 9)
+// 	pdf.SetX(bodyX)
+// 	pdf.Cell(0, lineH, "OBAVEŠTENJA - SLIKE")
+// 	pdf.Ln(lineH + 2)
+
+// 	// =========================
+// 	// SLIKE LOOP
+// 	// =========================
+// 	for i, s := range dog.ObavSlike {
+
+// 		// estimate visine slike (fiksni blok ~60)
+// 		ensureSpace(pdf, 70)
+
+// 		// naslov slike
+// 		pdf.SetFont("DejaVu", "", 9)
+// 		pdf.SetX(bodyX)
+// 		pdf.Cell(0, lineH, fmt.Sprintf("Slika %d", i+1))
+// 		pdf.Ln(lineH + 1)
+
+// 		// decode base64
+// 		imgBytes, err := base64.StdEncoding.DecodeString(s.Base64)
+// 		if err != nil {
+// 			continue
+// 		}
+
+// 		imgOpt := gofpdf.ImageOptions{
+// 			ImageType: s.Format, // "jpg", "png"
+// 			ReadDpi:   true,
+// 		}
+
+// 		// register image
+// 		imgName := fmt.Sprintf("img_%d_%d", i, time.Now().UnixNano())
+// 		pdf.RegisterImageOptionsReader(imgName, imgOpt, bytes.NewReader(imgBytes))
+
+// 		info := pdf.GetImageInfo(imgName)
+
+// 		// scale to fit width
+// 		w := maxWidth
+// 		h := info.Height() * (w / info.Width())
+
+// 		x := bodyX
+
+// 		pdf.ImageOptions(
+// 			imgName,
+// 			x,
+// 			pdf.GetY(),
+// 			w,
+// 			h,
+// 			false,
+// 			imgOpt,
+// 			0,
+// 			"",
+// 		)
+
+// 		pdf.Ln(h + 3)
+// 	}
+// }
+
 func renderObavSlika(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 	const lineH = 5.0
 
@@ -1187,9 +1545,6 @@ func renderObavSlika(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 		return
 	}
 
-	// =========================
-	// SORTIRANJE PO RB
-	// =========================
 	sort.Slice(dog.ObavSlike, func(i, j int) bool {
 		return dog.ObavSlike[i].RB < dog.ObavSlike[j].RB
 	})
@@ -1197,23 +1552,52 @@ func renderObavSlika(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 	left := pdf.GetX()
 	bodyX := left + 21
 
-	pageW, _ := pdf.GetPageSize()
-	// _, _, _, bottom := pdf.GetMargins()
+	pageW, pageH := pdf.GetPageSize()
+	_, _, _, bottom := pdf.GetMargins()
 
 	maxWidth := pageW - bodyX - 20
 
 	pdf.SetFont("DejaVu", "B", 9)
 	pdf.SetX(bodyX)
-	pdf.Cell(0, lineH, "OBAVEŠTENJA - SLIKE")
-	pdf.Ln(lineH + 2)
 
-	// =========================
-	// SLIKE LOOP
-	// =========================
 	for i, s := range dog.ObavSlike {
 
-		// estimate visine slike (fiksni blok ~60)
-		ensureSpace(pdf, 70)
+		imgBytes, err := base64.StdEncoding.DecodeString(s.Base64)
+		if err != nil {
+			continue
+		}
+
+		imgOpt := gofpdf.ImageOptions{
+			ImageType: s.Format,
+			ReadDpi:   true,
+		}
+
+		imgName := fmt.Sprintf("img_%d_%d", i, time.Now().UnixNano())
+		pdf.RegisterImageOptionsReader(imgName, imgOpt, bytes.NewReader(imgBytes))
+
+		info := pdf.GetImageInfo(imgName)
+
+		// --- scale ---
+		w := maxWidth
+		h := info.Height() * (w / info.Width())
+
+		// =========================
+		// KLJUČ: PRE PAGE BREAK
+		// =========================
+		needed := h + 10 + lineH // naslov + slika + margina
+
+		if pdf.GetY()+needed > pageH-bottom {
+			pdf.AddPage()
+			// pdf.SetX(bodyX)
+			// Ako je prva slika prešla na novu stranu,
+			// ponovo odštampaj header događaja.
+			if i == 0 {
+				renderDogadjajHeader(pdf, dog, 0)
+			}
+
+			left = pdf.GetX()
+			bodyX = left + 21
+		}
 
 		// naslov slike
 		pdf.SetFont("DejaVu", "", 9)
@@ -1221,33 +1605,14 @@ func renderObavSlika(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 		pdf.Cell(0, lineH, fmt.Sprintf("Slika %d", i+1))
 		pdf.Ln(lineH + 1)
 
-		// decode base64
-		imgBytes, err := base64.StdEncoding.DecodeString(s.Base64)
-		if err != nil {
-			continue
-		}
-
-		imgOpt := gofpdf.ImageOptions{
-			ImageType: s.Format, // "jpg", "png"
-			ReadDpi:   true,
-		}
-
-		// register image
-		imgName := fmt.Sprintf("img_%d_%d", i, time.Now().UnixNano())
-		pdf.RegisterImageOptionsReader(imgName, imgOpt, bytes.NewReader(imgBytes))
-
-		info := pdf.GetImageInfo(imgName)
-
-		// scale to fit width
-		w := maxWidth
-		h := info.Height() * (w / info.Width())
-
+		// slika
 		x := bodyX
+		y := pdf.GetY()
 
 		pdf.ImageOptions(
 			imgName,
 			x,
-			pdf.GetY(),
+			y,
 			w,
 			h,
 			false,
@@ -1256,6 +1621,102 @@ func renderObavSlika(pdf *gofpdf.Fpdf, dog *models.DogadjajPDF) {
 			"",
 		)
 
-		pdf.Ln(h + 3)
+		// pomeri kursor ispod slike
+		pdf.SetY(y + h + 3)
 	}
 }
+
+// func prepareImage(
+// 	pdf *gofpdf.Fpdf,
+// 	s models.ObavSlika,
+// 	bodyX float64,
+// 	maxWidth float64,
+// ) (imgName string, w float64, h float64, opt gofpdf.ImageOptions, err error) {
+
+// 	// =========================
+// 	// DECODE BASE64
+// 	// =========================
+// 	imgBytes, err := base64.StdEncoding.DecodeString(s.Base64)
+// 	if err != nil {
+// 		return "", 0, 0, opt, err
+// 	}
+
+// 	imgName = fmt.Sprintf("img_%d", time.Now().UnixNano())
+
+// 	opt = gofpdf.ImageOptions{
+// 		ImageType: "JPG", // ili PNG ako mešaš tipove
+// 		ReadDpi:   true,
+// 	}
+
+// 	pdf.RegisterImageOptionsReader(imgName, opt, bytes.NewReader(imgBytes))
+
+// 	info := pdf.GetImageInfo(imgName)
+
+// 	// =========================
+// 	// ORIGINALNE DIMENZIJE
+// 	// =========================
+// 	origW := info.Width()
+// 	origH := info.Height()
+
+// 	// =========================
+// 	// SKALIRANJE PO ŠIRINI
+// 	// =========================
+// 	w = maxWidth
+// 	h = origH * (w / origW)
+
+// 	// =========================
+// 	// PROVERA VISINE (fit na stranu)
+// 	// =========================
+// 	_, pageH := pdf.GetPageSize()
+// 	top, _, _, bottom := pdf.GetMargins()
+
+// 	availableH := pageH - top - bottom
+
+// 	if h > availableH {
+// 		// skaliraj po visini (portret slike, telefon itd.)
+// 		h = availableH
+// 		w = origW * (h / origH)
+// 	}
+
+// 	// =========================
+// 	// FINALNI X
+// 	// =========================
+// 	_ = bodyX // ostavljam ako kasnije želiš centriranje
+
+// 	return imgName, w, h, opt, nil
+// }
+
+// func estimateFirstImageHeight(
+// 	pdf *gofpdf.Fpdf,
+// 	s models.ObavSlika,
+// 	bodyX float64,
+// 	maxWidth float64,
+// ) float64 {
+
+// 	imgBytes, err := base64.StdEncoding.DecodeString(s.Base64)
+// 	if err != nil {
+// 		return 0
+// 	}
+
+// 	cfg, _, err := image.DecodeConfig(bytes.NewReader(imgBytes))
+// 	if err != nil || cfg.Width == 0 || cfg.Height == 0 {
+// 		return 0
+// 	}
+
+// 	origW := float64(cfg.Width)
+// 	origH := float64(cfg.Height)
+
+// 	w := maxWidth
+// 	h := origH * (w / origW)
+
+// 	_, pageH := pdf.GetPageSize()
+// 	top, _, _, bottom := pdf.GetMargins()
+
+// 	availableH := pageH - top - bottom
+
+// 	if h > availableH {
+// 		h = availableH
+// 	}
+
+// 	return h + 8
+// }

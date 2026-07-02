@@ -20,6 +20,7 @@ const (
 	TipDogTK                 = "6"
 	TipDogSOP                = "A"
 	TipDogIspad              = "1"
+	TipDogKvaroviDVxKV       = "7"
 	TipDogPrekidP            = "P"
 	TipDogRukovalac          = "D"
 )
@@ -133,6 +134,40 @@ func (server *Server) buildDogadjajPDF(
 		pdfDog.AngazovaniRukovalac = ar.AngazovaniRukovalac
 
 	case TipDogIspad:
+		// TODO
+		ispad, err := server.store.GetIspadById(ctx, dog.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		// 1. ISPAD detalji
+		detalji := buildIspadDetaljiPDF(
+			func() []models.Ispad {
+				if ispad.Ispad != nil {
+					return *ispad.Ispad
+				}
+				return nil
+			}(),
+			ispad,
+		)
+
+		var objekti []models.ObjekatView
+		// 2. COMMON manipulacije (VAŽNO)
+		if len(ispad.Manipulacije) > 0 {
+			objekti = buildIskljucenjeObjektiPDF(ispad)
+		}
+
+		// 3. COMMON fields
+		copyCommonPDFFields(pdfDog, ispad.Podnaslov, ispad.UzrokTekst, ispad.ManTekst)
+
+		if ispad.Posledice != nil {
+			pdfDog.Posledice = *ispad.Posledice
+		}
+
+		pdfDog.Detalji = detalji
+		pdfDog.Objekti = objekti
+
+	case TipDogKvaroviDVxKV:
 		// TODO
 		ispad, err := server.store.GetIspadById(ctx, dog.ID)
 		if err != nil {
