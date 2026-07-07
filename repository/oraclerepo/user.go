@@ -3,21 +3,15 @@ package oraclerepo
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/tijanadmi/ddn_rdc/models"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Authenticate authenticates a user
-func (m *OracleDBRepo) Authenticate(ctx context.Context, username, testPassword string) error {
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
+/*func (m *OracleDBRepo) Authenticate(ctx context.Context, username, testPassword string) error {
 
-	/*var id int
-	var hashedPassword string*/
 
 	var user models.User
 
@@ -36,18 +30,18 @@ func (m *OracleDBRepo) Authenticate(ctx context.Context, username, testPassword 
 		return err
 	}
 	return nil
-}
+}*/
 
 func (m *OracleDBRepo) getUserOptimized(ctx context.Context, field string, value any) (*models.User, error) {
 	// 1. Dohvati osnovne podatke o korisniku
-	query := fmt.Sprintf(`select id, username, password, RTRIM(full_name)
-						  from tis_services_users
+	query := fmt.Sprintf(`select id, ad_username,  RTRIM(full_name)
+						  from tis_users
 						  where %s = :1`, field)
 
 	var user models.User
 	var fullName sql.NullString
 	row := m.DB.QueryRowContext(ctx, query, value)
-	if err := row.Scan(&user.ID, &user.Username, &user.Password, &fullName); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &fullName); err != nil {
 		return nil, err
 	}
 	if fullName.Valid {
@@ -56,8 +50,8 @@ func (m *OracleDBRepo) getUserOptimized(ctx context.Context, field string, value
 
 	// 2. Dohvati role korisnika
 	roleQuery := `select RU.ID_ROLE, R.CODE, R.NAME
-				  from tis_services_role_user ru
-				  join tis_services_roles r on ru.id_role = r.id
+				  from tis_role_user ru
+				  join tis_roles r on ru.id_role = r.id
 				  where ru.ID_USER = :1`
 
 	rows, err := m.DB.QueryContext(ctx, roleQuery, user.ID)
@@ -158,7 +152,7 @@ func (m *OracleDBRepo) GetUserByID(ctx context.Context, id int) (*models.User, e
 }
 
 func (m *OracleDBRepo) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
-	return m.getUserOptimized(ctx, "username", username)
+	return m.getUserOptimized(ctx, "ad_username", username)
 }
 
 // func (m *OracleDBRepo) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {

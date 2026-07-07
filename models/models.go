@@ -299,7 +299,7 @@ type PoljaLOV struct {
 type User struct {
 	ID       int
 	Username string
-	Password string
+	//Password string
 	FullName string
 	// Role     []string
 	Roles []Role

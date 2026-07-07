@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -90,7 +91,7 @@ func newUserResponse(user *models.User) userResponse {
 }
 
 type loginUserRequest struct {
-	Username string `json:"username" binding:"required,alphanum"`
+	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
@@ -112,26 +113,66 @@ func getRoleCodes(roles []models.Role) []string {
 }
 
 func (server *Server) loginUser(ctx *gin.Context) {
+
 	var req loginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
+	// 1. Lokalna provera (da li korisnik uopšte ima pravo pristupa aplikaciji)
 	user, err := server.store.GetUserByUsername(ctx, req.Username)
-	// fmt.Println(user)
-	if err != nil {
 
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
+	if err != nil {
+		log.Printf("User %s not found in application database", req.Username)
+		ctx.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("neuspešna prijava")))
 		return
 	}
 
-	err = util.CheckPassword(req.Password, user.Password)
+	/*err = util.CheckPassword(req.Password, user.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
+	}*/
+
+	// 2. AD AUTHENTICATION
+	err = util.AuthenticateLDAP(
+		util.LDAPConfig{
+			Servers: server.config.LDAPServers,
+			Port:    server.config.LDAPPort,
+			Domain:  server.config.LDAPDomain,
+			Timeout: 5 * time.Second,
+		},
+		req.Username,
+		req.Password,
+	)
+
+	// 3. obrada grešaka iz LDAP autentifikacije
+	if err != nil {
+
+		switch err {
+
+		case util.ErrInvalidCredentials:
+			log.Printf("Invalid credentials for user %s", req.Username)
+			ctx.JSON(http.StatusUnauthorized,
+				errorResponse(fmt.Errorf("neuspešna prijava")))
+			return
+
+		case util.ErrLDAPUnavailable:
+			log.Printf("LDAP unavailable while logging user %s", req.Username)
+			ctx.JSON(http.StatusServiceUnavailable,
+				errorResponse(fmt.Errorf("servis trenutno nije dostupan")))
+			return
+
+		default:
+			log.Printf("Unknown LDAP error for user %s: %v", req.Username, err)
+			ctx.JSON(http.StatusInternalServerError,
+				errorResponse(fmt.Errorf("neuspešna prijava")))
+			return
+		}
 	}
 
+	// 4. JWT
 	roleCodes := getRoleCodes(user.Roles)
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(

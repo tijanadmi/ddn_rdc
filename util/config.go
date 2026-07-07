@@ -19,6 +19,9 @@ type Config struct {
 	AllowedOrigins       string        `mapstructure:"ALLOWED_ORIGINS"`
 	FrontendDomain       string        `mapstructure:"FRONTEND_DOMAIN"`
 	SecureCookie         bool          `mapstructure:"SECURE_COOKIE"`
+	LDAPServers          []string      `mapstructure:"LDAP_SERVERS"`
+	LDAPPort             int           `mapstructure:"LDAP_PORT"`
+	LDAPDomain           string        `mapstructure:"LDAP_DOMAIN"`
 }
 
 // LoadConfig reads configuration from file or environment variables.

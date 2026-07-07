@@ -10,7 +10,7 @@ import (
 
 type DatabaseRepo interface {
 	Connection() *sql.DB
-	Authenticate(ctx context.Context, username, testPassword string) error
+	//Authenticate(ctx context.Context, username, testPassword string) error
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserByID(ctx context.Context, id int) (*models.User, error)
 	CreateSession(arg models.CreateSessionParams) (models.Session, error)
