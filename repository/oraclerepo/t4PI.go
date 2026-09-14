@@ -76,7 +76,7 @@ func (m *OracleDBRepo) GetPiPIT4ByParams(ctx context.Context, arg models.ListPiD
 	for rows.Next() {
 		var ue models.PiMMT4
 		var count int
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.Stav,
 			&ue.Datizv,

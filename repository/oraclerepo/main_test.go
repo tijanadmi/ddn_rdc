@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/godror/godror"
+	_ "github.com/sijms/go-ora/v2"
 	"github.com/tijanadmi/ddn_rdc/repository"
 	"github.com/tijanadmi/ddn_rdc/util"
 )
 
-var testDB *sql.DB
+// var testDB *sql.DB
 
 var testRepo repository.DatabaseRepo
 

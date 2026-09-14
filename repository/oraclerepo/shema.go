@@ -34,7 +34,7 @@ func (m *OracleDBRepo) GetShemeByOrg(ctx context.Context, idOrg int, tipDok stri
 
 		var s models.Shema
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&s.ID,
 			&s.ImeDok,
 			&s.Putanja,
@@ -68,7 +68,9 @@ func (m *OracleDBRepo) GetShemaPutanjaByID(ctx context.Context, id int) (string,
 	var putanja string
 	var imeDok string
 
-	err := m.DB.QueryRowContext(ctx, query, id).Scan(&putanja, &imeDok)
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	err := ScanRowSafe(row, &putanja, &imeDok)
 	if err != nil {
 		return "", "", err
 	}

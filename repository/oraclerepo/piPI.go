@@ -142,7 +142,7 @@ func (m *OracleDBRepo) GetPiPIByParams(ctx context.Context, arg models.ListPiDDP
 	for rows.Next() {
 		var ue models.PiDD
 		var count int
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.IdSMrc,
 			&ue.Mrc,
@@ -394,7 +394,7 @@ func (m *OracleDBRepo) GetPiPIByParamsByPage(ctx context.Context, arg models.Lis
 	for rows.Next() {
 		var ue models.PiDD
 		var count int
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.IdSMrc,
 			&ue.Mrc,

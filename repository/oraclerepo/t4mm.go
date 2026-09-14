@@ -68,7 +68,7 @@ func (m *OracleDBRepo) GetPiMMT4ByParams(ctx context.Context, arg models.ListPiM
 	for rows.Next() {
 		var ue models.PiMMT4
 		var count int
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.Stav,
 			&ue.Datizv,
@@ -160,7 +160,7 @@ func (m *OracleDBRepo) GetPiMMT4ByParamsByPage(ctx context.Context, arg models.L
 	for rows.Next() {
 		var ue models.PiMMT4
 		var count int
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.Stav,
 			&ue.Datizv,

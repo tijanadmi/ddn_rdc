@@ -69,7 +69,7 @@ order by godina desc,mesec asc,napon desc`
 
 	for rows.Next() {
 		var ue models.PGDRadapuMes
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.MesecBr,
 			&ue.Mesec,
 			&ue.Godina,
@@ -127,7 +127,7 @@ FROM (SELECT god,NAPON,
 
 	for rows.Next() {
 		var ue models.PGDDapuA
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Godina,
 			&ue.Napon,
 			&ue.NapNaziv,

@@ -155,7 +155,7 @@ func (m *OracleDBRepo) GetPiMMByParams(ctx context.Context, arg models.ListPiMMP
 	for rows.Next() {
 		var ue models.PiMM
 		var count int
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.Stav,
 			&ue.Tipd,
@@ -410,7 +410,7 @@ func (m *OracleDBRepo) GetPiMMByParamsByPage(ctx context.Context, arg models.Lis
 	for rows.Next() {
 		var ue models.PiMM
 		var count int
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.Stav,
 			&ue.Tipd,

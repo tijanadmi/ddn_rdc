@@ -64,7 +64,7 @@ where smena.stat_smene = 0
 	for rows.Next() {
 		var s models.Smena
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&s.IdSmene,
 			&s.DatDnev,
 
@@ -156,7 +156,7 @@ ORDER BY d.rb_dog
 		for rowsDog.Next() {
 			var d models.Dogadjaj
 
-			err := rowsDog.Scan(
+			err := ScanSafe(rowsDog,
 				&d.ID,
 				&d.IDSmena,
 				&d.RbDog,
@@ -266,7 +266,7 @@ where smena.id = :1
 
 	var s models.Smena
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&s.IdSmene,
 		&s.DatDnev,
 		&s.DatDnevStr,
@@ -354,7 +354,7 @@ ORDER BY d.rb_dog
 	for rowsDog.Next() {
 		var d models.Dogadjaj
 
-		err := rowsDog.Scan(
+		err := ScanSafe(rowsDog,
 			&d.ID,
 			&d.IDSmena,
 			&d.RbDog,
@@ -458,7 +458,7 @@ and smena.ID_S_MRC like (:1) AND
 		var s models.Smena
 		var count int
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&s.IdSmene,
 			&s.DatDnev,
 
@@ -552,7 +552,7 @@ ORDER BY d.rb_dog
 		for rowsDog.Next() {
 			var d models.Dogadjaj
 
-			err := rowsDog.Scan(
+			err := ScanSafe(rowsDog,
 				&d.ID,
 				&d.IDSmena,
 				&d.RbDog,
@@ -737,7 +737,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -825,7 +825,7 @@ ORDER BY rb
 	for rows.Next() {
 		var mnp models.Manipulacija
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&mnp.IDDogSmene,
 			&mnp.Rb,
 			&mnp.Vrepoc,
@@ -898,7 +898,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -943,7 +943,9 @@ FETCH FIRST 1 ROWS ONLY
 	var obav models.ObavBeleska
 	var tekstObv sql.NullString
 
-	err = m.DB.QueryRowContext(ctx, detailQuery, id).Scan(
+	row = m.DB.QueryRowContext(ctx, detailQuery, id)
+
+	err = ScanRowSafe(row,
 		&obav.Napomena,
 		&tekstObv,
 		&obav.TipObv,
@@ -1017,7 +1019,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -1103,7 +1105,7 @@ ORDER BY d.vrepoc
 	for rows.Next() {
 		var tk models.TK
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&tk.ID,
 			&tk.Vrepoc,
 			&tk.Vrezav,
@@ -1186,7 +1188,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -1263,7 +1265,7 @@ ORDER BY d.vrepoc
 	for rows.Next() {
 		var tsu models.TSU
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&tsu.ID,
 			&tsu.Vrepoc,
 			&tsu.Vrezav,
@@ -1344,7 +1346,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -1429,7 +1431,7 @@ ORDER BY d.vrepoc
 	for rows.Next() {
 		var sop models.SOP
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&sop.ID,
 			&sop.Vrepoc,
 			&sop.Vrezav,
@@ -1513,7 +1515,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -1719,7 +1721,7 @@ ORDER BY A.VREPOC_SORT_ISPKV
 	for rowsi.Next() {
 		var isp models.Ispad
 
-		err := rowsi.Scan(
+		err := ScanSafe(rowsi,
 			&isp.VrepocSortIspkv,
 			&isp.ID,
 			&isp.RB,
@@ -1885,7 +1887,7 @@ ORDER BY rb
 	for rows.Next() {
 		var mnp models.Manipulacija
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&mnp.IDDogSmene,
 			&mnp.Rb,
 			&mnp.Vrepoc,
@@ -1970,7 +1972,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -2044,7 +2046,7 @@ order by A.VREPOC_SORT_ISPKV5678
 	for rows.Next() {
 		var pp models.PrekidP
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&pp.VrepocSort,
 			&pp.Polje,
 			&pp.FupID,
@@ -2109,7 +2111,7 @@ func (m *OracleDBRepo) GetObavSlikeById(ctx context.Context, id int) ([]models.O
 		var format sql.NullString
 		var rb int
 
-		err := rows.Scan(&blob, &format, &rb)
+		err := ScanSafe(rows, &blob, &format, &rb)
 		if err != nil {
 			return nil, err
 		}
@@ -2182,7 +2184,7 @@ WHERE d.id = :1
 
 	row := m.DB.QueryRowContext(ctx, masterQuery, id)
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&d.ID,
 		&d.RbDog,
 		&d.TipDog,
@@ -2235,7 +2237,9 @@ where dalj.id_dog_smene=:1
 
 	var r models.AngazovaniRukovalac
 
-	err = m.DB.QueryRowContext(ctx, detailQuery, id).Scan(
+	row = m.DB.QueryRowContext(ctx, detailQuery, id)
+
+	err = ScanRowSafe(row,
 		&r.VremeNaloga,
 		&r.ImeNaloga,
 		&r.VremeDolaska,
@@ -2289,7 +2293,7 @@ func (m *OracleDBRepo) GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, i
 		var heID int
 		var heNaziv string
 
-		if err := rows.Scan(&heID, &heNaziv); err != nil {
+		if err := ScanSafe(rows, &heID, &heNaziv); err != nil {
 			return "", err
 		}
 
@@ -2301,17 +2305,20 @@ func (m *OracleDBRepo) GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, i
 		var g1 sql.NullInt64 // 👈 JEDINI INTEGER
 		var g2, g3, g4, g5, g6, g7, g8, g9, g10 sql.NullString
 
-		err := m.DB.QueryRowContext(ctx, `
+		row := m.DB.QueryRowContext(ctx, `
 			SELECT NVL(snaga,0),
 			       g1,g2,g3,g4,g5,g6,g7,g8,g9,g10
 			FROM ddn_proiz
 			WHERE id_smena = :1
 			  AND id_tel_he = :2
-		`, idSmene, heID).Scan(
+		`, idSmene, heID)
+
+		err := ScanRowSafe(
+			row,
 			&maxg,
 			&g1,
-			&g2, &g3, &g4, &g5, &g6,
-			&g7, &g8, &g9, &g10,
+			&g2, &g3, &g4, &g5,
+			&g6, &g7, &g8, &g9, &g10,
 		)
 
 		// fmt.Println("Proizvodnja za HE:", heNaziv, "MaxG:", maxg, "G:", g1, g2, g3, g4, g5, g6, g7, g8, g9, g10)
@@ -2366,7 +2373,10 @@ func (m *OracleDBRepo) GetProizvodnjaPoSmeni(ctx context.Context, idSmene int, i
 			line += ", G10"
 		}
 
-		recenica.WriteString(line + "\n")
+		// recenica.WriteString(line + "\n")
+
+		recenica.WriteString(line)
+		recenica.WriteByte('\n')
 		// fmt.Println("Recenica posle dodavanja linije HE:", recenica.String())
 	}
 

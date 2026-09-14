@@ -19,7 +19,7 @@ func (m *OracleDBRepo) GetMrcById(ctx context.Context, id int) (*models.SMrc, er
 
 	var mrc models.SMrc
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&mrc.ID,
 		&mrc.Code,
 		&mrc.Name,
@@ -44,7 +44,7 @@ func (m *OracleDBRepo) GetOrgById(ctx context.Context, id int) (*models.SOrg, er
 
 	var org models.SOrg
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&org.ID,
 		&org.Code,
 		&org.Name,
@@ -83,7 +83,7 @@ func (m *OracleDBRepo) GetSMrc(ctx context.Context) ([]*models.SMrc, error) {
 
 	for rows.Next() {
 		var mrc models.SMrc
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&mrc.ID,
 			&mrc.Code,
 			&mrc.Name,
@@ -115,7 +115,7 @@ func (m *OracleDBRepo) GetSOrg(ctx context.Context) ([]*models.SOrg, error) {
 
 	for rows.Next() {
 		var org models.SOrg
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&org.ID,
 			&org.Code,
 			&org.Name,
@@ -149,7 +149,7 @@ func (m *OracleDBRepo) GetSMrcForInsert(ctx context.Context) ([]*models.SMrc, er
 
 	for rows.Next() {
 		var mrc models.SMrc
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&mrc.ID,
 			&mrc.Code,
 			&mrc.Name,
@@ -176,7 +176,7 @@ func (m *OracleDBRepo) GetSTipPrekById(ctx context.Context, id int) (*models.STi
 
 	var tip models.STipPrek
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&tip.ID,
 		&tip.Code,
 		&tip.Name,
@@ -206,7 +206,7 @@ func (m *OracleDBRepo) GetSTipPrek(ctx context.Context) ([]*models.STipPrek, err
 
 	for rows.Next() {
 		var tip models.STipPrek
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&tip.ID,
 			&tip.Code,
 			&tip.Name,
@@ -232,7 +232,7 @@ func (m *OracleDBRepo) GetSVrPrekById(ctx context.Context, id int) (*models.SVrP
 
 	var vr models.SVrPrek
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&vr.ID,
 		&vr.Code,
 		&vr.Name,
@@ -262,7 +262,7 @@ func (m *OracleDBRepo) GetSVrPrek(ctx context.Context) ([]*models.SVrPrek, error
 
 	for rows.Next() {
 		var vr models.SVrPrek
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&vr.ID,
 			&vr.Code,
 			&vr.Name,
@@ -295,7 +295,7 @@ func (m *OracleDBRepo) GetSPodVrPrek(ctx context.Context) ([]*models.SPodVrPrek,
 
 	for rows.Next() {
 		var vr models.SPodVrPrek
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&vr.IdTipObjekta,
 			&vr.Opis,
 			&vr.IdTipDogadjaja,
@@ -322,7 +322,7 @@ func (m *OracleDBRepo) GetSUzrokPrekById(ctx context.Context, id int) (*models.S
 
 	var uzrok models.SUzrokPrek
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&uzrok.ID,
 		&uzrok.Code,
 		&uzrok.Name,
@@ -352,7 +352,7 @@ func (m *OracleDBRepo) GetSUzrokPrek(ctx context.Context) ([]*models.SUzrokPrek,
 
 	for rows.Next() {
 		var uzrok models.SUzrokPrek
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&uzrok.ID,
 			&uzrok.Code,
 			&uzrok.Name,
@@ -378,7 +378,7 @@ func (m *OracleDBRepo) GetSPoduzrokPrekById(ctx context.Context, id int) (*model
 
 	var poduzrok models.SPoduzrokPrek
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&poduzrok.ID,
 		&poduzrok.Code,
 		&poduzrok.Name,
@@ -409,7 +409,7 @@ func (m *OracleDBRepo) GetSPoduzrokPrek(ctx context.Context, id_uzrok_prek int) 
 
 	for rows.Next() {
 		var poduzrok models.SPoduzrokPrek
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&poduzrok.ID,
 			&poduzrok.Code,
 			&poduzrok.Name,
@@ -435,7 +435,7 @@ func (m *OracleDBRepo) GetSMernaMestaById(ctx context.Context, id int) (*models.
 
 	var mm models.SMernaMesta
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&mm.ID,
 		&mm.Code,
 		&mm.Name,
@@ -465,7 +465,7 @@ func (m *OracleDBRepo) GetSMernaMesta(ctx context.Context) ([]*models.SMernaMest
 
 	for rows.Next() {
 		var mm models.SMernaMesta
-		if err := rows.Scan(
+		if err := ScanSafe(rows,
 			&mm.ID,
 			&mm.Code,
 			&mm.Name,
@@ -496,7 +496,7 @@ func (m *OracleDBRepo) GetObjById(ctx context.Context, id int) (*models.ObjLOV, 
 
 	var mrc models.ObjLOV
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&mrc.Opis,
 		&mrc.IdSMrc1,
 		&mrc.ObId,
@@ -531,7 +531,7 @@ func (m *OracleDBRepo) GetPoljeGEById(ctx context.Context, id int) (*models.Polj
 
 	var mrc models.PoljaLOV
 
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&mrc.Id,
 		&mrc.Polje,
 		&mrc.PoljeNaziv,
@@ -579,7 +579,7 @@ func (m *OracleDBRepo) GetObjTSRP(ctx context.Context, arg models.ListObjectPara
 
 	for rows.Next() {
 		var mrc models.ObjLOV
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&mrc.Opis,
 			&mrc.IdSMrc1,
 			&mrc.ObId,
@@ -626,7 +626,7 @@ func (m *OracleDBRepo) GetObjHETEVE(ctx context.Context, arg models.ListObjectPa
 
 	for rows.Next() {
 		var mrc models.ObjLOV
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&mrc.Opis,
 			&mrc.IdSMrc1,
 			&mrc.ObId,
@@ -673,7 +673,7 @@ func (m *OracleDBRepo) GetPoljaGE(ctx context.Context, arg models.ListPoljaLimit
 
 	for rows.Next() {
 		var mrc models.PoljaLOV
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&mrc.Id,
 			&mrc.Polje,
 			&mrc.PoljeNaziv,

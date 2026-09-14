@@ -109,7 +109,7 @@ ORDER BY TIPD, PI_DDD.DATIZV, PI_DDD.ID1, PI_DD.VREPOC
 			row     models.DetailRow
 		)
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&tipd,
 			&naztipd,
 			&datizv,

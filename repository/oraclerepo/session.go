@@ -22,7 +22,6 @@ INSERT INTO sessions (
 ) RETURNING id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
 `
 
-
 func (m *OracleDBRepo) CreateSession(arg models.CreateSessionParams) (models.Session, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -36,7 +35,7 @@ func (m *OracleDBRepo) CreateSession(arg models.CreateSessionParams) (models.Ses
 		arg.ExpiresAt,
 	)
 	var i models.Session
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&i.ID,
 		&i.Username,
 		&i.RefreshToken,
@@ -54,12 +53,12 @@ SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_a
 WHERE id = :1 LIMIT 1
 `
 
-func (m *OracleDBRepo) GetSession( id uuid.UUID) (models.Session, error) {
+func (m *OracleDBRepo) GetSession(id uuid.UUID) (models.Session, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	row := m.DB.QueryRowContext(ctx, getSession, id)
 	var i models.Session
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&i.ID,
 		&i.Username,
 		&i.RefreshToken,

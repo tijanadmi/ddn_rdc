@@ -93,7 +93,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context, id 
 	row := m.DB.QueryRowContext(ctx, query, id)
 
 	var ue models.DDNInterruptionOfDelivery
-	err := row.Scan(
+	err := ScanRowSafe(row,
 		&ue.Id,
 		&ue.IdSMrc,
 		&ue.Mrc,
@@ -217,7 +217,7 @@ func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryByPage(ctx context.Context, a
 		var ue models.DDNInterruptionOfDelivery
 		var count int
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.IdSMrc,
 			&ue.Mrc,
@@ -346,7 +346,7 @@ func (m *OracleDBRepo) GetAllDDNInterruptionOfDelivery(ctx context.Context, arg 
 		var ue models.DDNInterruptionOfDelivery
 		var count int
 
-		err := rows.Scan(
+		err := ScanSafe(rows,
 			&ue.Id,
 			&ue.IdSMrc,
 			&ue.Mrc,
@@ -395,237 +395,6 @@ func (m *OracleDBRepo) GetAllDDNInterruptionOfDelivery(ctx context.Context, arg 
 
 	return ues, totalCount, nil
 }
-
-// func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(ctx context.Context,id int) (*models.DDNInterruptionOfDelivery, error) {
-// 	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-// 	// defer cancel()
-
-// 	query := `SELECT PI.ID,
-// 			PI.ID_S_MRC,
-//   			MR.naziv,
-//   			PI.ID_S_TIPD,
-//   			PI.ID_S_VRPD,
-//   			O.TIPOB,
-//   			O.OB_ID,
-//   			O.OB_SIF,
-//   			O.NAZOB,
-//   			O.OPIS,
-//   			O.SKR,
-//   			O.ID_S_MRC1,
-//   			O.MRC1,
-//   			O.ID_S_MRC2,
-//   			O.MRC2,
-//   			O.ID_S_ORG1,
-//   			O.ID_S_ORG2,
-//   			PI.VREPOC,
-//   			PI.VREZAV,
-//   			PI.ID_S_VR_PREK,
-//   			V.NAZIV,
-//   			PI.ID_S_UZROK_PREK,
-//   			U.NAZIV,
-//   			PI.SNAGA,
-//   			PI.OPIS,
-//   			PI.DDN_KOR,
-//   			PI.ID_DOG_SMENE,
-//   			PI.ID_STAVKE,
-//   			PI.MOD,
-//   			PI.ID_S_MERNA_MESTA,
-//   			M.NAZIV,
-//   			PI.BROJ_MMESTA,
-//   			PI.IND,
-//   			PI.ID_P2_TRAF,
-//   			PO.IME_PO,
-//   			PO.OPIS,
-//   			PI.BI,
-//   			PI.ID_S_PODUZROK_PREK,
-//   			PI.ID_DOG_PREKID_P,
-//   			PI.ID_TIP_OBJEKTA_NDC,
-//   			PI.ID_TIP_DOGADJAJA_NDC,
-// 			PI.SYNSOFT_ID
-//   			FROM DDN_PREKID_ISP PI
-//   			INNER JOIN  S_MRC MR ON PI.ID_S_MRC=MR.ID
-//   			INNER JOIN  V_S_OB O ON PI.OB_ID=O.OB_ID AND PI.ID_TIPOB=O.TIPOB
-//   			LEFT JOIN S_VR_PREK V ON PI.ID_S_VR_PREK=V.ID
-//   			LEFT JOIN S_UZROK_PREK U ON PI.ID_S_UZROK_PREK=U.ID
-//   			LEFT JOIN S_MERNA_MESTA M ON PI.ID_S_MERNA_MESTA=M.ID
-//   			LEFT JOIN V_S_POLJE_SVA_AP PO ON PI.ID_P2_TRAF=PO.P2_TRAF_ID
-//   			where id=:1`
-
-// 	row := m.DB.QueryRowContext(ctx, query,id)
-
-// 	var  vrPrekName, uzrokPrekName, sMernaMestaName, imePo, opisPo sql.NullString
-// 	var idSMernaMesta sql.NullInt64
-
-// 	var i models.DDNInterruptionOfDelivery
-// 	err := row.Scan(
-// 			&i.Id,
-// 			&i.IdSMrc,
-// 			&i.SMrc.Name,
-// 			&i.IdSTipd,
-// 			&i.IdSVrpd,
-// 			&i.VSOb.Tipob,
-// 			&i.VSOb.ObId,
-// 			&i.VSOb.ObSif,
-// 			&i.VSOb.Nazob,
-// 			&i.VSOb.Opis,
-// 			&i.VSOb.Skt,
-// 			&i.VSOb.IdSMrc1,
-// 	        &i.VSOb.Mrc1,
-// 			&i.VSOb.IdSMrc2,
-// 			&i.VSOb.Mrc2,
-// 			&i.VSOb.IdSOrg1,
-// 			&i.VSOb.IdSOrg2,
-// 			&i.Vrepoc,
-// 			&i.Vrezav,
-// 			&i.SVrPrek.ID,
-// 			&vrPrekName,
-// 			&i.SUzrokPrek.ID,
-// 			&uzrokPrekName,
-// 			&i.Snaga,
-// 			&i.Opis,
-// 			&i.KorUneo,
-// 			&i.IdDogSmene,
-// 			&i.IdStavke,
-// 			&i.Mod,
-// 			&idSMernaMesta,
-// 			&sMernaMestaName,
-// 			&i.BrojMesta,
-// 			&i.Ind,
-// 			&i.P2TrafId,
-// 			&imePo,
-// 			&opisPo,
-// 			&i.Bi,
-// 			&i.IdSPoduzrokPrek,
-// 			&i.IdDogPrekidP,
-// 			&i.IdTipObjektaNdc,
-// 			&i.IdTipDogadjajaNdc,
-// 			&i.SynsoftId,
-// 		)
-
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		// Assign the null strings to the struct fields
-
-// 	if vrPrekName.Valid {
-// 		if i.SVrPrek == nil {
-// 			i.SVrPrek = &models.SVrPrek{}
-// 		}
-// 		i.SVrPrek.Name = vrPrekName.String
-// 	}
-// 	if uzrokPrekName.Valid {
-// 		if i.SUzrokPrek == nil {
-// 			i.SUzrokPrek = &models.SUzrokPrek{}
-// 		}
-// 		i.SUzrokPrek.Name = uzrokPrekName.String
-// 	}
-// 	if sMernaMestaName.Valid {
-// 		if i.SMernaMesta == nil {
-// 			i.SMernaMesta = &models.SMernaMesta{}
-// 		}
-// 		i.SMernaMesta.Name = sMernaMestaName.String
-// 	}
-// 	// if i.IdSMernaMesta.Valid {
-//     //     i.IdSMernaMesta = i.IdSMernaMesta.Int64
-//     // } else {
-//     //     i.IdSMernaMesta = 0
-//     // }
-// 	if idSMernaMesta.Valid {
-// 		i.IdSMernaMesta = idSMernaMesta
-// 	} else {
-// 		i.IdSMernaMesta = sql.NullInt64{Int64: 0, Valid: false}
-// 	}
-// 	if imePo.Valid {
-// 		if i.VSPoljeSvaAP == nil {
-// 			i.VSPoljeSvaAP = &models.VSPoljeSvaAP{}
-// 		}
-// 		i.VSPoljeSvaAP.ImePo = imePo.String
-// 	}
-// 	if opisPo.Valid {
-// 		if i.VSPoljeSvaAP == nil {
-// 			i.VSPoljeSvaAP = &models.VSPoljeSvaAP{}
-// 		}
-// 		i.VSPoljeSvaAP.Opis = opisPo.String
-// 	}
-
-// 	return &i, nil
-// }
-
-// func (m *OracleDBRepo) GetDDNInterruptionOfDeliveryById(id int) ([]*models.DDNInterruptionOfDelivery, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-// 	defer cancel()
-
-// 	query := `select ID_S_MRC,
-// 	COALESCE(to_char(ID_S_TIPD), ''),
-// 	COALESCE(to_char(ID_S_VRPD), ''),
-// 	COALESCE(to_char(ID_TIPOB), ''),
-// 	COALESCE(to_char(OB_ID), ''),
-//    to_char(VREPOC, 'dd.mm.yyyy HH24:MI:SS'),
-//    to_char(VREZAV, 'dd.mm.yyyy HH24:MI:SS'),
-//    COALESCE(to_char(ID_S_VR_PREK), ''),
-//    COALESCE(to_char(ID_S_UZROK_PREK), ''),
-//    COALESCE(to_char(SNAGA), ''),
-//    COALESCE(OPIS, ''),
-//    COALESCE(DDN_KOR, ''),
-//    COALESCE(to_char(ID_S_MERNA_MESTA), ''),
-//    COALESCE(to_char(BROJ_MMESTA), ''),
-//    COALESCE(IND, ''),
-//    COALESCE(to_char(ID_P2_TRAF), ''),
-//    COALESCE(to_char(BI), ''),
-//    COALESCE(to_char(ID_S_PODUZROK_PREK), ''),
-//    COALESCE(to_char(ID_DOG_PREKID_P), ''),
-//    COALESCE(to_char(ID_TIP_OBJEKTA_NDC), ''),
-//    COALESCE(to_char(ID_TIP_DOGADJAJA_NDC), ''),
-//    COALESCE(SYNSOFT_ID, '')
-//    from ddn_prekid_isp
-//    where id=:1`
-
-// 	rows, err := m.DB.QueryContext(ctx, query)
-// 	if err != nil {
-// 		fmt.Println("Pogresan upit ili nema rezultata upita")
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-
-// 	var p []*models.DDNInterruptionOfDelivery
-
-// 	for rows.Next() {
-// 		var ue models.DDNInterruptionOfDelivery
-// 		err := rows.Scan(
-// 			&ue.IdSMrc,
-// 			&ue.IdSTipd,
-// 			&ue.IdSVrpd,
-// 			&ue.IdTipob,
-// 			&ue.ObId,
-// 			&ue.Vrepoc,
-// 			&ue.Vrezav,
-// 			&ue.IdSVrPrek,
-// 			&ue.IdSUzrokPrek,
-// 			&ue.Snaga,
-// 			&ue.Opis,
-// 			&ue.KorUneo,
-// 			&ue.IdSMernaMesta,
-// 			&ue.BrojMesta,
-// 			&ue.Ind,
-// 			&ue.P2TrafId,
-// 			&ue.Bi,
-// 			&ue.IdSPoduzrokPrek,
-// 			&ue.IdDogPrekidP,
-// 			&ue.IdTipObjektaNdc,
-// 			&ue.IdTipDogadjajaNdc,
-// 			&ue.SynsoftId,
-// 		)
-
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		p = append(p, &ue)
-// 	}
-
-//		return p, nil
-//	}
 
 func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddnintd models.CreateDDNInterruptionOfDeliveryPParams) (int, error) {
 
@@ -733,13 +502,13 @@ func (m *OracleDBRepo) InsertDDNInterruptionOfDeliveryP(ctx context.Context, ddn
 	var prevID int
 	var prevVrepoc time.Time
 
-	err = tx.QueryRowContext(ctx, selectPrev,
-		ddnintd.IdTipob,
+	row := tx.QueryRowContext(ctx, selectPrev, ddnintd.IdTipob,
 		ddnintd.ObId,
 		ddnintd.P2TrafId,
 		ddnintd.IdSMrc,
 		ddnintd.Vrepoc,
-	).Scan(&prevID, &prevVrepoc)
+	)
+	err = ScanRowSafe(row, &prevID, &prevVrepoc)
 	// fmt.Println("selectPrev:", selectPrev)
 	// fmt.Println("prevID:", prevID, "prevVrepoc:", prevVrepoc)
 

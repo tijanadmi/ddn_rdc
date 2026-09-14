@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	_ "github.com/godror/godror"
+	_ "github.com/sijms/go-ora/v2"
 	"github.com/tijanadmi/ddn_rdc/cmd/api"
 	db "github.com/tijanadmi/ddn_rdc/repository"
 	"github.com/tijanadmi/ddn_rdc/repository/oraclerepo"
