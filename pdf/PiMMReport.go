@@ -3,6 +3,7 @@ package pdf
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/tijanadmi/ddn_rdc/models"
@@ -16,6 +17,14 @@ type TableLayout interface {
 	DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int)
 	RowHeight() float64
 }
+
+const (
+	tableHeaderHeight   = 10.0
+	eventTextLineHeight = 5.0
+	eventTextTopGap     = 2.0
+	eventTextBottomGap  = 3.0
+	tipdHeadingHeight   = 10.0
+)
 
 /*Layout za TAČKU 1 i 3*/
 type TableLayoutT1 struct {
@@ -131,30 +140,49 @@ type TipdRenderer interface {
 type TipdRendererT4 struct{}
 
 func (r TipdRendererT4) Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
-
-	pdf.SetFont("DejaVu", "", 9)
-
 	for _, day := range tipd.Days {
-
-		// ===== DATUM =====
-		pdf.SetFont("DejaVu", "B", 9)
-		pdf.SetTextColor(0, 128, 0)      // zelena EMS
-		pdf.Cell(0, 6, "Дан: "+day.Date) // npr 04.01.2026
-		pdf.SetTextColor(0, 0, 0)
-		pdf.Ln(6)
-
-		pdf.SetFont("DejaVu", "", 9)
+		if !hasVerticalSpace(pdf, 6) {
+			startTipdTextPage(pdf, tipd, day.Date)
+		} else {
+			drawDayHeading(pdf, day.Date)
+		}
 
 		for _, event := range day.Events {
-			if event.Tekst != "" {
-				pdf.SetTextColor(0, 0, 180)
-				pdf.MultiCell(0, 5, event.Tekst, "", "", false)
-				pdf.SetTextColor(0, 0, 0)
-				pdf.Ln(3)
+			if event.Tekst == "" {
+				continue
+			}
+
+			pdf.SetFont("DejaVu", "", 9)
+			lines := splitEventText(pdf, event.Tekst)
+			eventHeight := float64(len(lines))*eventTextLineHeight + eventTextBottomGap
+
+			if !hasVerticalSpace(pdf, eventHeight) {
+				if eventHeight <= freshTextPageEventCapacity(pdf) ||
+					!hasVerticalSpace(pdf, eventTextLineHeight) {
+					startTipdTextPage(pdf, tipd, day.Date)
+				}
+			}
+
+			pdf.SetTextColor(0, 0, 180)
+			for _, line := range lines {
+				if !hasVerticalSpace(pdf, eventTextLineHeight) {
+					startTipdTextPage(pdf, tipd, day.Date)
+					pdf.SetTextColor(0, 0, 180)
+				}
+				pdf.CellFormat(
+					0, eventTextLineHeight, strings.TrimRight(line, "\r"),
+					"", 1, "", false, 0, "",
+				)
+			}
+			pdf.SetTextColor(0, 0, 0)
+			if hasVerticalSpace(pdf, eventTextBottomGap) {
+				pdf.Ln(eventTextBottomGap)
 			}
 		}
 
-		pdf.Ln(4)
+		if hasVerticalSpace(pdf, 4) {
+			pdf.Ln(4)
+		}
 	}
 }
 
@@ -165,39 +193,59 @@ type TipdRendererTable struct {
 }
 
 func (r TipdRendererTable) Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
-
 	tableHeaderPrintedOnPage := false
 	currentPage := pdf.PageNo()
 	rowIdx := 1
 
 	for _, day := range tipd.Days {
 		for _, event := range day.Events {
-			for _, row := range event.Rows {
+			pdf.SetFont("DejaVu", "", 7)
 
-				row.Traj = formatTrajanje(row.Traj, tipd.Tipd)
+			if pdf.PageNo() != currentPage {
+				tableHeaderPrintedOnPage = false
+				currentPage = pdf.PageNo()
+			}
 
-				if pdf.PageNo() != currentPage {
-					tableHeaderPrintedOnPage = false
-					currentPage = pdf.PageNo()
-				}
+			eventHeight := measureTableEventHeight(pdf, r.Layout, event)
+			requiredHeight := eventHeight
+			if !tableHeaderPrintedOnPage {
+				requiredHeight += tableHeaderHeight
+			}
 
-				ensureSpaceForTableRow(pdf, r.Layout.RowHeight(), &tableHeaderPrintedOnPage, &tipd)
-
-				if !tableHeaderPrintedOnPage {
-					r.Layout.DrawHeader(pdf)
+			if !hasVerticalSpace(pdf, requiredHeight) {
+				if eventHeight <= freshTablePageEventCapacity(pdf) {
+					startTipdTablePage(pdf, r.Layout, tipd)
 					tableHeaderPrintedOnPage = true
-				}
+					currentPage = pdf.PageNo()
+				} else {
+					if tableHeaderPrintedOnPage ||
+						!hasVerticalSpace(pdf, tableHeaderHeight+r.Layout.RowHeight()) {
+						startTipdTablePage(pdf, r.Layout, tipd)
+					} else {
+						r.Layout.DrawHeader(pdf)
+						pdf.SetFont("DejaVu", "", 7)
+					}
+					tableHeaderPrintedOnPage = true
+					currentPage = pdf.PageNo()
 
+					renderOversizedTableEvent(pdf, r.Layout, tipd, event, &rowIdx)
+					currentPage = pdf.PageNo()
+					continue
+				}
+			}
+
+			if !tableHeaderPrintedOnPage {
+				r.Layout.DrawHeader(pdf)
+				tableHeaderPrintedOnPage = true
+			}
+
+			for _, row := range event.Rows {
+				row.Traj = formatTrajanje(row.Traj, tipd.Tipd)
 				r.Layout.DrawRow(pdf, row, rowIdx)
 				rowIdx++
 			}
 
-			pdf.Ln(2)
-			if event.Tekst != "" {
-				pdf.MultiCell(0, 5, event.Tekst, "", "", false)
-				drawTableBottom(pdf)
-				pdf.Ln(3)
-			}
+			drawTableEventText(pdf, event.Tekst)
 		}
 	}
 }
@@ -240,12 +288,10 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 	pdf.SetFont("DejaVu", "", 8)
 
 	for _, tipd := range report.TipdGroups {
-
-		pdf.SetFont("DejaVu", "B", 11)
-		pdf.SetTextColor(0, 128, 0) // zelena EMS
-		pdf.Cell(0, 8, fmt.Sprintf("Тачка: %s : %s", tipd.Tipd, tipd.Naziv))
-		pdf.SetTextColor(0, 0, 0)
-		pdf.Ln(10)
+		if !hasVerticalSpace(pdf, measureTipdStartHeight(pdf, tipd)) {
+			pdf.AddPage()
+		}
+		drawTipdHeading(pdf, tipd)
 
 		renderer := getTipdRenderer(tipd.Tipd)
 		renderer.Render(pdf, tipd)
@@ -260,34 +306,160 @@ func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func ensureSpaceForTableRow(
-	pdf *gofpdf.Fpdf,
-	rowHeight float64,
-	headerPrinted *bool,
-	currentTipd *models.TipdGroup,
-) {
+func pageBottomY(pdf *gofpdf.Fpdf) float64 {
 	_, pageH := pdf.GetPageSize()
 	_, _, _, bottom := pdf.GetMargins()
+	return pageH - bottom
+}
 
-	if pdf.GetY()+rowHeight > pageH-bottom {
+func hasVerticalSpace(pdf *gofpdf.Fpdf, height float64) bool {
+	return pdf.GetY()+height <= pageBottomY(pdf)
+}
 
-		pdf.AddPage()
+func drawTipdHeading(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
+	pdf.SetFont("DejaVu", "B", 11)
+	pdf.SetTextColor(0, 128, 0)
+	pdf.Cell(0, 8, fmt.Sprintf("Тачка: %s : %s", tipd.Tipd, tipd.Naziv))
+	pdf.SetTextColor(0, 0, 0)
+	pdf.Ln(tipdHeadingHeight)
+}
 
-		// TIPD header na vrhu nove strane
-		if currentTipd != nil {
-			pdf.SetFont("DejaVu", "B", 11)
-			pdf.SetTextColor(0, 128, 0) // zelena EMS
-			pdf.Cell(0, 8, fmt.Sprintf(
-				"Тачка: %s : %s",
-				currentTipd.Tipd,
-				currentTipd.Naziv,
-			))
-			pdf.SetTextColor(0, 0, 0)
-			pdf.Ln(10)
-			pdf.SetFont("DejaVu", "", 8)
+func startTipdTablePage(pdf *gofpdf.Fpdf, layout TableLayout, tipd models.TipdGroup) {
+	pdf.AddPage()
+	drawTipdHeading(pdf, tipd)
+	layout.DrawHeader(pdf)
+	pdf.SetFont("DejaVu", "", 7)
+}
+
+func drawDayHeading(pdf *gofpdf.Fpdf, date string) {
+	pdf.SetFont("DejaVu", "B", 9)
+	pdf.SetTextColor(0, 128, 0)
+	pdf.Cell(0, 6, "Дан: "+date)
+	pdf.SetTextColor(0, 0, 0)
+	pdf.Ln(6)
+	pdf.SetFont("DejaVu", "", 9)
+}
+
+func startTipdTextPage(pdf *gofpdf.Fpdf, tipd models.TipdGroup, date string) {
+	pdf.AddPage()
+	drawTipdHeading(pdf, tipd)
+	drawDayHeading(pdf, date)
+}
+
+func freshTablePageEventCapacity(pdf *gofpdf.Fpdf) float64 {
+	_, top, _, _ := pdf.GetMargins()
+	return pageBottomY(pdf) - top - tipdHeadingHeight - tableHeaderHeight
+}
+
+func freshTextPageEventCapacity(pdf *gofpdf.Fpdf) float64 {
+	_, top, _, _ := pdf.GetMargins()
+	return pageBottomY(pdf) - top - tipdHeadingHeight - 6
+}
+
+func firstTipdEvent(tipd models.TipdGroup) (models.EventGroup, bool) {
+	for _, day := range tipd.Days {
+		if len(day.Events) > 0 {
+			return day.Events[0], true
+		}
+	}
+	return models.EventGroup{}, false
+}
+
+func measureTipdStartHeight(pdf *gofpdf.Fpdf, tipd models.TipdGroup) float64 {
+	event, ok := firstTipdEvent(tipd)
+	if !ok {
+		return tipdHeadingHeight
+	}
+
+	if tipd.Tipd == "4" {
+		pdf.SetFont("DejaVu", "", 9)
+		eventHeight := float64(len(splitEventText(pdf, event.Tekst)))*eventTextLineHeight + eventTextBottomGap
+		if eventHeight > freshTextPageEventCapacity(pdf) {
+			eventHeight = eventTextLineHeight
+		}
+		return tipdHeadingHeight + 6 + eventHeight
+	}
+
+	layout := getTableLayout(tipd.Tipd)
+	pdf.SetFont("DejaVu", "", 7)
+	eventHeight := measureTableEventHeight(pdf, layout, event)
+	if eventHeight > freshTablePageEventCapacity(pdf) {
+		eventHeight = layout.RowHeight()
+	}
+	return tipdHeadingHeight + tableHeaderHeight + eventHeight
+}
+
+func tableTextWidth(pdf *gofpdf.Fpdf) float64 {
+	pageW, _ := pdf.GetPageSize()
+	left, _, right, _ := pdf.GetMargins()
+	return pageW - left - right
+}
+
+func splitEventText(pdf *gofpdf.Fpdf, text string) []string {
+	if text == "" {
+		return nil
+	}
+	return pdf.SplitText(text, tableTextWidth(pdf))
+}
+
+func measureTableEventHeight(
+	pdf *gofpdf.Fpdf,
+	layout TableLayout,
+	event models.EventGroup,
+) float64 {
+	height := float64(len(event.Rows))*layout.RowHeight() + eventTextTopGap
+	if event.Tekst != "" {
+		height += float64(len(splitEventText(pdf, event.Tekst))) * eventTextLineHeight
+		height += eventTextBottomGap
+	}
+	return height
+}
+
+func drawTableEventText(pdf *gofpdf.Fpdf, text string) {
+	pdf.Ln(eventTextTopGap)
+	if text == "" {
+		return
+	}
+
+	pdf.MultiCell(0, eventTextLineHeight, text, "", "", false)
+	drawTableBottom(pdf)
+	pdf.Ln(eventTextBottomGap)
+}
+
+func renderOversizedTableEvent(
+	pdf *gofpdf.Fpdf,
+	layout TableLayout,
+	tipd models.TipdGroup,
+	event models.EventGroup,
+	rowIdx *int,
+) {
+	for _, row := range event.Rows {
+		if !hasVerticalSpace(pdf, layout.RowHeight()) {
+			startTipdTablePage(pdf, layout, tipd)
 		}
 
-		// *headerPrinted = false
+		row.Traj = formatTrajanje(row.Traj, tipd.Tipd)
+		layout.DrawRow(pdf, row, *rowIdx)
+		(*rowIdx)++
+	}
+
+	pdf.Ln(eventTextTopGap)
+	lines := splitEventText(pdf, event.Tekst)
+	for _, line := range lines {
+		if !hasVerticalSpace(pdf, eventTextLineHeight) {
+			startTipdTablePage(pdf, layout, tipd)
+		}
+		pdf.CellFormat(
+			0, eventTextLineHeight, strings.TrimRight(line, "\r"),
+			"", 1, "", false, 0, "",
+		)
+	}
+
+	if event.Tekst != "" {
+		drawTableBottom(pdf)
+		if hasVerticalSpace(pdf, eventTextBottomGap) {
+			pdf.Ln(eventTextBottomGap)
+		}
 	}
 }
 
