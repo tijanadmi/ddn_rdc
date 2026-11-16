@@ -273,8 +273,8 @@ func getTipdRenderer(tipd string) TipdRenderer {
 func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.SetMargins(10, 37, 10)
-	pdf.SetAutoPageBreak(true, 10)
+	pdf.SetMargins(6, 34, 6)
+	pdf.SetAutoPageBreak(true, 8)
 
 	// === REGISTRACIJA UTF-8 FONTOVA ===
 	pdf.AddUTF8Font("DejaVu", "", "assets/fonts/DejaVuSans.ttf")
