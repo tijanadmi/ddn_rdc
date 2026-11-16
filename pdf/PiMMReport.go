@@ -16,6 +16,7 @@ type TableLayout interface {
 	DrawHeader(pdf *gofpdf.Fpdf)
 	DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int)
 	RowHeight() float64
+	TableWidth() float64
 }
 
 const (
@@ -37,6 +38,10 @@ func (l TableLayoutT1) RowHeight() float64 {
 	return tableRowHeight
 }
 
+func (l TableLayoutT1) TableWidth() float64 {
+	return 198
+}
+
 func (l TableLayoutT1) DrawHeader(pdf *gofpdf.Fpdf) {
 	left, _, _, _ := pdf.GetMargins()
 	pdf.SetX(left)
@@ -49,7 +54,7 @@ func (l TableLayoutT1) DrawHeader(pdf *gofpdf.Fpdf) {
 	pdf.CellFormat(60, tableCellHeight, "Објекат", "LRT", 0, "", true, 0, "")
 	pdf.CellFormat(12, tableCellHeight, "Снага", "LRT", 0, "C", true, 0, "")
 	pdf.CellFormat(30, tableCellHeight, "Врста догађаја", "LRT", 0, "", true, 0, "")
-	pdf.CellFormat(45, tableCellHeight, "Примарни узрок дог.", "LT", 1, "", true, 0, "")
+	pdf.CellFormat(52, tableCellHeight, "Примарни узрок дог.", "LT", 1, "", true, 0, "")
 
 	pdf.CellFormat(6, tableCellHeight, "бр", "RB", 0, "C", true, 0, "")
 	pdf.CellFormat(24, tableCellHeight, "", "LRB", 0, "C", true, 0, "")
@@ -57,7 +62,7 @@ func (l TableLayoutT1) DrawHeader(pdf *gofpdf.Fpdf) {
 	pdf.CellFormat(60, tableCellHeight, "", "LRB", 0, "", true, 0, "")
 	pdf.CellFormat(12, tableCellHeight, "MW", "LRB", 0, "C", true, 0, "")
 	pdf.CellFormat(30, tableCellHeight, "", "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(45, tableCellHeight, "Временски услови", "LB", 1, "", true, 0, "")
+	pdf.CellFormat(52, tableCellHeight, "Временски услови", "LB", 1, "", true, 0, "")
 }
 
 func (l TableLayoutT1) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
@@ -71,6 +76,10 @@ func (l TableLayoutT2) RowHeight() float64 {
 	return tableRowHeight
 }
 
+func (l TableLayoutT2) TableWidth() float64 {
+	return 198
+}
+
 func (l TableLayoutT2) DrawHeader(pdf *gofpdf.Fpdf) {
 	left, _, _, _ := pdf.GetMargins()
 	pdf.SetX(left)
@@ -82,14 +91,14 @@ func (l TableLayoutT2) DrawHeader(pdf *gofpdf.Fpdf) {
 	pdf.CellFormat(14, tableCellHeight, "Трај.", "LRT", 0, "C", true, 0, "")
 	pdf.CellFormat(70, tableCellHeight, "Објекат", "LRT", 0, "", true, 0, "")
 	pdf.CellFormat(30, tableCellHeight, "Врста догађаја", "LRT", 0, "", true, 0, "")
-	pdf.CellFormat(50, tableCellHeight, "Разлог", "LT", 1, "", true, 0, "")
+	pdf.CellFormat(54, tableCellHeight, "Разлог", "LT", 1, "", true, 0, "")
 
 	pdf.CellFormat(6, tableCellHeight, "бр", "RB", 0, "C", true, 0, "")
 	pdf.CellFormat(24, tableCellHeight, "", "LRB", 0, "C", true, 0, "")
 	pdf.CellFormat(14, tableCellHeight, "hh:mm", "LRB", 0, "", true, 0, "")
 	pdf.CellFormat(70, tableCellHeight, "", "LRB", 0, "", true, 0, "")
 	pdf.CellFormat(30, tableCellHeight, "", "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(50, tableCellHeight, "укључења / искључења", "LB", 1, "", true, 0, "")
+	pdf.CellFormat(54, tableCellHeight, "укључења / искључења", "LB", 1, "", true, 0, "")
 }
 
 func (l TableLayoutT2) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
@@ -98,7 +107,7 @@ func (l TableLayoutT2) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	objekat := fitText(pdf, r.Objekat, 70)
 	vrsta := fitText(pdf, r.VrstaDogadjaja, 30)
 	polje := fitText(pdf, r.Polje+" "+r.ImePolja, 70)
-	razlog := fitText(pdf, r.Razlog, 50)
+	razlog := fitText(pdf, r.Razlog, 54)
 
 	// RED 1
 	pdf.CellFormat(6, tableCellHeight, fmt.Sprint(idx), "", 0, "C", false, 0, "")
@@ -106,7 +115,7 @@ func (l TableLayoutT2) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	pdf.CellFormat(14, tableCellHeight, r.Traj, "", 0, "C", false, 0, "")
 	pdf.CellFormat(70, tableCellHeight, objekat, "", 0, "", false, 0, "")
 	pdf.CellFormat(30, tableCellHeight, vrsta, "", 0, "", false, 0, "")
-	pdf.CellFormat(50, tableCellHeight, razlog, "", 1, "", false, 0, "")
+	pdf.CellFormat(54, tableCellHeight, razlog, "", 1, "", false, 0, "")
 
 	// RED 2
 	pdf.CellFormat(6, tableCellHeight, "", "", 0, "", false, 0, "")
@@ -114,7 +123,7 @@ func (l TableLayoutT2) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	pdf.CellFormat(14, tableCellHeight, "", "", 0, "", false, 0, "")
 	pdf.CellFormat(70, tableCellHeight, polje, "", 0, "", false, 0, "")
 	pdf.CellFormat(30, tableCellHeight, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(50, tableCellHeight, "", "", 1, "", false, 0, "")
+	pdf.CellFormat(54, tableCellHeight, "", "", 1, "", false, 0, "")
 
 	resetX(pdf)
 }
@@ -155,7 +164,7 @@ func (r TipdRendererT4) Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
 			}
 
 			pdf.SetFont("DejaVu", "", 9)
-			lines := splitEventText(pdf, event.Tekst)
+			lines := splitText(pdf, event.Tekst, contentWidth(pdf))
 			eventHeight := float64(len(lines))*eventTextLineHeight + eventTextBottomGap
 
 			if !hasVerticalSpace(pdf, eventHeight) {
@@ -247,7 +256,7 @@ func (r TipdRendererTable) Render(pdf *gofpdf.Fpdf, tipd models.TipdGroup) {
 				rowIdx++
 			}
 
-			drawTableEventText(pdf, event.Tekst)
+			drawTableEventText(pdf, r.Layout, event.Tekst)
 		}
 	}
 }
@@ -375,7 +384,7 @@ func measureTipdStartHeight(pdf *gofpdf.Fpdf, tipd models.TipdGroup) float64 {
 
 	if tipd.Tipd == "4" {
 		pdf.SetFont("DejaVu", "", 9)
-		eventHeight := float64(len(splitEventText(pdf, event.Tekst)))*eventTextLineHeight + eventTextBottomGap
+		eventHeight := float64(len(splitText(pdf, event.Tekst, contentWidth(pdf))))*eventTextLineHeight + eventTextBottomGap
 		if eventHeight > freshTextPageEventCapacity(pdf) {
 			eventHeight = eventTextLineHeight
 		}
@@ -391,17 +400,17 @@ func measureTipdStartHeight(pdf *gofpdf.Fpdf, tipd models.TipdGroup) float64 {
 	return tipdHeadingHeight + tableHeaderHeight + eventHeight
 }
 
-func tableTextWidth(pdf *gofpdf.Fpdf) float64 {
+func contentWidth(pdf *gofpdf.Fpdf) float64 {
 	pageW, _ := pdf.GetPageSize()
 	left, _, right, _ := pdf.GetMargins()
 	return pageW - left - right
 }
 
-func splitEventText(pdf *gofpdf.Fpdf, text string) []string {
+func splitText(pdf *gofpdf.Fpdf, text string, width float64) []string {
 	if text == "" {
 		return nil
 	}
-	return pdf.SplitText(text, tableTextWidth(pdf))
+	return pdf.SplitText(text, width)
 }
 
 func measureTableEventHeight(
@@ -411,20 +420,20 @@ func measureTableEventHeight(
 ) float64 {
 	height := float64(len(event.Rows))*layout.RowHeight() + eventTextTopGap
 	if event.Tekst != "" {
-		height += float64(len(splitEventText(pdf, event.Tekst))) * eventTextLineHeight
+		height += float64(len(splitText(pdf, event.Tekst, layout.TableWidth()))) * eventTextLineHeight
 		height += eventTextBottomGap
 	}
 	return height
 }
 
-func drawTableEventText(pdf *gofpdf.Fpdf, text string) {
+func drawTableEventText(pdf *gofpdf.Fpdf, layout TableLayout, text string) {
 	pdf.Ln(eventTextTopGap)
 	if text == "" {
 		return
 	}
 
-	pdf.MultiCell(0, eventTextLineHeight, text, "", "", false)
-	drawTableBottom(pdf)
+	pdf.MultiCell(layout.TableWidth(), eventTextLineHeight, text, "", "", false)
+	drawTableBottom(pdf, layout.TableWidth())
 	pdf.Ln(eventTextBottomGap)
 }
 
@@ -446,7 +455,7 @@ func renderOversizedTableEvent(
 	}
 
 	pdf.Ln(eventTextTopGap)
-	lines := splitEventText(pdf, event.Tekst)
+	lines := splitText(pdf, event.Tekst, layout.TableWidth())
 	for _, line := range lines {
 		if !hasVerticalSpace(pdf, eventTextLineHeight) {
 			startTipdTablePage(pdf, layout, tipd)
@@ -458,7 +467,7 @@ func renderOversizedTableEvent(
 	}
 
 	if event.Tekst != "" {
-		drawTableBottom(pdf)
+		drawTableBottom(pdf, layout.TableWidth())
 		if hasVerticalSpace(pdf, eventTextBottomGap) {
 			pdf.Ln(eventTextBottomGap)
 		}
@@ -551,8 +560,8 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 
 	objekat := fitText(pdf, r.Objekat, 62)
 	vrsta := fitText(pdf, r.VrstaDogadjaja, 30)
-	uzrok := fitText(pdf, r.Uzrok, 45)
-	vremUsl := fitText(pdf, r.VremUsl, 45)
+	uzrok := fitText(pdf, r.Uzrok, 52)
+	vremUsl := fitText(pdf, r.VremUsl, 52)
 	polje := fitText(pdf, r.Polje+" "+r.ImePolja, 62)
 
 	// RED 1
@@ -562,7 +571,7 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	pdf.CellFormat(60, tableCellHeight, objekat, "", 0, "", false, 0, "")
 	pdf.CellFormat(12, tableCellHeight, r.Snaga, "", 0, "C", false, 0, "")
 	pdf.CellFormat(30, tableCellHeight, vrsta, "", 0, "", false, 0, "")
-	pdf.CellFormat(45, tableCellHeight, uzrok, "", 1, "", false, 0, "")
+	pdf.CellFormat(52, tableCellHeight, uzrok, "", 1, "", false, 0, "")
 
 	// RED 2
 	pdf.CellFormat(6, tableCellHeight, "", "", 0, "", false, 0, "")
@@ -571,7 +580,7 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	pdf.CellFormat(60, tableCellHeight, polje, "", 0, "", false, 0, "")
 	pdf.CellFormat(12, tableCellHeight, "", "", 0, "", false, 0, "")
 	pdf.CellFormat(30, tableCellHeight, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(45, tableCellHeight, vremUsl, "", 1, "", false, 0, "")
+	pdf.CellFormat(52, tableCellHeight, vremUsl, "", 1, "", false, 0, "")
 
 	// pdf.SetTextColor(0, 0, 0)
 
@@ -579,17 +588,11 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 
 }
 
-func drawTableBottom(pdf *gofpdf.Fpdf) {
+func drawTableBottom(pdf *gofpdf.Fpdf, width float64) {
 	left, _, _, _ := pdf.GetMargins()
 	pdf.SetX(left)
 
-	pdf.CellFormat(6, 0, "", "T", 0, "", false, 0, "")
-	pdf.CellFormat(25, 0, "", "T", 0, "", false, 0, "")
-	pdf.CellFormat(10, 0, "", "T", 0, "", false, 0, "")
-	pdf.CellFormat(62, 0, "", "T", 0, "", false, 0, "")
-	pdf.CellFormat(12, 0, "", "T", 0, "", false, 0, "")
-	pdf.CellFormat(30, 0, "", "T", 0, "", false, 0, "")
-	pdf.CellFormat(45, 0, "", "T", 1, "", false, 0, "")
+	pdf.CellFormat(width, 0, "", "T", 1, "", false, 0, "")
 
 	resetX(pdf)
 }
