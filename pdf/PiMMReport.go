@@ -19,11 +19,13 @@ type TableLayout interface {
 }
 
 const (
-	tableHeaderHeight   = 10.0
-	eventTextLineHeight = 5.0
-	eventTextTopGap     = 2.0
-	eventTextBottomGap  = 3.0
-	tipdHeadingHeight   = 10.0
+	tableCellHeight      = 4.25
+	tableHeaderHeight    = 2 * tableCellHeight
+	tableRowHeight       = 2 * tableCellHeight
+	eventTextLineHeight  = 4.0
+	eventTextTopGap      = 1.0
+	eventTextBottomGap   = 2.0
+	tipdHeadingHeight    = 8.0
 )
 
 /*Layout za TAČKU 1 i 3*/
@@ -32,7 +34,7 @@ type TableLayoutT1 struct {
 }
 
 func (l TableLayoutT1) RowHeight() float64 {
-	return 10
+	return tableRowHeight
 }
 
 func (l TableLayoutT1) DrawHeader(pdf *gofpdf.Fpdf) {
@@ -41,21 +43,21 @@ func (l TableLayoutT1) DrawHeader(pdf *gofpdf.Fpdf) {
 	pdf.SetFont("DejaVu", "B", 7)
 	pdf.SetFillColor(198, 224, 180)
 
-	pdf.CellFormat(6, 5, "Р.", "RT", 0, "C", true, 0, "")
-	pdf.CellFormat(24, 5, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
-	pdf.CellFormat(14, 5, "Трај.", "LRT", 0, "C", true, 0, "")
-	pdf.CellFormat(60, 5, "Објекат", "LRT", 0, "", true, 0, "")
-	pdf.CellFormat(12, 5, "Снага", "LRT", 0, "C", true, 0, "")
-	pdf.CellFormat(30, 5, "Врста догађаја", "LRT", 0, "", true, 0, "")
-	pdf.CellFormat(45, 5, "Примарни узрок дог.", "LT", 1, "", true, 0, "")
+	pdf.CellFormat(6, tableCellHeight, "Р.", "RT", 0, "C", true, 0, "")
+	pdf.CellFormat(24, tableCellHeight, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(14, tableCellHeight, "Трај.", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(60, tableCellHeight, "Објекат", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(12, tableCellHeight, "Снага", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(30, tableCellHeight, "Врста догађаја", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(45, tableCellHeight, "Примарни узрок дог.", "LT", 1, "", true, 0, "")
 
-	pdf.CellFormat(6, 5, "бр", "RB", 0, "C", true, 0, "")
-	pdf.CellFormat(24, 5, "", "LRB", 0, "C", true, 0, "")
-	pdf.CellFormat(14, 5, l.TrajLabel, "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(60, 5, "", "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(12, 5, "MW", "LRB", 0, "C", true, 0, "")
-	pdf.CellFormat(30, 5, "", "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(45, 5, "Временски услови", "LB", 1, "", true, 0, "")
+	pdf.CellFormat(6, tableCellHeight, "бр", "RB", 0, "C", true, 0, "")
+	pdf.CellFormat(24, tableCellHeight, "", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(14, tableCellHeight, l.TrajLabel, "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(60, tableCellHeight, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(12, tableCellHeight, "MW", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(30, tableCellHeight, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(45, tableCellHeight, "Временски услови", "LB", 1, "", true, 0, "")
 }
 
 func (l TableLayoutT1) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
@@ -66,7 +68,7 @@ func (l TableLayoutT1) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 type TableLayoutT2 struct{}
 
 func (l TableLayoutT2) RowHeight() float64 {
-	return 10
+	return tableRowHeight
 }
 
 func (l TableLayoutT2) DrawHeader(pdf *gofpdf.Fpdf) {
@@ -75,19 +77,19 @@ func (l TableLayoutT2) DrawHeader(pdf *gofpdf.Fpdf) {
 	pdf.SetFont("DejaVu", "B", 7)
 	pdf.SetFillColor(198, 224, 180)
 
-	pdf.CellFormat(6, 5, "Р.", "RT", 0, "C", true, 0, "")
-	pdf.CellFormat(24, 5, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
-	pdf.CellFormat(14, 5, "Трај.", "LRT", 0, "C", true, 0, "")
-	pdf.CellFormat(70, 5, "Објекат", "LRT", 0, "", true, 0, "")
-	pdf.CellFormat(30, 5, "Врста догађаја", "LRT", 0, "", true, 0, "")
-	pdf.CellFormat(50, 5, "Разлог", "LT", 1, "", true, 0, "")
+	pdf.CellFormat(6, tableCellHeight, "Р.", "RT", 0, "C", true, 0, "")
+	pdf.CellFormat(24, tableCellHeight, "Почетак – Крај", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(14, tableCellHeight, "Трај.", "LRT", 0, "C", true, 0, "")
+	pdf.CellFormat(70, tableCellHeight, "Објекат", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(30, tableCellHeight, "Врста догађаја", "LRT", 0, "", true, 0, "")
+	pdf.CellFormat(50, tableCellHeight, "Разлог", "LT", 1, "", true, 0, "")
 
-	pdf.CellFormat(6, 5, "бр", "RB", 0, "C", true, 0, "")
-	pdf.CellFormat(24, 5, "", "LRB", 0, "C", true, 0, "")
-	pdf.CellFormat(14, 5, "hh:mm", "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(70, 5, "", "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(30, 5, "", "LRB", 0, "", true, 0, "")
-	pdf.CellFormat(50, 5, "укључења / искључења", "LB", 1, "", true, 0, "")
+	pdf.CellFormat(6, tableCellHeight, "бр", "RB", 0, "C", true, 0, "")
+	pdf.CellFormat(24, tableCellHeight, "", "LRB", 0, "C", true, 0, "")
+	pdf.CellFormat(14, tableCellHeight, "hh:mm", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(70, tableCellHeight, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(30, tableCellHeight, "", "LRB", 0, "", true, 0, "")
+	pdf.CellFormat(50, tableCellHeight, "укључења / искључења", "LB", 1, "", true, 0, "")
 }
 
 func (l TableLayoutT2) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
@@ -99,20 +101,20 @@ func (l TableLayoutT2) DrawRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	razlog := fitText(pdf, r.Razlog, 50)
 
 	// RED 1
-	pdf.CellFormat(6, 5, fmt.Sprint(idx), "", 0, "C", false, 0, "")
-	pdf.CellFormat(24, 5, r.Vrepoc, "", 0, "", false, 0, "")
-	pdf.CellFormat(14, 5, r.Traj, "", 0, "C", false, 0, "")
-	pdf.CellFormat(70, 5, objekat, "", 0, "", false, 0, "")
-	pdf.CellFormat(30, 5, vrsta, "", 0, "", false, 0, "")
-	pdf.CellFormat(50, 5, razlog, "", 1, "", false, 0, "")
+	pdf.CellFormat(6, tableCellHeight, fmt.Sprint(idx), "", 0, "C", false, 0, "")
+	pdf.CellFormat(24, tableCellHeight, r.Vrepoc, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, tableCellHeight, r.Traj, "", 0, "C", false, 0, "")
+	pdf.CellFormat(70, tableCellHeight, objekat, "", 0, "", false, 0, "")
+	pdf.CellFormat(30, tableCellHeight, vrsta, "", 0, "", false, 0, "")
+	pdf.CellFormat(50, tableCellHeight, razlog, "", 1, "", false, 0, "")
 
 	// RED 2
-	pdf.CellFormat(6, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(24, 5, r.Vrezav, "", 0, "", false, 0, "")
-	pdf.CellFormat(14, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(70, 5, polje, "", 0, "", false, 0, "")
-	pdf.CellFormat(30, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(50, 5, "", "", 1, "", false, 0, "")
+	pdf.CellFormat(6, tableCellHeight, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(24, tableCellHeight, r.Vrezav, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, tableCellHeight, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(70, tableCellHeight, polje, "", 0, "", false, 0, "")
+	pdf.CellFormat(30, tableCellHeight, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(50, tableCellHeight, "", "", 1, "", false, 0, "")
 
 	resetX(pdf)
 }
@@ -271,8 +273,8 @@ func getTipdRenderer(tipd string) TipdRenderer {
 func GeneratePiMMReportPDF(report *models.Report) ([]byte, error) {
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.SetMargins(10, 40, 10) // ⬅ veća gornja margina zbog headera
-	pdf.SetAutoPageBreak(true, 15)
+	pdf.SetMargins(10, 37, 10)
+	pdf.SetAutoPageBreak(true, 10)
 
 	// === REGISTRACIJA UTF-8 FONTOVA ===
 	pdf.AddUTF8Font("DejaVu", "", "assets/fonts/DejaVuSans.ttf")
@@ -554,22 +556,22 @@ func tableRow(pdf *gofpdf.Fpdf, r models.DetailRow, idx int) {
 	polje := fitText(pdf, r.Polje+" "+r.ImePolja, 62)
 
 	// RED 1
-	pdf.CellFormat(6, 5, fmt.Sprint(idx), "", 0, "C", false, 0, "")
-	pdf.CellFormat(24, 5, r.Vrepoc, "", 0, "", false, 0, "")
-	pdf.CellFormat(14, 5, r.Traj, "", 0, "C", false, 0, "")
-	pdf.CellFormat(60, 5, objekat, "", 0, "", false, 0, "")
-	pdf.CellFormat(12, 5, r.Snaga, "", 0, "C", false, 0, "")
-	pdf.CellFormat(30, 5, vrsta, "", 0, "", false, 0, "")
-	pdf.CellFormat(45, 5, uzrok, "", 1, "", false, 0, "")
+	pdf.CellFormat(6, tableCellHeight, fmt.Sprint(idx), "", 0, "C", false, 0, "")
+	pdf.CellFormat(24, tableCellHeight, r.Vrepoc, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, tableCellHeight, r.Traj, "", 0, "C", false, 0, "")
+	pdf.CellFormat(60, tableCellHeight, objekat, "", 0, "", false, 0, "")
+	pdf.CellFormat(12, tableCellHeight, r.Snaga, "", 0, "C", false, 0, "")
+	pdf.CellFormat(30, tableCellHeight, vrsta, "", 0, "", false, 0, "")
+	pdf.CellFormat(45, tableCellHeight, uzrok, "", 1, "", false, 0, "")
 
 	// RED 2
-	pdf.CellFormat(6, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(24, 5, r.Vrezav, "", 0, "", false, 0, "")
-	pdf.CellFormat(14, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(60, 5, polje, "", 0, "", false, 0, "")
-	pdf.CellFormat(12, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(30, 5, "", "", 0, "", false, 0, "")
-	pdf.CellFormat(45, 5, vremUsl, "", 1, "", false, 0, "")
+	pdf.CellFormat(6, tableCellHeight, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(24, tableCellHeight, r.Vrezav, "", 0, "", false, 0, "")
+	pdf.CellFormat(14, tableCellHeight, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(60, tableCellHeight, polje, "", 0, "", false, 0, "")
+	pdf.CellFormat(12, tableCellHeight, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(30, tableCellHeight, "", "", 0, "", false, 0, "")
+	pdf.CellFormat(45, tableCellHeight, vremUsl, "", 1, "", false, 0, "")
 
 	// pdf.SetTextColor(0, 0, 0)
 
